@@ -33,6 +33,9 @@ export async function POST(request: NextRequest) {
     response.headers.append("Set-Cookie", `${cookie.name}=${cookie.value}; Path=/; HttpOnly; SameSite=Lax; Expires=${cookie.options.expires.toUTCString()}${cookie.options.secure ? "; Secure" : ""}`);
     return response;
   } catch (error) {
+    if (error instanceof Error && /(connect|tenant|database|postgres|ENOTFOUND)/i.test(error.message)) {
+      return apiError({ code: "DATABASE_UNAVAILABLE", message: "Database sedang tidak dapat dihubungi. Periksa konfigurasi DATABASE_URL." }, { status: 503 });
+    }
     return routeError(error);
   }
 }

@@ -109,7 +109,7 @@ export function VisiMisiSection() {
 
         <div className="relative overflow-hidden rounded-3xl border-2 border-blue-200 bg-[#123e91] shadow-[0_24px_60px_rgba(15,50,120,0.22)] sm:hidden">
           <div className="absolute inset-0">
-            <Image src="/banner.jpeg" alt="Gedung SMKN 1 Cibinong" fill sizes="100vw" quality={50} className="object-cover" />
+            <Image src="/banner.jpeg" alt="Gedung SMKN 1 Cibinong" fill sizes="100vw" quality={75} className="object-cover" />
             <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(13,47,121,0.96),rgba(31,100,226,0.9))]" />
           </div>
           <AnimatePresence mode="wait">

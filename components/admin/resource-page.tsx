@@ -16,7 +16,7 @@ export type ResourceItem = { id: number; title?: string; name?: string; type?: s
 export type ResourceConfig = { title: string; description: string; resource: string; createHref: string; editPrefix: string; columns: string[]; fields: (item: ResourceItem) => React.ReactNode[] };
 
 async function request(url: string, init?: RequestInit) {
-  const response = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...init?.headers } });
+  const response = await fetch(url, { cache: "no-store", ...init, headers: { "Content-Type": "application/json", ...init?.headers } });
   const result = await response.json();
   if (!response.ok || !result.success) throw new Error(result.error?.message ?? "Permintaan gagal.");
   return result;

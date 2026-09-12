@@ -3,28 +3,98 @@
 import Image from "next/image";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarClock, Eye, LoaderCircle, Save, Send, UploadCloud } from "lucide-react";
+import { LoaderCircle, Save, Send, UploadCloud } from "lucide-react";
+
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 
 type Kind = "posts" | "guru" | "sarana-prasarana" | "kerjasama-industri";
 const titles = { posts: "Konten", guru: "Guru & Staff", "sarana-prasarana": "Sarana & Prasarana", "kerjasama-industri": "Mitra Industri" } as const;
-async function request(url: string, init?: RequestInit) { const headers = new Headers(init?.headers); if (!(init?.body instanceof FormData)) headers.set("Content-Type", "application/json"); const response = await fetch(url, { ...init, headers }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.error?.message ?? "Permintaan gagal."); return result.data; }
+
+async function request(url: string, init?: RequestInit) {
+  const headers = new Headers(init?.headers);
+  if (!(init?.body instanceof FormData)) headers.set("Content-Type", "application/json");
+  const response = await fetch(url, { ...init, headers, cache: "no-store" });
+  const result = await response.json();
+  if (!response.ok || !result.success) throw new Error(result.error?.message ?? "Permintaan gagal.");
+  return result.data;
+}
 
 export function EditorPage({ kind, id }: { kind: Kind; id?: string }) {
-  const router = useRouter(); const [form, setForm] = useState<Record<string, unknown>>({ isPublished: false, sortOrder: 0, type: "berita", presentationSlot: "standard", galleryUrls: [] }); const [categories, setCategories] = useState<Array<{ id: number; name: string }>>([]); const [error, setError] = useState(""); const [pending, setPending] = useState(false); const [uploading, setUploading] = useState(false);
-  useEffect(() => { if (id) void request(`/api/${kind}/${id}`).then(setForm).catch((e) => setError(e.message)); if (kind === "posts") void request("/api/post-categories?limit=50").then(setCategories).catch((e) => setError(e.message)); }, [id, kind]);
+  const router = useRouter();
+  const [form, setForm] = useState<Record<string, unknown>>({ isPublished: false, sortOrder: 0, type: "berita", presentationSlot: "standard", galleryUrls: [] });
+  const [categories, setCategories] = useState<Array<{ id: number; name: string }>>([]);
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    if (id) void request(`/api/${kind}/${id}`).then(setForm).catch((cause) => setError(cause instanceof Error ? cause.message : "Data gagal dimuat."));
+    const categoryResource = kind === "posts" ? "post-categories" : kind === "guru" ? "guru-categories" : null;
+    if (categoryResource) void request(`/api/${categoryResource}?limit=50`).then(setCategories).catch((cause) => setError(cause instanceof Error ? cause.message : "Kategori gagal dimuat."));
+  }, [id, kind]);
+
   const set = (key: string, value: unknown) => setForm((previous) => ({ ...previous, [key]: value }));
-  const field = (key: string, label: string, multi = false) => <div className="space-y-2"><Label htmlFor={key}>{label}</Label>{multi ? <Textarea id={key} value={String(form[key] ?? "")} onChange={(e) => set(key, e.target.value)} /> : <Input id={key} value={String(form[key] ?? "")} onChange={(e) => set(key, e.target.value)} />}</div>;
-  async function upload(event: ChangeEvent<HTMLInputElement>) { const file = event.target.files?.[0]; if (!file) return; setUploading(true); setError(""); try { const body = new FormData(); body.set("file", file); const result = await request("/api/uploads", { method: "POST", body }); set(kind === "kerjasama-industri" ? "logoUrl" : "imageUrl", result.url); } catch (e) { setError(e instanceof Error ? e.message : "Upload gagal."); } finally { setUploading(false); } }
-  async function save(mode: "draft" | "publish" | "schedule") { setPending(true); setError(""); try { const publishedAt = mode === "draft" ? null : mode === "schedule" ? new Date(String(form.publishedAt)).toISOString() : new Date().toISOString(); const payload = { ...form, isPublished: mode !== "draft", publishedAt }; await request(id ? `/api/${kind}/${id}` : `/api/${kind}`, { method: id ? "PUT" : "POST", body: JSON.stringify(payload) }); router.push(`/admin/${kind === "posts" ? "konten" : kind}`); } catch (e) { setError(e instanceof Error ? e.message : "Perubahan gagal."); } finally { setPending(false); } }
-  if (kind === "posts") return <div className="mx-auto max-w-[1440px] space-y-5"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs font-semibold text-slate-400">Admin / Konten</p><h1 className="mt-1 text-2xl font-bold">{id ? "Edit konten" : "Buat konten"}</h1></div><div className="flex gap-2"><Button variant="outline" onClick={() => void save("draft")} disabled={pending}><Save />Simpan draft</Button><Button onClick={() => void save("publish")} disabled={pending} className="bg-[#1D4F98] hover:bg-[#0B3477]">{pending ? <LoaderCircle className="animate-spin" /> : <Send />}Terbitkan</Button></div></div>{error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}<div className="grid gap-5 xl:grid-cols-[330px_minmax(0,1fr)]"><aside className="space-y-5"><Card><CardHeader><CardTitle>Manajemen konten</CardTitle></CardHeader><CardContent className="space-y-4"><div className="space-y-2"><Label>Tipe</Label><NativeSelect value={String(form.type)} onChange={(e) => set("type", e.target.value)}><NativeSelectOption value="berita">Berita</NativeSelectOption><NativeSelectOption value="pengumuman">Pengumuman</NativeSelectOption><NativeSelectOption value="prestasi">Prestasi</NativeSelectOption><NativeSelectOption value="agenda">Agenda</NativeSelectOption></NativeSelect></div>{<div className="space-y-2"><Label>Kategori</Label><NativeSelect value={String(form.categoryId ?? "")} onChange={(e) => set("categoryId", e.target.value ? Number(e.target.value) : null)}><NativeSelectOption value="">Tanpa kategori</NativeSelectOption>{categories.map((category) => <NativeSelectOption key={category.id} value={String(category.id)}>{category.name}</NativeSelectOption>)}</NativeSelect></div>}{field("title", "Judul")}{field("slug", "Slug")}{field("excerpt", "Ringkasan", true)}</CardContent></Card><Card><CardHeader><CardTitle>Gambar banner</CardTitle></CardHeader><CardContent className="space-y-3"><label className="grid min-h-28 cursor-pointer place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-center"><UploadCloud className="size-6 text-[#1D4F98]" /><span className="mt-2 text-sm font-medium">{uploading ? "Mengunggah..." : "Pilih gambar"}</span><span className="text-xs text-slate-500">JPEG, PNG, WebP, AVIF. Maksimum 5 MB.</span><input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={upload} /></label>{Boolean(form.imageUrl) && <div className="relative aspect-video overflow-hidden rounded-lg"><img src={String(form.imageUrl)} alt="Preview banner" className="h-full w-full object-cover" /></div>}</CardContent></Card><Card><CardHeader><CardTitle>Publikasi</CardTitle></CardHeader><CardContent className="space-y-3"><div className="space-y-2"><Label>Waktu terbit</Label><NativeSelect value={String(form.publishMode ?? "draft")} onChange={(e) => set("publishMode", e.target.value)}><NativeSelectOption value="draft">Simpan sebagai draft</NativeSelectOption><NativeSelectOption value="now">Terbitkan sekarang</NativeSelectOption><NativeSelectOption value="schedule">Jadwalkan</NativeSelectOption></NativeSelect></div>{form.publishMode === "schedule" && <Input type="datetime-local" value={String(form.publishedAt ?? "").slice(0, 16)} onChange={(e) => set("publishedAt", e.target.value)} />}{form.publishMode === "schedule" && <Button className="w-full" variant="outline" onClick={() => void save("schedule")}><CalendarClock />Jadwalkan terbit</Button>}</CardContent></Card></aside><section className="space-y-5"><Card><CardHeader><CardTitle>Isi konten</CardTitle></CardHeader><CardContent><Tabs defaultValue="write"><TabsList><TabsTrigger value="write">Tulis</TabsTrigger><TabsTrigger value="preview">Pratinjau teks</TabsTrigger></TabsList><TabsContent value="write" className="pt-4"><Textarea className="min-h-[380px] font-mono text-sm" value={String(form.body ?? "")} onChange={(e) => set("body", e.target.value)} placeholder="Mulai menulis konten dengan Markdown..." /></TabsContent><TabsContent value="preview" className="pt-4"><article className="min-h-[380px] whitespace-pre-wrap rounded-lg border bg-slate-50 p-5 text-sm leading-7 text-slate-700">{String(form.body ?? "Belum ada isi konten.")}</article></TabsContent></Tabs></CardContent></Card><Card><CardHeader><CardTitle className="flex items-center gap-2"><Eye className="size-5 text-[#1D4F98]" />Preview di website</CardTitle></CardHeader><CardContent><article className="overflow-hidden rounded-2xl border bg-white"><div className="relative aspect-[21/8] bg-slate-200">{form.imageUrl ? <img src={String(form.imageUrl)} alt="Preview konten" className="h-full w-full object-cover brightness-75" /> : <div className="grid h-full place-items-center text-sm text-slate-500">Banner akan muncul di sini</div>}<div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/85 p-5 text-white"><p className="text-xs font-semibold text-blue-200">{String(form.type ?? "BERITA").toUpperCase()}</p><h2 className="mt-1 text-xl font-bold">{String(form.title ?? "Judul konten")}</h2><p className="mt-2 line-clamp-2 text-sm text-white/80">{String(form.excerpt ?? "Ringkasan konten tampil di sini.")}</p></div></div><div className="p-5"><p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">{String(form.body ?? "Isi artikel akan muncul di sini.")}</p></div></article></CardContent></Card></section></div></div>;
-  return <div className="mx-auto max-w-4xl space-y-5"><h1 className="text-2xl font-bold">{id ? `Edit ${titles[kind]}` : `Tambah ${titles[kind]}`}</h1>{error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}<Card><CardContent className="space-y-4 p-6">{field(kind === "guru" || kind === "kerjasama-industri" ? "name" : "title", "Nama / Judul")}{field(kind === "guru" ? "bio" : "description", "Deskripsi", true)}<label className="grid min-h-28 cursor-pointer place-items-center rounded-lg border border-dashed p-4"><UploadCloud /><span className="text-sm">Upload gambar</span><input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={upload} /></label><div className="flex justify-end gap-2"><Button variant="outline" onClick={() => router.back()}>Batal</Button><Button onClick={() => void save("publish")}>Simpan</Button></div></CardContent></Card></div>;
+  const field = (key: string, label: string, multiline = false, required = false) => (
+    <div className="space-y-2">
+      <Label htmlFor={key}>{label}{required ? " *" : ""}</Label>
+      {multiline ? <Textarea id={key} value={String(form[key] ?? "")} onChange={(event) => set(key, event.target.value)} /> : <Input id={key} value={String(form[key] ?? "")} onChange={(event) => set(key, event.target.value)} />}
+    </div>
+  );
+
+  async function upload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError("");
+    try {
+      const body = new FormData();
+      body.set("file", file);
+      const result = await request("/api/uploads", { method: "POST", body });
+      set(kind === "kerjasama-industri" ? "logoUrl" : "imageUrl", result.url);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Upload gagal.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function save(mode: "draft" | "publish") {
+    setPending(true);
+    setError("");
+    try {
+      const type = String(form.type ?? "berita");
+      const payload = { ...form, isPublished: mode === "publish", publishedAt: mode === "publish" ? new Date().toISOString() : null, body: type === "prestasi" ? null : form.body };
+      await request(id ? `/api/${kind}/${id}` : `/api/${kind}`, { method: id ? "PUT" : "POST", body: JSON.stringify(payload) });
+      router.replace(`/admin/${kind === "posts" ? "konten" : kind}`);
+      router.refresh();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Perubahan gagal.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  if (kind === "posts") {
+    const type = String(form.type ?? "berita");
+    const imageUrl = typeof form.imageUrl === "string" ? form.imageUrl : "";
+    return <div className="mx-auto max-w-5xl space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs font-semibold text-slate-400">Admin / Konten</p><h1 className="mt-1 text-2xl font-bold">{id ? "Edit konten" : "Buat konten"}</h1></div><div className="flex gap-2"><Button variant="outline" onClick={() => void save("draft")} disabled={pending}><Save />Simpan draft</Button><Button onClick={() => void save("publish")} disabled={pending} className="bg-[#1D4F98] hover:bg-[#0B3477]">{pending ? <LoaderCircle className="animate-spin" /> : <Send />}Terbitkan</Button></div></div>
+      {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
+      <Card><CardHeader><CardTitle>Informasi konten</CardTitle></CardHeader><CardContent className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2"><Label>Tipe</Label><NativeSelect value={type} onChange={(event) => set("type", event.target.value)}><NativeSelectOption value="berita">Berita</NativeSelectOption><NativeSelectOption value="pengumuman">Pengumuman</NativeSelectOption><NativeSelectOption value="prestasi">Prestasi</NativeSelectOption><NativeSelectOption value="agenda">Agenda</NativeSelectOption></NativeSelect></div>
+        <div className="space-y-2"><Label>Kategori</Label><NativeSelect value={String(form.categoryId ?? "")} onChange={(event) => set("categoryId", event.target.value ? Number(event.target.value) : null)}><NativeSelectOption value="">Tanpa kategori</NativeSelectOption>{categories.map((category) => <NativeSelectOption key={category.id} value={String(category.id)}>{category.name}</NativeSelectOption>)}</NativeSelect></div>
+        {field("title", "Judul", false, true)}{field("slug", "Slug URL", false, true)}{field("excerpt", type === "prestasi" ? "Ringkasan prestasi" : "Ringkasan", true, type === "prestasi")}
+        {type === "agenda" && field("eventDate", "Tanggal agenda", false, true)}
+      </CardContent></Card>
+      <Card><CardHeader><CardTitle>{type === "prestasi" ? "Media prestasi" : "Isi konten"}</CardTitle></CardHeader><CardContent className="space-y-4">{type !== "prestasi" && field("body", "Isi artikel", true)}<label className="grid min-h-28 cursor-pointer place-items-center rounded-lg border border-dashed p-4"><UploadCloud /><span className="text-sm">{uploading ? "Mengunggah..." : "Upload gambar"}</span><input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={upload} /></label>{imageUrl && <Image src={imageUrl} alt="Preview" width={600} height={240} className="h-32 w-full rounded-lg object-cover" />}</CardContent></Card>
+    </div>;
+  }
+
+  return <div className="mx-auto max-w-4xl space-y-5"><h1 className="text-2xl font-bold">{id ? `Edit ${titles[kind]}` : `Tambah ${titles[kind]}`}</h1>{error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}<Card><CardContent className="space-y-4 p-6">{field(kind === "guru" || kind === "kerjasama-industri" ? "name" : "title", "Nama / Judul", false, true)}{kind === "guru" && <><div className="space-y-2"><Label htmlFor="position">Jabatan</Label><Input id="position" value={String(form.position ?? "")} onChange={(event) => set("position", event.target.value)} placeholder="Contoh: Guru Produktif" /></div><div className="space-y-2"><Label htmlFor="categoryId">Kategori</Label><NativeSelect id="categoryId" value={String(form.categoryId ?? "")} onChange={(event) => set("categoryId", event.target.value ? Number(event.target.value) : null)}><NativeSelectOption value="">Tanpa kategori</NativeSelectOption>{categories.map((category) => <NativeSelectOption key={category.id} value={String(category.id)}>{category.name}</NativeSelectOption>)}</NativeSelect></div></>}{field(kind === "guru" ? "bio" : "description", "Deskripsi", true)}<label className="grid min-h-28 cursor-pointer place-items-center rounded-lg border border-dashed p-4"><UploadCloud /><span className="text-sm">{uploading ? "Mengunggah..." : "Upload gambar"}</span><input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={upload} /></label><div className="flex justify-end gap-2"><Button variant="outline" onClick={() => router.back()}>Batal</Button><Button onClick={() => void save("publish")}>Simpan</Button></div></CardContent></Card></div>;
 }

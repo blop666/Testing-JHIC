@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 
-import { db } from "@/db";
+import { client, db } from "@/db";
 import { guru, guruCategories, kerjasamaIndustri, postCategories, posts, saranaPrasarana, siteSettings, users } from "@/db/schema";
 import { hashPassword } from "@/server/auth/session";
 
@@ -59,4 +59,11 @@ async function main() {
   await seedContent();
 }
 
-main().catch((error) => { console.error(error); process.exitCode = 1; });
+main()
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await client.end();
+  });

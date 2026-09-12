@@ -7,6 +7,7 @@ import { assertJurusanScope } from "@/lib/auth";
 import { getSession } from "@/server/auth/session";
 import { routeError } from "@/server/http";
 import { postIdSchema, postInputSchema } from "@/server/validators/posts";
+import { revalidatePublicResource } from "@/server/cache";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -41,6 +42,8 @@ export async function PUT(request: NextRequest, context: Context) {
     const input = postInputSchema.parse(await request.json());
     const { db } = await import("@/db");
     const [updated] = await db.update(posts).set({ ...input, jurusanId: post.jurusanId, galleryUrls: input.galleryUrls ?? [], updatedAt: new Date() }).where(eq(posts.id, id)).returning();
+    revalidatePublicResource("posts", post.type);
+    if (input.type !== post.type) revalidatePublicResource("posts", input.type);
     return apiSuccess(updated);
   } catch (error) {
     return routeError(error);
@@ -55,6 +58,7 @@ export async function DELETE(_: NextRequest, context: Context) {
     if (!post) return apiError({ code: "NOT_FOUND", message: "Post tidak ditemukan." }, { status: 404 });
     const { db } = await import("@/db");
     const [updated] = await db.update(posts).set({ isPublished: false, updatedAt: new Date() }).where(eq(posts.id, id)).returning();
+    revalidatePublicResource("posts", post.type);
     return apiSuccess(updated);
   } catch (error) {
     return routeError(error);

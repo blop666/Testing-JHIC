@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, or } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 
 import { guru, guruCategories, kerjasamaIndustri, postCategories, posts, saranaPrasarana, siteSettings } from "@/db/schema";
@@ -32,7 +32,7 @@ export async function getPublicPostBySlug(slug: string) {
     galleryUrls: posts.galleryUrls,
     publishedAt: posts.publishedAt,
     category: { name: postCategories.name, slug: postCategories.slug },
-  }).from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).where(and(eq(posts.slug, slug), eq(posts.type, "berita"), eq(posts.isPublished, true))).limit(1);
+  }).from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).where(and(or(eq(posts.slug, slug), eq(posts.slug, slug.replace(/-\d+$/, ""))), eq(posts.type, "berita"), eq(posts.isPublished, true))).limit(1);
   return post ?? null;
 }
 
