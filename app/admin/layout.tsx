@@ -6,5 +6,5 @@ import { AdminShell } from "@/components/admin/admin-shell";
 export default async function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const session = await getSession();
   if (!session) redirect("/login");
-  return <AdminQueryProvider><AdminShell>{children}</AdminShell></AdminQueryProvider>;
+  return <AdminQueryProvider><AdminShell session={{ name: session.name, role: session.role, jurusanName: session.jurusanName }}>{children}</AdminShell></AdminQueryProvider>;
 }

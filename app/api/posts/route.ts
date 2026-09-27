@@ -1,8 +1,9 @@
-import { and, asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
 import { postCategories, posts } from "@/db/schema";
 import { apiError, apiSuccess } from "@/lib/api-response";
+import { resolveListScope } from "@/lib/auth";
 import { getSession } from "@/server/auth/session";
 import { routeError } from "@/server/http";
 import { postInputSchema, postQuerySchema } from "@/server/validators/posts";
@@ -14,11 +15,13 @@ export async function GET(request: NextRequest) {
     if (!process.env.DATABASE_URL) return apiSuccess([], undefined, { page: query.page, limit: query.limit, total: 0 });
     const { db } = await import("@/db");
     const session = await getSession();
+    const { jurusanId, publicOnly } = resolveListScope(session, query.jurusan_id);
     const filters = [];
-    if (!session) filters.push(eq(posts.isPublished, true));
-    else if (session.role === "jurusan_admin") filters.push(eq(posts.jurusanId, session.jurusanId!));
+    if (publicOnly) filters.push(eq(posts.isPublished, true));
+    if (jurusanId != null) filters.push(eq(posts.jurusanId, jurusanId));
     if (query.type) filters.push(eq(posts.type, query.type));
-    if (query.jurusan_id) filters.push(eq(posts.jurusanId, query.jurusan_id));
+    if (query.status) filters.push(eq(posts.isPublished, query.status === "published"));
+    if (query.q) filters.push(or(ilike(posts.title, `%${query.q}%`), ilike(posts.excerpt, `%${query.q}%`)));
     if (query.featured) filters.push(eq(posts.isFeatured, query.featured === "true"));
     if (query.highlighted) filters.push(eq(posts.isHighlighted, query.highlighted === "true"));
     if (query.category) filters.push(eq(postCategories.slug, query.category));

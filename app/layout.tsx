@@ -1,14 +1,6 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
 import "./globals.css";
 import { AOSInit } from "@/components/aos-init";
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "600", "700"],
-  variable: "--font-poppins",
-});
 
 export const metadata: Metadata = {
   title: "CibiOne CMS",
@@ -18,7 +10,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id">
-      <body className={`${poppins.variable} ${poppins.className}`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+        />
+      </head>
+      <body>
         <AOSInit />
         {children}
       </body>

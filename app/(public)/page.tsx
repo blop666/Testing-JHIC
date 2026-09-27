@@ -8,19 +8,96 @@ import { SchoolEvents } from "@/components/sections/school-events";
 import { SchoolProfileVideo } from "@/components/sections/school-profile-video";
 import { IndustryPartners } from "@/components/sections/industry-partners";
 import { FeaturedPrograms } from "@/components/sections/featured-programs";
+import { getPublicPosts, getPublicPartners, getPublicPrograms } from "@/server/queries/public-content";
 
-export default function HomePage() {
+function toDate(value: Date | null) {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long", year: "numeric" }).format(date);
+}
+
+export default async function HomePage() {
+  const [berita, prestasi, announcements, agenda, partners, programs] = await Promise.all([
+    getPublicPosts("berita", 6),
+    getPublicPosts("prestasi", 6),
+    getPublicPosts("pengumuman", 4),
+    getPublicPosts("agenda", 10),
+    getPublicPartners(),
+    getPublicPrograms(),
+  ]);
+
+  const programItems = programs.map((item) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    label: item.label,
+    image: item.imageUrl ?? "/hero-banner.jpeg",
+  }));
+
+  const newsItems = berita.map((post, index) => ({
+    id: post.id,
+    title: post.title,
+    excerpt: post.excerpt ?? "",
+    date: toDate(post.publishedAt),
+    category: post.category?.name ?? "Berita",
+    image: post.imageUrl ?? "/banner.jpeg",
+    slug: post.slug,
+    isNew: index === 0,
+  }));
+
+  const achievementItems = prestasi.map((post, index) => ({
+    id: post.id,
+    title: post.title,
+    recipient: post.excerpt ?? "SMKN 1 Cibinong",
+    date: toDate(post.publishedAt),
+    level: index % 4 === 0 ? "Nasional" : index % 4 === 1 ? "Provinsi" : index % 4 === 2 ? "Kabupaten" : "Sekolah",
+    image: post.imageUrl ?? "/banner.jpeg",
+    ratio: (index % 3 === 0 ? "portrait" : index % 3 === 1 ? "landscape" : "square") as "portrait" | "landscape" | "square",
+    description: post.excerpt ?? "",
+  }));
+
+  const announcementItems = announcements.map((item) => ({
+    title: item.title,
+    excerpt: item.excerpt ?? "",
+    date: item.publishedAt ? new Date(item.publishedAt) : null,
+    image: item.imageUrl ?? "",
+    label: item.category?.name ?? "Pengumuman",
+    slug: item.slug,
+  }));
+
+  const partnerItems = partners.map((item) => ({
+    id: item.id,
+    name: item.name,
+    logoUrl: item.logoUrl ?? "",
+    websiteUrl: item.websiteUrl ?? "",
+  }));
+
+  const agendaItems = agenda
+    .filter((item) => item.eventDate && new Date(item.eventDate).getTime() >= Date.now() - 86_400_000)
+    .sort((a, b) => new Date(a.eventDate!).getTime() - new Date(b.eventDate!).getTime())
+    .slice(0, 3)
+    .map((item) => ({
+      id: item.id,
+      title: item.title,
+      excerpt: item.excerpt ?? "",
+      date: item.eventDate ?? null,
+      endDate: item.eventEndDate ?? null,
+      location: item.eventLocation ?? "",
+      image: item.imageUrl ?? "/banner.jpeg",
+      slug: item.slug,
+    }));
+
   return (
     <main className="min-h-screen">
       <HeroBanner />
       <PrincipalGreeting />
       <SchoolQuote />
-      <AchievementHighlight />
-      <IndustryPartners />
-      <FeaturedPrograms />
-      <NewsShowcase />
-      <AnnouncementBoard />
-      <SchoolEvents />
+      <AchievementHighlight achievements={achievementItems} />
+      <IndustryPartners partners={partnerItems} />
+      <FeaturedPrograms programs={programItems} />
+      <NewsShowcase items={newsItems} />
+      <AnnouncementBoard items={announcementItems} />
+      <SchoolEvents items={agendaItems} />
       <SchoolProfileVideo />
     </main>
   );

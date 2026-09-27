@@ -4,50 +4,31 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type Program = {
-  id: string;
+export type FeaturedProgram = {
+  id: number;
   title: string;
   description: string;
   label: string;
   image: string;
 };
 
-const programs: Program[] = [
-  {
-    id: "portal-belajar",
-    title: "Portal Belajar Online",
-    description: "Lingkungan belajar digital untuk mendukung pembelajaran jarak jauh sesuai kurikulum sekolah.",
-    label: "Pembelajaran digital",
-    image: "/hero-banner.jpeg",
-  },
-  {
-    id: "mikrotik-academy",
-    title: "Academy Mikrotik",
-    description: "Kelas Mikrotik bersertifikasi sebagai bagian dari kurikulum dan persiapan kompetensi siswa.",
-    label: "Sertifikasi teknologi",
-    image: "/smkn-hero-banner.png",
-  },
-  {
-    id: "bk-online",
-    title: "Sistem Informasi BK",
-    description: "Layanan informasi bimbingan dan konseling yang lebih mudah dijangkau oleh siswa.",
-    label: "Pendampingan siswa",
-    image: "/hero-banner.png",
-  },
-  {
-    id: "sertifikasi-lsp",
-    title: "Sertifikasi LSP",
-    description: "Layanan sertifikasi kompetensi untuk membuktikan kesiapan siswa memasuki dunia kerja.",
-    label: "Kompetensi profesi",
-    image: "/hero-banner.jpeg",
-  },
+const fallbackPrograms: FeaturedProgram[] = [
+  { id: 1, title: "Portal Belajar Online", description: "Lingkungan belajar digital untuk mendukung pembelajaran jarak jauh sesuai kurikulum sekolah.", label: "Pembelajaran digital", image: "/hero-banner.jpeg" },
+  { id: 2, title: "Academy Mikrotik", description: "Kelas Mikrotik bersertifikasi sebagai bagian dari kurikulum dan persiapan kompetensi siswa.", label: "Sertifikasi teknologi", image: "/smkn-hero-banner.png" },
+  { id: 3, title: "Sistem Informasi BK", description: "Layanan informasi bimbingan dan konseling yang lebih mudah dijangkau oleh siswa.", label: "Pendampingan siswa", image: "/hero-banner.png" },
+  { id: 4, title: "Sertifikasi LSP", description: "Layanan sertifikasi kompetensi untuk membuktikan kesiapan siswa memasuki dunia kerja.", label: "Kompetensi profesi", image: "/hero-banner.jpeg" },
 ];
 
-export function FeaturedPrograms() {
+const AUTO_SCROLL_MS = 5000;
+
+export function FeaturedPrograms({ programs = fallbackPrograms }: { programs?: FeaturedProgram[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [progress, setProgress] = useState({ width: 100, left: 0 });
+  const [paused, setPaused] = useState(false);
+
+  const items = programs.length ? programs : fallbackPrograms;
 
   const checkScrollability = useCallback(() => {
     const container = scrollRef.current;
@@ -72,15 +53,28 @@ export function FeaturedPrograms() {
       observer.disconnect();
       container.removeEventListener("scroll", checkScrollability);
     };
-  }, [checkScrollability]);
+  }, [checkScrollability, items.length]);
 
-  const scroll = (direction: "left" | "right") => {
+  const scroll = useCallback((direction: "left" | "right") => {
     const container = scrollRef.current;
     const card = container?.querySelector<HTMLElement>("[data-program-card]");
     if (!container || !card) return;
     const gap = Number.parseFloat(getComputedStyle(container).columnGap) || 0;
     container.scrollBy({ left: (card.offsetWidth + gap) * (direction === "left" ? -1 : 1), behavior: "smooth" });
-  };
+  }, []);
+
+  useEffect(() => {
+    if (paused || items.length <= 1) return;
+    const interval = setInterval(() => {
+      const container = scrollRef.current;
+      if (!container) return;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+      if (maxScroll <= 0) return;
+      if (container.scrollLeft >= maxScroll - 8) container.scrollTo({ left: 0, behavior: "smooth" });
+      else scroll("right");
+    }, AUTO_SCROLL_MS);
+    return () => clearInterval(interval);
+  }, [paused, items.length, scroll]);
 
   return (
     <section className="relative z-10 bg-[#f7f9fc] py-16 text-slate-950 md:py-24" aria-labelledby="featured-programs-heading">
@@ -92,12 +86,12 @@ export function FeaturedPrograms() {
           </div>
         </div>
 
-        <div className="relative mx-4 md:mx-8">
+        <div className="relative mx-4 md:mx-8" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
           <div ref={scrollRef} className="featured-program-scroll flex snap-x snap-mandatory gap-5 overflow-x-auto py-3 md:gap-6">
-            {programs.map((program) => (
+            {items.map((program) => (
               <article key={program.id} data-program-card className="group w-[84vw] shrink-0 snap-start sm:w-[calc((100%_-_1.25rem)/2)] lg:w-[calc((100%_-_3rem)/3)]">
                 <div className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-slate-900 shadow-[0_12px_32px_rgba(15,23,42,0.16)] transition-shadow duration-300 group-hover:shadow-[0_18px_42px_rgba(15,23,42,0.22)]">
-                  <Image src={program.image} alt="" fill sizes="380px" className="object-cover transition duration-700 group-hover:scale-105" />
+                  <Image src={program.image || "/hero-banner.jpeg"} alt="" fill sizes="380px" className="object-cover transition duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-b from-slate-950/10 via-slate-950/25 to-slate-950/95" />
                   <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-7">
                     <p className="text-xs font-medium uppercase tracking-[0.15em] text-blue-200">{program.label}</p>

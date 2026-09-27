@@ -1,0 +1,4 @@
+"use client";
+import { ResourcePage, StatusBadge } from "@/components/admin/resource-page";
+import { Badge } from "@/components/ui/badge";
+export default function ProgramUnggulanPage() { return <ResourcePage config={{ title: "Program Unggulan", description: "Program unggulan yang tampil di halaman utama.", resource: "program-unggulan", createHref: "/admin/program-unggulan/baru", editPrefix: "/admin/program-unggulan", columns: ["Judul", "Label", "Jurusan", "Urutan", "Status"], fields: (item) => [<span className="font-semibold">{item.title}</span>, <Badge variant="outline">{item.label ?? "-"}</Badge>, <span className="text-slate-500">{item.jurusan ? `${item.jurusan.code} · ${item.jurusan.name}` : "Global"}</span>, <span>{item.sortOrder ?? 0}</span>, <StatusBadge published={item.isPublished} />] }} />; }

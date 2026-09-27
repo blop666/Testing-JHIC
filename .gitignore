@@ -11,4 +11,5 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 docs/ignoret/
+docs/jurusan-admin-credentials.md
 public/uploads/

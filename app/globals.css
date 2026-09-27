@@ -12,7 +12,7 @@ body {
   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
   background-attachment: fixed;
   color: var(--foreground);
-  font-family: var(--font-poppins), sans-serif;
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   min-height: 100vh;
 }
 
@@ -784,3 +784,24 @@ body {
 }
 
 
+
+/* Rich text (HTML) content rendering for article bodies */
+.rich-text h1, .rich-text h2, .rich-text h3, .rich-text h4 { color: #0f172a; font-weight: 700; line-height: 1.25; }
+.rich-text h1 { font-size: 1.875rem; margin: 1.5rem 0 0.75rem; }
+.rich-text h2 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.rich-text h3 { font-size: 1.25rem; margin: 1.25rem 0 0.5rem; }
+.rich-text p { color: #334155; line-height: 1.8; margin-bottom: 1rem; }
+.rich-text ul, .rich-text ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+.rich-text ul { list-style: disc; }
+.rich-text ol { list-style: decimal; }
+.rich-text li { color: #334155; line-height: 1.7; margin-bottom: 0.35rem; }
+.rich-text strong { font-weight: 700; color: #0f172a; }
+.rich-text em { font-style: italic; }
+.rich-text blockquote { border-left: 4px solid #1d4f98; background: #e8f1f6; padding: 1rem 1.25rem; border-radius: 0.5rem; margin: 1rem 0; color: #334155; }
+.rich-text a { color: #1d4f98; text-decoration: underline; }
+.rich-text img { border-radius: 0.75rem; margin: 1rem 0; }
+.rich-text pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 0.75rem; overflow-x: auto; margin: 1rem 0; }
+.rich-text code { background: #f1f5f9; color: #0f172a; padding: 0.1rem 0.35rem; border-radius: 0.25rem; font-size: 0.875em; }
+.rich-text hr { border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0; }
+.rich-text figure { margin: 1.5rem 0; }
+.rich-text figcaption { text-align: center; color: #64748b; font-size: 0.875rem; margin-top: 0.5rem; }

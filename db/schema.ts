@@ -70,6 +70,8 @@ export const posts = pgTable("posts", {
   imageUrl: text("image_url"),
   galleryUrls: jsonb("gallery_urls").$type<string[]>(),
   eventDate: timestamp("event_date", { withTimezone: true }),
+  eventEndDate: timestamp("event_end_date", { withTimezone: true }),
+  eventLocation: text("event_location"),
   isPublished: boolean("is_published").notNull().default(true),
   publishedAt: timestamp("published_at", { withTimezone: true }),
   isFeatured: boolean("is_featured").notNull().default(false),
@@ -88,6 +90,7 @@ export const posts = pgTable("posts", {
   index("posts_type_view_count_idx").on(table.type, table.viewCount),
   index("posts_category_id_idx").on(table.categoryId),
   index("posts_jurusan_id_idx").on(table.jurusanId),
+  index("posts_scope_public_published_idx").on(table.jurusanId, table.isPublished, table.publishedAt),
 ]);
 
 export const guruCategories = pgTable("guru_categories", {
@@ -130,6 +133,34 @@ export const saranaPrasarana = pgTable("sarana_prasarana", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const programUnggulan = pgTable("program_unggulan", {
+  id: serial("id").primaryKey(),
+  jurusanId: integer("jurusan_id").references(() => jurusan.id),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  label: text("label").notNull(),
+  imageUrl: text("image_url"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  isPublished: boolean("is_published").notNull().default(false),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [index("program_unggulan_scope_public_sort_idx").on(table.jurusanId, table.isPublished, table.sortOrder)]);
+
+export const fasilitasVokasi = pgTable("fasilitas_vokasi", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url"),
+  jurusanId: integer("jurusan_id").references(() => jurusan.id),
+  tefaName: text("tefa_name"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  isPublished: boolean("is_published").notNull().default(false),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [index("fasilitas_vokasi_scope_public_sort_idx").on(table.jurusanId, table.isPublished, table.sortOrder)]);
+
 export const kerjasamaIndustri = pgTable("kerjasama_industri", {
   id: serial("id").primaryKey(),
   jurusanId: integer("jurusan_id").references(() => jurusan.id),
@@ -154,10 +185,20 @@ export const siteSettings = pgTable("site_settings", {
 export const chatbotKnowledge = pgTable("chatbot_knowledge", {
   id: serial("id").primaryKey(),
   jurusanId: integer("jurusan_id").references(() => jurusan.id),
+  title: text("title"),
   contentText: text("content_text").notNull(),
+  sourceUrl: text("source_url"),
+  sourceFileName: text("source_file_name"),
+  sourceMimeType: text("source_mime_type"),
+  sourceSizeBytes: integer("source_size_bytes"),
+  sourceHash: text("source_hash"),
+  effectiveFrom: timestamp("effective_from", { withTimezone: true }),
+  effectiveUntil: timestamp("effective_until", { withTimezone: true }),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }),
   isActive: boolean("is_active").notNull().default(true),
   isPublished: boolean("is_published").notNull().default(false),
   createdBy: integer("created_by").references(() => users.id),
+  updatedBy: integer("updated_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [index("chatbot_knowledge_scope_public_idx").on(table.jurusanId, table.isActive, table.isPublished, table.effectiveUntil)]);

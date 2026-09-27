@@ -3,10 +3,11 @@ import { NextRequest } from "next/server";
 
 import { posts } from "@/db/schema";
 import { apiError, apiSuccess } from "@/lib/api-response";
-import { assertJurusanScope } from "@/lib/auth";
+import { assertResourceScope } from "@/lib/auth";
 import { getSession } from "@/server/auth/session";
 import { routeError } from "@/server/http";
 import { postIdSchema, postInputSchema } from "@/server/validators/posts";
+import { assertPostCategoryScope } from "@/server/repositories/categories";
 import { revalidatePublicResource } from "@/server/cache";
 
 type Context = { params: Promise<{ id: string }> };
@@ -17,7 +18,7 @@ async function findScopedPost(id: number) {
   const { db } = await import("@/db");
   const [post] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
   if (!post) return { session, post: null };
-  assertJurusanScope(session, post.jurusanId);
+  assertResourceScope(session, post.jurusanId);
   return { session, post };
 }
 
@@ -40,6 +41,7 @@ export async function PUT(request: NextRequest, context: Context) {
     if (!session) return apiError({ code: "UNAUTHENTICATED", message: "Silakan masuk terlebih dahulu." }, { status: 401 });
     if (!post) return apiError({ code: "NOT_FOUND", message: "Post tidak ditemukan." }, { status: 404 });
     const input = postInputSchema.parse(await request.json());
+    await assertPostCategoryScope(input.categoryId, post.jurusanId);
     const { db } = await import("@/db");
     const [updated] = await db.update(posts).set({ ...input, jurusanId: post.jurusanId, galleryUrls: input.galleryUrls ?? [], updatedAt: new Date() }).where(eq(posts.id, id)).returning();
     revalidatePublicResource("posts", post.type);

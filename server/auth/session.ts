@@ -4,14 +4,14 @@ import bcrypt from "bcryptjs";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { cookies } from "next/headers";
 
-import { sessions, users } from "@/db/schema";
+import { jurusan, sessions, users } from "@/db/schema";
 import type { SessionUser } from "@/lib/auth";
 
 export const SESSION_COOKIE = "cibione_session";
 const UI_PREVIEW_TOKEN = "local-ui-preview";
 const SESSION_DAYS = 7;
 
-export type AuthSession = SessionUser & { sessionId: number; expiresAt: Date };
+export type AuthSession = SessionUser & { sessionId: number; expiresAt: Date; name: string; email: string; jurusanName: string | null };
 
 function tokenHash(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -36,7 +36,7 @@ export async function createSession(user: SessionUser) {
 export async function getSession(): Promise<AuthSession | null> {
   if (!process.env.DATABASE_URL) {
     if (process.env.NODE_ENV === "development" && (await cookies()).get(SESSION_COOKIE)?.value === UI_PREVIEW_TOKEN) {
-      return { id: 0, sessionId: 0, role: "super_admin", jurusanId: null, expiresAt: new Date(Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000) };
+      return { id: 0, sessionId: 0, role: "super_admin", jurusanId: null, name: "Preview Administrator", email: "preview@cibione.local", jurusanName: null, expiresAt: new Date(Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000) };
     }
     return null;
   }
@@ -49,13 +49,18 @@ export async function getSession(): Promise<AuthSession | null> {
     id: users.id,
     role: users.role,
     jurusanId: users.jurusanId,
-  }).from(sessions).innerJoin(users, eq(sessions.userId, users.id)).where(and(
+    name: users.name,
+    email: users.email,
+    jurusanName: jurusan.name,
+  }).from(sessions).innerJoin(users, eq(sessions.userId, users.id)).leftJoin(jurusan, and(eq(users.jurusanId, jurusan.id), eq(jurusan.isActive, true))).where(and(
     eq(sessions.tokenHash, tokenHash(token)),
     isNull(sessions.revokedAt),
     gt(sessions.expiresAt, new Date()),
     eq(users.isActive, true),
   )).limit(1);
-  return row ?? null;
+  if (!row) return null;
+  if (row.role === "jurusan_admin" && !row.jurusanId) return null;
+  return row;
 }
 
 export function previewSessionCookie() {

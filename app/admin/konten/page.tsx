@@ -10,6 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type Analytics = { total: number; published: number; drafts: number; views: number; activity: number[] };
 
+const typeLabel: Record<string, string> = { berita: "Berita", pengumuman: "Pengumuman", prestasi: "Prestasi", agenda: "Agenda" };
+const typeBadge: Record<string, string> = { berita: "border-blue-200 bg-blue-50 text-blue-700", pengumuman: "border-violet-200 bg-violet-50 text-violet-700", prestasi: "border-emerald-200 bg-emerald-50 text-emerald-700", agenda: "border-amber-200 bg-amber-50 text-amber-700" };
+
 function Sparkline({ values }: { values: number[] }) {
   const max = Math.max(...values, 1);
   const points = values.map((value, index) => `${(index / Math.max(values.length - 1, 1)) * 100},${30 - (value / max) * 26}`).join(" ");
@@ -19,7 +22,21 @@ function Sparkline({ values }: { values: number[] }) {
 function ContentAnalytics() {
   const [data, setData] = useState<Analytics | null>(null);
   const [error, setError] = useState("");
-  useEffect(() => { void fetch("/api/posts/analytics").then(async (response) => { const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.error?.message ?? "Analytics gagal dimuat."); setData(result.data); }).catch((cause) => setError(cause instanceof Error ? cause.message : "Analytics gagal dimuat.")); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const response = await fetch("/api/posts/analytics");
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.error?.message ?? "Analytics gagal dimuat.");
+        if (!cancelled) setData(result.data);
+      } catch (cause) {
+        if (!cancelled) setError(cause instanceof Error ? cause.message : "Analytics gagal dimuat.");
+      }
+    }
+    void load();
+    return () => { cancelled = true; };
+  }, []);
   if (error) return <p className="text-sm text-red-700" role="alert">{error}</p>;
   if (!data) return <Skeleton className="h-48 w-full rounded-xl" />;
   const stats = [["Total konten", data.total, Files], ["Sudah terbit", data.published, FileCheck2], ["Draft", data.drafts, BarChart3], ["Total views", data.views, Eye]] as const;
@@ -27,5 +44,32 @@ function ContentAnalytics() {
 }
 
 export default function ContentPage() {
-  return <ResourcePage config={{ title: "Konten", description: "Kelola berita, pengumuman, prestasi, dan agenda.", resource: "posts", createHref: "/admin/konten/baru", editPrefix: "/admin/konten", columns: ["Konten", "Tipe", "Kategori", "Status"], fields: (item) => [<span className="font-semibold">{item.title}</span>, <Badge variant="outline">{item.type ?? "Konten"}</Badge>, <span className="text-slate-500">{item.category?.name ?? "Tanpa kategori"}</span>, <StatusBadge published={item.isPublished} />] }}><ContentAnalytics /></ResourcePage>;
+  const [categories, setCategories] = useState<Array<{ slug: string; name: string }>>([]);
+  useEffect(() => {
+    void fetch("/api/post-categories?limit=100").then((r) => r.json()).then((d) => { if (d.success) setCategories(d.data ?? []); }).catch(() => {});
+  }, []);
+  return (
+    <ResourcePage
+      config={{
+        title: "Konten",
+        description: "Kelola berita, pengumuman, prestasi, dan agenda.",
+        resource: "posts",
+        createHref: "/admin/konten/baru",
+        editPrefix: "/admin/konten",
+        columns: ["Konten", "Tipe", "Kategori", "Status"],
+        filters: [
+          { key: "type", label: "Semua tipe", options: Object.entries(typeLabel).map(([value, label]) => ({ value, label })) },
+          { key: "category", label: "Semua kategori", options: categories.map((c) => ({ value: c.slug, label: c.name })) },
+        ],
+        fields: (item) => [
+          <span className="font-semibold">{item.title}</span>,
+          <Badge variant="outline" className={typeBadge[item.type ?? ""] ?? ""}>{typeLabel[item.type ?? ""] ?? item.type ?? "Konten"}</Badge>,
+          <span className="text-slate-500">{item.category?.name ?? "Tanpa kategori"}</span>,
+          <StatusBadge published={item.isPublished} />,
+        ],
+      }}
+    >
+      <ContentAnalytics />
+    </ResourcePage>
+  );
 }

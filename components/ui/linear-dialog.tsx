@@ -204,18 +204,18 @@ export function DialogContent({ children, className, style }: DialogContentProps
 
   return (
     <motion.div
-      animate={{ opacity: 1, scale: 1 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
       aria-describedby={`dialog-description-${uniqueId}`}
       aria-labelledby={`dialog-title-${uniqueId}`}
       aria-modal="true"
       className={cn("pointer-events-auto overflow-hidden", className)}
-      exit={{ opacity: 0, scale: 0.985 }}
+      exit={{ opacity: 0, scale: 0.96, y: 8 }}
       id={`dialog-content-${uniqueId}`}
-      initial={{ opacity: 0, scale: 0.985 }}
+      initial={{ opacity: 0, scale: 0.92, y: 24 }}
       ref={containerRef}
       role="dialog"
       style={{ ...style, willChange: "transform, opacity" }}
-      transition={{ duration: 0.36, ease: [0.23, 1, 0.32, 1] }}
+      transition={{ type: "spring", damping: 26, stiffness: 320, mass: 0.9 }}
     >
       {children}
     </motion.div>

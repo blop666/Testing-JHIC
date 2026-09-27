@@ -1,17 +1,12 @@
 "use client";
 
-import { memo, useState } from "react";
-import dynamic from "next/dynamic";
-import Image from "next/image";
-import { Dialog } from "@/components/ui/linear-dialog";
+import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+import { LayoutGrid } from "@/components/ui/layout-grid";
+import type { LayoutGridCard } from "@/components/ui/layout-grid";
 import { cn } from "@/lib/utils";
-
-const loadAchievementModal = () => import("./achievement-modal").then((module) => module.AchievementModal);
-
-const AchievementModal = dynamic(
-  loadAchievementModal,
-  { ssr: false },
-);
 
 export interface Achievement {
   id: number;
@@ -22,67 +17,192 @@ export interface Achievement {
   image: string;
   ratio: "portrait" | "landscape" | "square";
   description: string;
+  body?: string | null;
+  jurusanCode?: string;
+  jurusanName?: string;
+  viewCount?: number;
+  isHighlighted?: boolean;
+  isPopularOverride?: boolean;
 }
 
-export const ACHIEVEMENTS: Achievement[] = [
-  { id: 1, title: "Juara Nasional Kompetisi Teknologi", recipient: "Tim SIJA", date: "18 Agustus 2026", level: "Nasional", image: "/banner.jpeg", ratio: "portrait", description: "Tim SIJA membawa pulang penghargaan nasional berkat inovasi teknologi yang dikembangkan bersama guru pembimbing." },
-  { id: 2, title: "Medali Emas Olimpiade Sains", recipient: "Nadia Putri", date: "12 Agustus 2026", level: "Provinsi", image: "/banner.jpeg", ratio: "landscape", description: "Capaian ini menjadi hasil dari pembinaan rutin, latihan terarah, dan semangat belajar yang konsisten." },
-  { id: 3, title: "Finalis Lomba Desain Kreatif", recipient: "Tim DKV", date: "10 Agustus 2026", level: "Nasional", image: "/banner.jpeg", ratio: "square", description: "Karya visual siswa terpilih sebagai finalis melalui proses kurasi bersama peserta dari berbagai daerah." },
-  { id: 4, title: "Juara Debat Bahasa Indonesia", recipient: "Ekstrakurikuler Debat", date: "7 Agustus 2026", level: "Kabupaten", image: "/banner.jpeg", ratio: "landscape", description: "Tim debat menunjukkan argumentasi yang kuat dan kerja sama yang baik pada setiap babak kompetisi." },
-  { id: 5, title: "Penghargaan Inovasi Pembelajaran", recipient: "Guru Produktif", date: "3 Agustus 2026", level: "Provinsi", image: "/banner.jpeg", ratio: "portrait", description: "Penghargaan diberikan atas pengembangan pembelajaran berbasis proyek yang relevan dengan dunia industri." },
-  { id: 6, title: "Juara Turnamen Futsal Pelajar", recipient: "Tim Futsal SMKN 1", date: "29 Juli 2026", level: "Kabupaten", image: "/banner.jpeg", ratio: "square", description: "Perjuangan tim futsal berbuah prestasi melalui permainan disiplin dan dukungan seluruh warga sekolah." },
-  { id: 7, title: "Best Project Kewirausahaan Siswa", recipient: "Tim BDP", date: "24 Juli 2026", level: "Nasional", image: "/banner.jpeg", ratio: "landscape", description: "Produk karya siswa diapresiasi karena memiliki gagasan bisnis yang matang dan berdampak bagi lingkungan." },
-  { id: 8, title: "Juara Poster Digital Lingkungan", recipient: "Raka Pratama", date: "20 Juli 2026", level: "Provinsi", image: "/banner.jpeg", ratio: "portrait", description: "Poster digital siswa menyampaikan pesan lingkungan secara kreatif, jelas, dan mudah dipahami." },
-  { id: 9, title: "Apresiasi Kepemimpinan Pelajar", recipient: "OSIS SMKN 1", date: "16 Juli 2026", level: "Kabupaten", image: "/banner.jpeg", ratio: "square", description: "Pengurus OSIS memperoleh apresiasi atas konsistensi program kepemimpinan dan kegiatan sosial siswa." },
-];
+export interface AchievementJurusan {
+  id: number;
+  code: string;
+  name: string;
+  slug: string;
+}
+
+export const ACHIEVEMENTS: Achievement[] = [];
 
 const PER_PAGE = 6;
-const ratioClassName = { portrait: "aspect-[4/5]", landscape: "aspect-[16/10]", square: "aspect-square" } as const;
+const GRID_CLASSES = [
+  "md:col-span-1 md:row-span-1",
+  "md:col-span-2 md:row-span-1",
+  "md:col-span-2 md:row-span-1",
+  "md:col-span-1 md:row-span-1",
+  "md:col-span-1 md:row-span-1",
+  "md:col-span-2 md:row-span-1",
+];
 
-const AchievementCard = memo(function AchievementCard({ achievement, onSelect }: { achievement: Achievement; onSelect: (achievement: Achievement) => void }) {
+function AchievementContent({ achievement }: { achievement: Achievement }) {
   return (
-    <button className="group block w-full cursor-pointer overflow-hidden rounded-[24px] text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1d4f98]" onClick={() => onSelect(achievement)} onFocus={() => void loadAchievementModal()} onMouseEnter={() => void loadAchievementModal()} onPointerDown={() => void loadAchievementModal()} type="button">
-      <article className="relative overflow-hidden rounded-[24px] bg-slate-200">
-        <div className={cn("relative", ratioClassName[achievement.ratio])}>
-          <Image alt={achievement.title} className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]" fill loading="lazy" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" src={achievement.image} />
-          <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-slate-950/10 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-            <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.13em] backdrop-blur-sm">{achievement.level}</span>
-            <h3 className="mt-3 text-lg font-bold leading-tight tracking-[-0.02em] sm:text-xl">{achievement.title}</h3>
-            <p className="mt-2 text-xs font-medium text-white/75">{achievement.recipient}</p>
-          </div>
-        </div>
-      </article>
-    </button>
+    <>
+      <span className="inline-flex w-fit rounded-full bg-[#e8f1f6] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[#1d4f98]">
+        Highlight Prestasi
+      </span>
+      <h2 className="mt-6 pr-8 text-3xl font-bold leading-tight tracking-[-0.04em] text-slate-950 sm:text-4xl">
+        {achievement.title}
+      </h2>
+      <p className="mt-4 text-base font-semibold leading-7 text-[#1d4f98]">
+        {achievement.recipient}
+      </p>
+      <div className="mt-5 space-y-4 text-sm leading-7 text-slate-600 sm:text-base sm:leading-8">
+        <p>{achievement.description}</p>
+        {achievement.body && achievement.body !== achievement.description && <p>{achievement.body}</p>}
+      </div>
+      <div className="mt-auto border-t border-slate-200 pt-5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">
+        {achievement.date || "Tanggal belum tersedia"}
+      </div>
+    </>
   );
-});
+}
 
-export function PrestasiGallery({ achievements = ACHIEVEMENTS }: { achievements?: Achievement[] }) {
+function achievementCard(achievement: Achievement, index: number) {
+  return {
+    id: achievement.id,
+    className: cn(
+      GRID_CLASSES[index % GRID_CLASSES.length],
+      "h-[190px] md:h-full",
+    ),
+    thumbnail: achievement.image,
+    alt: achievement.title,
+    title: achievement.title,
+    category: achievement.level,
+    content: <AchievementContent achievement={achievement} />,
+  };
+}
+
+export function PrestasiGallery({
+  achievements = [],
+  jurusan = [],
+}: {
+  achievements?: Achievement[];
+  jurusan?: AchievementJurusan[];
+}) {
   const [page, setPage] = useState(0);
-  const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
-  const pageCount = Math.max(1, Math.ceil(achievements.length / PER_PAGE));
-  const pageItems = achievements.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
-  const columns = [pageItems.filter((_, index) => index % 3 === 0), pageItems.filter((_, index) => index % 3 === 1), pageItems.filter((_, index) => index % 3 === 2)];
-
-  async function openAchievement(achievement: Achievement) {
-    await loadAchievementModal();
-    setSelectedAchievement(achievement);
-  }
+  const [activeTab, setActiveTab] = useState<"latest" | "popular">("latest");
+  const [activeJurusan, setActiveJurusan] = useState("Semua");
+  const [selectedCard, setSelectedCard] = useState<LayoutGridCard | null>(null);
+  const filteredAchievements = useMemo(
+    () => activeJurusan === "Semua"
+      ? achievements
+      : achievements.filter((item) => item.jurusanCode === activeJurusan),
+    [achievements, activeJurusan],
+  );
+  const latest = filteredAchievements.slice(0, 3);
+  const popular = [...filteredAchievements]
+    .sort((a, b) => Number(b.isPopularOverride) - Number(a.isPopularOverride) || (b.viewCount ?? 0) - (a.viewCount ?? 0));
+  const filtered = activeTab === "latest" ? filteredAchievements : popular;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const currentPage = Math.min(page, pageCount - 1);
+  const pageItems = filtered.slice(currentPage * PER_PAGE, currentPage * PER_PAGE + PER_PAGE);
+  const sidebarItems = activeTab === "latest" ? latest : popular.slice(0, 3);
+  const jurusanCounts = new Map(jurusan.map((item) => [item.code, achievements.filter((achievement) => achievement.jurusanCode === item.code).length]));
 
   return (
-    <section className="bg-[#f4f8fa] pb-16 pt-10 sm:pb-20" aria-labelledby="prestasi-gallery-title">
-      <div className="mx-auto max-w-[1720px] px-4 sm:px-6 lg:px-8 xl:px-10" data-aos="fade-up">
-        <header className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between" data-aos="fade-up" data-aos-delay="50">
-          <div><span className="text-xs font-bold uppercase tracking-[0.18em] text-[#1d4f98]">Highlight Prestasi</span><h1 id="prestasi-gallery-title" className="mt-2 text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">Pencapaian Siswa SMKN 1 Cibinong</h1></div>
-          <p className="max-w-md text-sm leading-6 text-slate-600">Kumpulan prestasi siswa, guru, dan sekolah dari berbagai kompetisi.</p>
+    <section className="bg-[#f4f8fa] pb-16 pt-8 sm:pb-20 sm:pt-10" aria-labelledby="prestasi-gallery-title">
+      <div className="mx-auto max-w-[1720px] px-4 sm:px-6 lg:px-8 xl:px-10">
+        <header className="mb-7" data-aos="fade-up">
+          <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#1d4f98]">Highlight Prestasi</span>
+          <h1 id="prestasi-gallery-title" className="mt-2 text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+            Pencapaian Siswa SMKN 1 Cibinong
+          </h1>
         </header>
-        <div data-aos="fade-up" data-aos-delay="150">
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" key={page}>
-            {columns.map((column, index) => <div className={cn("grid gap-5", index === 2 && "sm:col-span-2 sm:grid sm:grid-cols-2 lg:col-span-1 lg:block lg:space-y-5")} key={index}>{column.map((achievement) => <AchievementCard achievement={achievement} key={achievement.id} onSelect={(item) => void openAchievement(item)} />)}</div>)}
+
+        <div className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(280px,0.9fr)] xl:gap-8">
+          <div className="min-w-0 w-full h-full" data-aos="fade-up" data-aos-delay="100">
+            {pageItems.length ? (
+              <motion.div
+                key={`${activeJurusan}-${activeTab}-${currentPage}`}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+                className="min-h-[600px] md:h-full"
+              >
+                <LayoutGrid cards={pageItems.map(achievementCard)} selectedCard={selectedCard} onSelectedCardChange={setSelectedCard} />
+              </motion.div>
+            ) : (
+              <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">
+                Belum ada prestasi untuk jurusan ini.
+              </div>
+            )}
+
+            {pageCount > 1 && (
+              <div className="mt-7 flex items-center justify-center gap-3" role="group" aria-label="Pagination prestasi">
+                <button
+                  type="button"
+                  aria-label="Halaman sebelumnya"
+                  disabled={currentPage === 0}
+                  onClick={() => setPage((value) => Math.max(0, value - 1))}
+                  className="grid h-9 w-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
+                ><ChevronLeft className="h-4 w-4" /></button>
+                {Array.from({ length: pageCount }, (_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    aria-current={currentPage === index ? "page" : undefined}
+                    aria-label={`Halaman prestasi ${index + 1}`}
+                    onClick={() => setPage(index)}
+                    className={cn("h-2.5 rounded-full transition-all", currentPage === index ? "w-8 bg-[#1d4f98]" : "w-2.5 bg-slate-300")}
+                  />
+                ))}
+                <button
+                  type="button"
+                  aria-label="Halaman berikutnya"
+                  disabled={currentPage === pageCount - 1}
+                  onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}
+                  className="grid h-9 w-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
+                ><ChevronRight className="h-4 w-4" /></button>
+              </div>
+            )}
           </div>
+
+          <aside className="flex h-full flex-col space-y-5 lg:sticky lg:top-24" data-aos="fade-up" data-aos-delay="200">
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_18px_42px_-34px_rgba(15,23,42,0.45)]">
+              <div className="mb-4 grid grid-cols-2 border-b border-slate-200" role="tablist" aria-label="Urutkan prestasi">
+                {(["latest", "popular"] as const).map((tab) => (
+                  <button key={tab} type="button" role="tab" aria-selected={activeTab === tab} onClick={() => { setActiveTab(tab); setPage(0); }} className={cn("border-b-2 px-4 py-3 text-sm font-semibold", activeTab === tab ? "border-[#1d4f98] text-[#1d4f98]" : "border-transparent text-slate-500")}>{tab === "latest" ? "Terbaru" : "Populer"}</button>
+                ))}
+              </div>
+              <div className="space-y-3">
+                {sidebarItems.map((item, index) => {
+                  const card = achievementCard(item, index);
+                  return <button key={item.id} type="button" onClick={() => setSelectedCard(card)} className={cn("grid w-full grid-cols-[112px_minmax(0,1fr)] gap-3 rounded-xl border p-2.5 text-left", index === 0 && "border-[#bfd3e6] bg-[#e8f1f6]")}><span className="relative h-[92px] overflow-hidden rounded-xl"><img src={item.image} alt="" className="h-full w-full object-cover" /></span><span className="flex min-w-0 flex-col justify-center"><span className="mb-1 text-[10px] font-bold uppercase tracking-[0.13em] text-[#1d4f98]">{item.level}</span><span className="line-clamp-2 text-sm font-bold leading-5 text-slate-950">{item.title}</span><span className="mt-1 text-[11px] font-semibold text-slate-700">{item.date}</span></span></button>;
+                })}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_18px_42px_-34px_rgba(15,23,42,0.45)]">
+              <h2 className="mb-4 text-base font-bold text-slate-950">Kategori</h2>
+              <div className="space-y-1.5">
+                {[{ code: "Semua", name: "Semua", total: achievements.length }, ...jurusan.map((item) => ({ ...item, total: jurusanCounts.get(item.code) ?? 0 }))].map((item) => {
+                  const active = activeJurusan === item.code;
+                  return (
+                    <button
+                      key={item.code}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => { setActiveJurusan(item.code); setPage(0); setSelectedCard(null); }}
+                      className={cn("flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors", active ? "bg-[#e8f1f6] text-[#1d4f98]" : "text-slate-600 hover:bg-slate-50")}
+                    >
+                      <span>{item.name}</span><span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">{item.total}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </aside>
         </div>
-        {pageCount > 1 && <div className="mt-9 flex justify-center gap-2" data-aos="fade-up" data-aos-delay="250" role="group" aria-label="Pagination prestasi">{Array.from({ length: pageCount }, (_, index) => <button aria-current={page === index ? "true" : undefined} aria-label={`Tampilkan halaman prestasi ${index + 1}`} className="relative h-4 w-9 cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1d4f98]" key={index} onClick={() => setPage(index)} type="button"><span className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-slate-200" />{page === index && <span className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#1d4f98]" />}</button>)}</div>}
-        {selectedAchievement && <Dialog open onOpenChange={(open) => !open && setSelectedAchievement(null)}><AchievementModal achievement={selectedAchievement} /></Dialog>}
       </div>
     </section>
   );

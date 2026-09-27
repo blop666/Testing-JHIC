@@ -19,8 +19,11 @@ const globalForDb = globalThis as typeof globalThis & {
 export const client = globalForDb.cibionePostgresClient ?? postgres(connectionString, {
   max: 10,
   idle_timeout: 20,
-  connect_timeout: 10,
+  connect_timeout: 30,
+  max_lifetime: 60 * 30,
+  keep_alive: 60,
   prepare: false,
+  onnotice: () => {},
 });
 
 if (process.env.NODE_ENV !== "production") {

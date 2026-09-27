@@ -15,6 +15,34 @@
       "when": 1787224044287,
       "tag": "0001_furry_master_chief",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790474677436,
+      "tag": "0002_perfect_cargill",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790480279673,
+      "tag": "0003_warm_annihilus",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790483573735,
+      "tag": "0004_nifty_absorbing_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790486225564,
+      "tag": "0005_previous_sumo",
+      "breakpoints": true
     }
   ]
 }

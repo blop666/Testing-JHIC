@@ -11,6 +11,7 @@ const navItems = [
   { label: "Profil", href: "/profil-sekolah" },
   { label: "Jurusan", href: "/kompetensi-keahlian" },
   { label: "Berita", href: "/berita" },
+  { label: "Prestasi", href: "/berita/prestasi" },
   { label: "Kontak", href: "/kontak" },
 ];
 
@@ -83,7 +84,7 @@ export function SiteNavbar() {
 
           <nav className="hidden items-center gap-8 text-sm md:flex" aria-label="Navigasi utama">
             {navItems.slice(1).map((item) => {
-              const active = pathname.startsWith(item.href);
+              const active = item.href === "/berita" ? pathname === "/berita" : pathname.startsWith(item.href);
               return (
                 <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className="relative py-2 opacity-80 transition-opacity hover:opacity-100">
                   {item.label}
@@ -112,7 +113,7 @@ export function SiteNavbar() {
             <motion.nav id="mobile-navigation" aria-label="Navigasi mobile" initial={{ opacity: 0, y: -20, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -16, scale: 0.98 }} transition={{ type: "spring", stiffness: 320, damping: 28 }} className="absolute inset-x-4 top-24 overflow-hidden rounded-[2rem] border border-white/40 bg-white/88 p-3 text-[#0b3477] shadow-[0_30px_80px_rgba(2,20,60,0.3)] backdrop-blur-2xl">
               <div className="px-4 pb-3 pt-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#0b3477]/50">Navigasi</div>
               {navItems.map((item, index) => {
-                const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+                const active = item.href === "/" ? pathname === "/" : item.href === "/berita" ? pathname === "/berita" : pathname.startsWith(item.href);
                 return (
                   <motion.div key={item.href} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.03 * index }}>
                     <Link href={item.href} aria-current={active ? "page" : undefined} className={`flex items-center justify-between rounded-2xl px-4 py-3.5 text-base font-medium transition ${active ? "bg-[#0036ab] text-white shadow-lg shadow-blue-900/15" : "hover:bg-blue-50"}`}>

@@ -204,7 +204,7 @@ const FALLBACK_NEWS_ITEMS: NewsItem[] = [
 
 const AUTO_PLAY_DELAY = 5500;
 
-export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements }: { items?: NewsItem[]; achievements?: import("./prestasi-gallery").Achievement[] }) {
+export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initialCategory, categoryOptions }: { items?: NewsItem[]; achievements?: import("./prestasi-gallery").Achievement[]; initialCategory?: string; categoryOptions?: { name: string; total: number }[] }) {
   const reduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeFilter, setActiveFilter] = useState<NewsFilter>("latest");
@@ -415,7 +415,7 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements }: { i
       </div>
       <HighlightPrestasi achievements={achievements} />
       <div className="mx-auto max-w-[1720px] px-4 sm:px-6 lg:px-8 xl:px-10">
-        <BeritaList items={newsItems} />
+          <BeritaList items={newsItems} categoryOptions={categoryOptions} initialCategory={initialCategory} />
       </div>
     </section>
   );

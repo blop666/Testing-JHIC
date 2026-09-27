@@ -14,6 +14,11 @@ const MOBILE_NEWS_PER_PAGE = 3;
 const DESKTOP_NEWS_PER_PAGE = 6;
 const MOBILE_AUTO_ADVANCE_DELAY = 5500;
 
+interface CategoryItem {
+  name: string;
+  total: number;
+}
+
 const NewsDetailModal = dynamic(
   () => import("./news-detail-modal").then((module) => module.NewsDetailModal),
   { ssr: false },
@@ -43,16 +48,18 @@ function newsDateKey(date: string) {
 
 interface BeritaListProps {
   items: NewsItem[];
+  categoryOptions?: CategoryItem[];
+  initialCategory?: string;
   navigationRequest?: {
     newsId: number;
     requestId: number;
   } | null;
 }
 
-export const BeritaList = memo(function BeritaList({ items, navigationRequest }: BeritaListProps) {
+export const BeritaList = memo(function BeritaList({ items, categoryOptions, initialCategory, navigationRequest }: BeritaListProps) {
   const reduceMotion = useReducedMotion();
   const [query, setQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("Semua");
+  const [activeCategory, setActiveCategory] = useState(initialCategory ?? "Semua");
   const [activeDate, setActiveDate] = useState<string | null>(null);
   const [month, setMonth] = useState(new Date(2026, 7, 1));
   const [page, setPage] = useState(0);
@@ -68,6 +75,11 @@ export const BeritaList = memo(function BeritaList({ items, navigationRequest }:
     })),
     [items],
   );
+  const visibleCategories = useMemo(() => {
+    if (!categoryOptions?.length) return categories;
+    const counts = new Map(categories.map((category) => [category.name, category.total]));
+    return categoryOptions.map((category) => ({ name: category.name, total: counts.get(category.name) ?? 0 }));
+  }, [categories, categoryOptions]);
 
   const filteredItems = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -219,7 +231,7 @@ export const BeritaList = memo(function BeritaList({ items, navigationRequest }:
             <BeritaSidebar
             activeCategory={activeCategory}
             activeDate={activeDate}
-            categories={categories}
+            categories={visibleCategories}
             month={month}
             onCategoryChange={updateCategory}
             onClearFilters={clearFilters}

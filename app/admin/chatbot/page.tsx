@@ -1,149 +1,262 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { Bot, CalendarDays, Check, ChevronRight, Eye, FileText, MessageSquare, Send } from "lucide-react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { Bot, CalendarDays, Check, ChevronRight, Eye, FileText, ImagePlus, Link2, LoaderCircle, MessageSquare, Pencil, RotateCcw, Send, X } from "lucide-react";
 import { motion } from "motion/react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContainer, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/linear-dialog";
+import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "@/components/ui/native-select";
 import { generateSlug } from "@/lib/slug";
 import { cn } from "@/lib/utils";
+
+type ContentType = "berita" | "pengumuman" | "prestasi" | "agenda";
+type ResourceType = "mitra-industri" | "sarana-prasarana" | "guru" | "kategori-konten" | "kategori-guru" | "program-unggulan" | "fasilitas-vokasi";
+
+type Target = ContentType | ResourceType;
+
+type Draft = {
+  contentType: ContentType;
+  title: string;
+  excerpt: string;
+  body: string;
+  eventDate: string | null;
+  eventEndDate: string | null;
+  eventLocation: string | null;
+  categoryHint: string | null;
+  jurusanHint: string | null;
+  imageDescription: string | null;
+  needsImage: boolean;
+  sourceUrls: string[];
+  warnings: string[];
+  missingFields: string[];
+  confidence: number;
+};
+
+type ResourceDraft = {
+  resourceType: ResourceType;
+  name: string;
+  description: string | null;
+  imageUrl: string | null;
+  websiteUrl: string | null;
+  position: string | null;
+  bio: string | null;
+  slug: string | null;
+  label: string | null;
+  tefaName: string | null;
+  presentationSlot: "featured_large" | "standard" | "tall" | "wide" | null;
+  jurusanHint: string | null;
+  categoryHint: string | null;
+  warnings: string[];
+  missingFields: string[];
+  confidence: number;
+};
 
 type Message = {
   id: number;
   sender: "ai" | "user";
   text?: string;
   isTyping?: boolean;
-  preview?: {
-    type: string;
-    title: string;
-    excerpt: string;
-    category: string;
-    department: string;
-    body: string;
-    date: string;
-    imageUrl?: string;
-  };
-  showActions?: boolean;
+  draft?: Draft;
+  resourceDraft?: ResourceDraft;
+  publishedId?: number;
+  sources?: Array<{ title: string; url: string }>;
 };
+
+const contentTypeLabel: Record<ContentType, string> = { berita: "Berita", pengumuman: "Pengumuman", prestasi: "Prestasi", agenda: "Agenda" };
+const resourceTypeLabel: Record<ResourceType, string> = { "mitra-industri": "Mitra Industri", "sarana-prasarana": "Sarana & Prasarana", guru: "Guru & Staff", "kategori-konten": "Kategori Konten", "kategori-guru": "Kategori Guru", "program-unggulan": "Program Unggulan", "fasilitas-vokasi": "Fasilitas Praktik Vokasi" };
+const contentTypes: ContentType[] = ["berita", "pengumuman", "prestasi", "agenda"];
+const resourceTypes: ResourceType[] = ["mitra-industri", "sarana-prasarana", "guru", "kategori-konten", "kategori-guru", "program-unggulan", "fasilitas-vokasi"];
+
+function isResourceType(target: Target): target is ResourceType {
+  return resourceTypes.includes(target as ResourceType);
+}
 
 const examplePrompts = [
   "Buatkan berita tentang kegiatan PKL kelas XI SIJA yang berlangsung minggu ini.",
-  "Tambahkan prestasi baru: Tim RPL juara 2 lomba aplikasi tingkat provinsi.",
-  "Buat pengumuman tentang pendaftaran siswa baru tahun ajaran 2026/2027.",
 ];
 
 const initialMessage: Message = {
   id: 1,
   sender: "ai",
-  text: "Halo! Saya asisten AI CibiOne CMS. Saya dapat membantu Anda membuat konten seperti berita, prestasi, atau pengumuman dengan instruksi bahasa natural. Coba salah satu contoh di bawah atau tulis instruksi Anda sendiri.",
+  text: "Halo! Saya asisten AI CibiOne CMS. Saya dapat membuat konten (berita, pengumuman, prestasi, agenda) atau mengelola data sekolah (mitra industri, sarana prasarana, guru, kategori). Pilih jenis di atas, lalu tulis instruksi Anda.",
 };
+
+async function request(url: string, init?: RequestInit) {
+  const headers = new Headers(init?.headers);
+  if (!(init?.body instanceof FormData)) headers.set("Content-Type", "application/json");
+  const response = await fetch(url, { ...init, headers, cache: "no-store" });
+  const text = await response.text();
+  let result: { success?: boolean; data?: any; error?: { message?: string } } = {};
+  try { result = JSON.parse(text); } catch { /* ignore */ }
+  if (!response.ok || !result.success) throw new Error(result.error?.message ?? "Permintaan gagal.");
+  return result.data;
+}
 
 export default function AdminChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [publishedId, setPublishedId] = useState<number | null>(null);
-  const [publishedPostId, setPublishedPostId] = useState<number | null>(null);
-  const [selectedPreview, setSelectedPreview] = useState<Message["preview"] | null>(null);
+  const [target, setTarget] = useState<Target>("berita");
+  const [currentDraft, setCurrentDraft] = useState<Draft | null>(null);
+  const [currentResource, setCurrentResource] = useState<ResourceDraft | null>(null);
+  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [sourceUrls, setSourceUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [selectedDraft, setSelectedDraft] = useState<Draft | null>(null);
   const [showFullPreview, setShowFullPreview] = useState(false);
+  const [editingField, setEditingField] = useState<"title" | "excerpt" | "body" | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [pendingEdit, setPendingEdit] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const urlRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesRef.current?.scrollTo({ top: messagesRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  function handleSend(event: FormEvent, customPrompt?: string) {
-    event.preventDefault();
-    const text = customPrompt || input.trim();
-    if (!text || isProcessing) return;
-
-    const userMessage: Message = { id: Date.now(), sender: "user", text };
-    setMessages((current) => [...current, userMessage]);
-    setInput("");
-    setIsProcessing(true);
-
-    setTimeout(() => {
-      const typingMessage: Message = { id: Date.now() + 1, sender: "ai", isTyping: true };
-      setMessages((current) => [...current, typingMessage]);
-    }, 300);
-
-    setTimeout(() => {
-      setMessages((current) => current.filter((msg) => !msg.isTyping));
-
-      const understandingMessage: Message = {
-        id: Date.now() + 2,
-        sender: "ai",
-        text: "Baik, saya sedang memahami instruksi Anda...",
-      };
-      setMessages((current) => [...current, understandingMessage]);
-    }, 1200);
-
-    setTimeout(() => {
-      const isAchievement = /prestasi|juara|penghargaan|kompetisi|lomba/i.test(text);
-      const isAnnouncement = /pengumuman|pendaftaran|ppdb|daftar/i.test(text);
-      const contentType = isAchievement ? "Prestasi" : isAnnouncement ? "Pengumuman" : "Berita";
-      const department = isAchievement ? "RPL" : /sija/i.test(text) ? "SIJA" : /tkj/i.test(text) ? "TKJ" : "Umum";
-
-      const preview = {
-        type: contentType,
-        title: isAchievement
-          ? "Tim RPL Raih Juara 2 Lomba Aplikasi Tingkat Provinsi"
-          : isAnnouncement
-            ? "Pendaftaran Siswa Baru Tahun Ajaran 2026/2027 Dibuka"
-            : "Kegiatan PKL Kelas XI SIJA Memperkuat Pengalaman Industri",
-        excerpt: isAchievement
-          ? "Tim Rekayasa Perangkat Lunak SMKN 1 Cibinong berhasil meraih juara 2 dalam kompetisi pengembangan aplikasi mobile tingkat provinsi Jawa Barat. Prestasi ini membuktikan kompetensi siswa dalam teknologi."
-          : isAnnouncement
-            ? "SMKN 1 Cibinong membuka pendaftaran peserta didik baru untuk tahun ajaran 2026/2027. Pendaftaran dilakukan secara online melalui portal PPDB Jawa Barat mulai 1 Juni hingga 30 Juni 2026."
-            : "Siswa kelas XI program keahlian Sistem Informasi Jaringan dan Aplikasi (SIJA) mengikuti kegiatan Praktek Kerja Lapangan (PKL) untuk memperluas pengalaman belajar dan kesiapan memasuki dunia kerja.",
-        category: isAchievement ? "Prestasi Siswa" : isAnnouncement ? "Pengumuman" : "Kegiatan Sekolah",
-        department,
-         body: isAchievement
-           ? "Tim Rekayasa Perangkat Lunak SMKN 1 Cibinong berhasil meraih juara 2 dalam kompetisi pengembangan aplikasi mobile tingkat provinsi Jawa Barat. Prestasi ini menjadi bukti semangat belajar dan kompetensi siswa dalam mengembangkan solusi digital.\n\nCapaian ini juga menjadi motivasi bagi seluruh siswa untuk terus berkarya, berkolaborasi, dan mengikuti berbagai kompetisi di tingkat nasional maupun provinsi."
-           : isAnnouncement
-             ? "SMKN 1 Cibinong membuka pendaftaran peserta didik baru untuk tahun ajaran 2026/2027. Pendaftaran dilakukan secara online melalui portal PPDB Jawa Barat mulai 1 Juni hingga 30 Juni 2026.\n\nInformasi mengenai persyaratan, jadwal, dan tahapan pendaftaran dapat diakses melalui kanal resmi sekolah. Calon peserta didik diharapkan mempersiapkan seluruh dokumen sesuai ketentuan yang berlaku."
-             : "Siswa kelas XI program keahlian Sistem Informasi Jaringan dan Aplikasi (SIJA) mengikuti kegiatan Praktek Kerja Lapangan (PKL) untuk memperluas pengalaman belajar dan kesiapan memasuki dunia kerja.\n\nMelalui kegiatan ini, siswa mendapatkan kesempatan untuk menerapkan kompetensi yang dipelajari di sekolah sekaligus mengenal budaya kerja secara langsung di industri.",
-         date: "24 Agustus 2026",
-         imageUrl: "/banner.jpeg",
-      };
-
-      const interpretationMessage: Message = {
-        id: Date.now() + 3,
-        sender: "ai",
-        text: `Saya telah memahami instruksi Anda. Saya akan membuat konten **${contentType}** untuk jurusan **${department}**. Berikut adalah preview konten yang akan dibuat:`,
-      };
-
-      const previewMessage: Message = {
-        id: Date.now() + 4,
-        sender: "ai",
-        preview,
-        showActions: true,
-      };
-
-      setMessages((current) => [...current, interpretationMessage, previewMessage]);
-      setIsProcessing(false);
-    }, 3000);
+  function addMessage(message: Omit<Message, "id">) {
+    setMessages((current) => [...current, { ...message, id: Date.now() + Math.random() }]);
   }
 
-  async function handlePublish(messageId: number, preview: NonNullable<Message["preview"]>) {
-    if (publishedId === messageId) return;
+  async function generateContent(prompt: string, baseDraft?: Draft): Promise<{ chat: true; answer: string } | { chat: false; draft: Draft; sources: Array<{ title: string; url: string }> }> {
+    const payload: Record<string, unknown> = { prompt, mode: baseDraft ? "edit" : "create", sourceUrls };
+    if (attachedImage) payload.imageUrl = attachedImage;
+    if (baseDraft) payload.baseDraft = baseDraft;
+    const data = await request("/api/ai/content/generate", { method: "POST", body: JSON.stringify(payload) });
+    if (data.kind === "chat") return { chat: true, answer: data.answer as string };
+    const draft = data.draft as Draft;
+    setCurrentDraft(draft);
+    return { chat: false, draft, sources: (data.sources ?? []) as Array<{ title: string; url: string }> };
+  }
+
+  async function generateResource(prompt: string, resourceType: ResourceType, baseDraft?: ResourceDraft): Promise<{ chat: true; answer: string } | { chat: false; draft: ResourceDraft }> {
+    const payload: Record<string, unknown> = { prompt, resourceType, mode: baseDraft ? "edit" : "create" };
+    if (attachedImage) payload.imageUrl = attachedImage;
+    if (baseDraft) payload.baseDraft = baseDraft;
+    const data = await request("/api/ai/resource/generate", { method: "POST", body: JSON.stringify(payload) });
+    if (data.kind === "chat") return { chat: true, answer: data.answer as string };
+    const draft = data.draft as ResourceDraft;
+    setCurrentResource(draft);
+    return { chat: false, draft };
+  }
+
+  function startNewSession() {
+    setCurrentDraft(null);
+    setCurrentResource(null);
+    setAttachedImage(null);
+    setSourceUrls([]);
+    setPendingEdit(false);
+    setEditingField(null);
+    setMessages([{ ...initialMessage, id: Date.now() + Math.random() }]);
+    setInput("");
+    inputRef.current?.focus();
+  }
+
+  function needsClarification() {
+    if (isResourceType(target)) return currentResource !== null && (currentResource.missingFields.length > 0 || currentResource.warnings.length > 0);
+    return currentDraft !== null && (currentDraft.missingFields.length > 0 || currentDraft.warnings.length > 0);
+  }
+
+  async function handleSend(event: FormEvent, customPrompt?: string) {
+    event.preventDefault();
+    const text = (customPrompt ?? input).trim();
+    if (!text || isProcessing) return;
+
+    addMessage({ sender: "user", text });
+    setInput("");
+    setIsProcessing(true);
+    addMessage({ sender: "ai", isTyping: true });
+
     try {
-      const response = await fetch("/api/posts", {
+      if (isResourceType(target)) {
+        const base = pendingEdit ? currentResource ?? undefined : undefined;
+        const result = await generateResource(text, target, base);
+        setPendingEdit(false);
+        if (result.chat) {
+          addMessage({ sender: "ai", text: result.answer });
+          return;
+        }
+        const draft = result.draft;
+        const questions = [...new Set([...draft.missingFields, ...draft.warnings])];
+        if (draft.missingFields.length > 0) addMessage({ sender: "ai", text: "Saya masih butuh data berikut:\n\n" + questions.map((q) => `• ${q}`).join("\n") });
+        else if (draft.warnings.length > 0) addMessage({ sender: "ai", text: "Catatan:\n\n" + questions.map((q) => `• ${q}`).join("\n") });
+        else addMessage({ sender: "ai", text: `Saya telah menyusun data **${resourceTypeLabel[target]}** dengan keyakinan ${Math.round(draft.confidence * 100)}%.` });
+        addMessage({ sender: "ai", resourceDraft: draft });
+      } else {
+        const base = pendingEdit ? currentDraft ?? undefined : undefined;
+        const result = await generateContent(text, base);
+        setPendingEdit(false);
+        if (result.chat) {
+          addMessage({ sender: "ai", text: result.answer });
+          return;
+        }
+        const { draft, sources } = result;
+        const questions = [...new Set([...draft.missingFields, ...draft.warnings])];
+        if (draft.missingFields.length > 0) addMessage({ sender: "ai", text: "Saya masih butuh beberapa data sebelum konten ini lengkap:\n\n" + questions.map((q) => `• ${q}`).join("\n") + "\n\nSilakan jawab atau lengkapi." });
+        else if (draft.warnings.length > 0) addMessage({ sender: "ai", text: "Catatan untuk melengkapi konten:\n\n" + questions.map((q) => `• ${q}`).join("\n") });
+        else addMessage({ sender: "ai", text: `Saya telah menyusun konten **${contentTypeLabel[draft.contentType]}** dengan keyakinan ${Math.round(draft.confidence * 100)}%.` });
+        addMessage({ sender: "ai", draft, sources });
+      }
+    } catch (error) {
+      addMessage({ sender: "ai", text: error instanceof Error ? error.message : "Gagal memproses. Coba lagi." });
+    } finally {
+      setMessages((current) => current.filter((m) => !m.isTyping));
+      setIsProcessing(false);
+    }
+  }
+
+  async function uploadImage(file: File) {
+    setUploading(true);
+    try {
+      const body = new FormData();
+      body.set("file", file);
+      const result = await request("/api/uploads", { method: "POST", body });
+      setAttachedImage(result.url);
+    } catch (error) {
+      addMessage({ sender: "ai", text: error instanceof Error ? error.message : "Upload gambar gagal." });
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function addSourceUrl() {
+    const url = sourceUrl.trim();
+    if (!url) return;
+    try { new URL(url); } catch { addMessage({ sender: "ai", text: "URL sumber tidak valid." }); return; }
+    if (!sourceUrls.includes(url)) setSourceUrls((current) => [...current, url]);
+    setSourceUrl("");
+  }
+
+  function removeSourceUrl(url: string) {
+    setSourceUrls((current) => current.filter((item) => item !== url));
+  }
+
+  async function publishDraft(messageId: number, draft: Draft) {
+    if (draft.contentType === "agenda" && !draft.eventDate) {
+      addMessage({ sender: "ai", text: "Konten agenda belum bisa diterbitkan karena tanggal belum diisi." });
+      return;
+    }
+    try {
+      await request("/api/posts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: preview.type === "Prestasi" ? "prestasi" : preview.type === "Pengumuman" ? "pengumuman" : "berita",
-          title: preview.title,
-          slug: `${generateSlug(preview.title)}-${Date.now()}`,
-          excerpt: preview.excerpt,
-          body: preview.body,
-          imageUrl: preview.imageUrl,
+          type: draft.contentType,
+          title: draft.title,
+          slug: `${generateSlug(draft.title)}-${Date.now()}`,
+          excerpt: draft.excerpt,
+          body: draft.contentType === "prestasi" ? null : draft.body,
+          imageUrl: attachedImage ?? null,
           galleryUrls: [],
+          eventDate: draft.eventDate ?? null,
+          eventEndDate: draft.eventEndDate ?? null,
+          eventLocation: draft.eventLocation ?? null,
           isPublished: true,
           publishedAt: new Date().toISOString(),
           isFeatured: false,
@@ -151,24 +264,57 @@ export default function AdminChatbotPage() {
           isPopularOverride: false,
         }),
       });
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error(result.error?.message || "Konten gagal diterbitkan.");
-      setPublishedId(messageId);
-      setPublishedPostId(result.data?.id ?? null);
-      const successMessage: Message = {
-        id: Date.now() + 100,
-        sender: "ai",
-        text: `Konten “${preview.title}” berhasil diterbitkan dan sudah tersimpan di Kelola Konten.`,
-      };
-      setMessages((current) => [...current, successMessage]);
+      setMessages((current) => current.map((m) => (m.id === messageId ? { ...m, publishedId: 1 } : m)));
+      addMessage({ sender: "ai", text: `Konten “${draft.title}” berhasil diterbitkan.` });
     } catch (error) {
-      const successMessage: Message = {
-        id: Date.now() + 100,
-        sender: "ai",
-        text: error instanceof Error ? error.message : "Konten gagal diterbitkan.",
-      };
-      setMessages((current) => [...current, successMessage]);
+      addMessage({ sender: "ai", text: error instanceof Error ? error.message : "Konten gagal diterbitkan." });
     }
+  }
+
+  async function saveResource(messageId: number, draft: ResourceDraft, publish: boolean) {
+    const type = draft.resourceType;
+    const image = attachedImage ?? draft.imageUrl;
+    let endpoint = "";
+    let payload: Record<string, unknown>;
+    try {
+      if (type === "mitra-industri") {
+        endpoint = "/api/kerjasama-industri";
+        payload = { name: draft.name, logoUrl: image, description: draft.description, websiteUrl: draft.websiteUrl, isPublished: publish, sortOrder: 0 };
+      } else if (type === "sarana-prasarana") {
+        endpoint = "/api/sarana-prasarana";
+        payload = { title: draft.name, description: draft.description, imageUrl: image, presentationSlot: draft.presentationSlot ?? "standard", isPublished: publish, sortOrder: 0 };
+      } else if (type === "guru") {
+        endpoint = "/api/guru";
+        payload = { name: draft.name, position: draft.position, bio: draft.bio, imageUrl: image, isPublished: publish, sortOrder: 0 };
+      } else if (type === "program-unggulan") {
+        endpoint = "/api/program-unggulan";
+        payload = { title: draft.name, description: draft.description, label: draft.label, imageUrl: image, isPublished: publish, sortOrder: 0 };
+      } else if (type === "fasilitas-vokasi") {
+        endpoint = "/api/fasilitas-vokasi";
+        payload = { title: draft.name, description: draft.description, imageUrl: image, tefaName: draft.tefaName, isPublished: publish, sortOrder: 0 };
+      } else {
+        endpoint = type === "kategori-konten" ? "/api/post-categories" : "/api/guru-categories";
+        const slug = draft.slug ?? generateSlug(draft.name);
+        payload = { name: draft.name, slug, description: type === "kategori-konten" ? draft.description : undefined, isActive: publish, sortOrder: 0 };
+      }
+      await request(endpoint, { method: "POST", body: JSON.stringify(payload) });
+      setMessages((current) => current.map((m) => (m.id === messageId ? { ...m, publishedId: 1 } : m)));
+      addMessage({ sender: "ai", text: `Data “${draft.name}” berhasil ${publish ? "disimpan & dipublikasikan" : "disimpan sebagai draft"}.` });
+    } catch (error) {
+      addMessage({ sender: "ai", text: error instanceof Error ? error.message : "Data gagal disimpan." });
+    }
+  }
+
+  function startEdit(draft: Draft, field: "title" | "excerpt" | "body") {
+    setEditingField(field);
+    setEditValue(draft[field] ?? "");
+  }
+
+  function applyEdit() {
+    if (!currentDraft || !editingField) return;
+    setCurrentDraft((current) => (current ? { ...current, [editingField]: editValue } : current));
+    setEditingField(null);
+    setEditValue("");
   }
 
   function handleExampleClick(prompt: string) {
@@ -176,122 +322,111 @@ export default function AdminChatbotPage() {
     inputRef.current?.focus();
   }
 
+  const isPendingClarification = needsClarification();
+
   return (
     <div className="flex h-[calc(100svh-7rem)] min-h-0 flex-col md:h-[calc(100svh-8.5rem)]">
       <header className="border-b bg-white px-6 py-4">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="grid size-10 place-content-center rounded-xl bg-blue-700 text-white">
-              <Bot className="size-5" />
-            </span>
+            <span className="grid size-10 place-content-center rounded-xl bg-blue-700 text-white"><Bot className="size-5" /></span>
             <div>
               <h1 className="text-lg font-bold text-slate-950">AI Content Assistant</h1>
-              <p className="text-sm text-slate-500">Kelola konten dengan bahasa natural</p>
+              <p className="text-sm text-slate-500">Buat & kelola konten dan data sekolah</p>
             </div>
           </div>
-          <Badge variant="outline" className="border-orange-200 bg-orange-50 text-orange-700">
-             Siap membantu
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={startNewSession} disabled={isProcessing}><RotateCcw className="size-4" />Sesi baru</Button>
+          </div>
         </div>
       </header>
 
       <div ref={messagesRef} className="flex-1 overflow-y-auto bg-slate-50 px-6 py-6">
         <div className="mx-auto max-w-5xl space-y-6">
-          {messages.map((message) => (
-            <motion.div
-              key={message.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={cn("flex gap-3", message.sender === "user" && "flex-row-reverse")}
-            >
-              {message.sender === "ai" && (
-                <span className="grid size-8 shrink-0 place-content-center rounded-lg bg-blue-700 text-white">
-                  <Bot className="size-4" />
-                </span>
-              )}
-              {message.sender === "user" && (
-                <span className="grid size-8 shrink-0 place-content-center rounded-lg bg-slate-700 text-white">
-                  <MessageSquare className="size-4" />
-                </span>
-              )}
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <label htmlFor="target-select" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Pilih jenis yang ingin dibuat</label>
+            <NativeSelect id="target-select" className="w-full sm:w-fit" value={target} onChange={(event) => setTarget(event.target.value as Target)}>
+              <NativeSelectOptGroup label="Konten">
+                {contentTypes.map((type) => <NativeSelectOption key={type} value={type}>{contentTypeLabel[type]}</NativeSelectOption>)}
+              </NativeSelectOptGroup>
+              <NativeSelectOptGroup label="Data Sekolah">
+                {resourceTypes.map((type) => <NativeSelectOption key={type} value={type}>{resourceTypeLabel[type]}</NativeSelectOption>)}
+              </NativeSelectOptGroup>
+            </NativeSelect>
+          </div>
 
+          {messages.map((message) => (
+            <motion.div key={message.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={cn("flex gap-3", message.sender === "user" && "flex-row-reverse")}>
+              {message.sender === "ai" && <span className="grid size-8 shrink-0 place-content-center rounded-lg bg-blue-700 text-white"><Bot className="size-4" /></span>}
+              {message.sender === "user" && <span className="grid size-8 shrink-0 place-content-center rounded-lg bg-slate-700 text-white"><MessageSquare className="size-4" /></span>}
               <div className={cn("flex max-w-[85%] flex-col gap-3", message.sender === "user" && "items-end")}>
                 {message.isTyping ? (
                   <div className="flex w-fit gap-1.5 rounded-2xl rounded-tl-sm bg-white px-5 py-3 shadow-sm">
-                    {[0, 1, 2].map((dot) => (
-                      <motion.span
-                        key={dot}
-                        className="size-2 rounded-full bg-blue-500"
-                        animate={{ y: [0, -4, 0] }}
-                        transition={{ duration: 0.7, repeat: Infinity, delay: dot * 0.12 }}
-                      />
-                    ))}
+                    {[0, 1, 2].map((dot) => <motion.span key={dot} className="size-2 rounded-full bg-blue-500" animate={{ y: [0, -4, 0] }} transition={{ duration: 0.7, repeat: Infinity, delay: dot * 0.12 }} />)}
                   </div>
                 ) : message.text ? (
-                  <div
-                    className={cn(
-                      "rounded-2xl px-5 py-3 text-sm leading-relaxed shadow-sm",
-                      message.sender === "ai"
-                        ? "rounded-tl-sm bg-white text-slate-700"
-                        : "rounded-tr-sm bg-blue-700 text-white"
-                    )}
-                    dangerouslySetInnerHTML={{ __html: message.text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") }}
-                  />
+                  <div className={cn("whitespace-pre-line rounded-2xl px-5 py-3 text-sm leading-relaxed shadow-sm", message.sender === "ai" ? "rounded-tl-sm bg-white text-slate-700" : "rounded-tr-sm bg-blue-700 text-white")} dangerouslySetInnerHTML={{ __html: message.text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") }} />
                 ) : null}
 
-                {message.preview && (
+                {message.draft && (
                   <div className="w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="mb-4 flex items-center justify-between">
-                      <Badge variant="outline" className="flex items-center gap-1.5">
-                        <FileText className="size-3" />
-                        {message.preview.type}
-                      </Badge>
-                      <Badge variant="outline">{message.preview.department}</Badge>
+                    <div className="mb-3 flex items-center justify-between">
+                      <Badge variant="outline" className="flex items-center gap-1.5"><FileText className="size-3" />{contentTypeLabel[message.draft.contentType]}</Badge>
+                      <div className="flex items-center gap-2">
+                        {message.draft.jurusanHint && <Badge variant="outline">{message.draft.jurusanHint}</Badge>}
+                        <Badge className="bg-amber-50 text-xs text-amber-700">Draft</Badge>
+                      </div>
                     </div>
-
-                     {message.preview.imageUrl && (
-                       <div className="relative mb-4 h-40 overflow-hidden rounded-xl bg-slate-100">
-                         <Image src={message.preview.imageUrl} alt="Gambar konten" fill className="object-cover" sizes="600px" />
-                         <div className="absolute inset-0 bg-linear-to-t from-slate-950/35 to-transparent" />
-                       </div>
-                     )}
-
-                     <button type="button" className="text-left" onClick={() => { setSelectedPreview(message.preview ?? null); setShowFullPreview(false); }}>
-                       <h3 className="text-lg font-bold leading-tight text-slate-950 hover:text-blue-700">{message.preview.title}</h3>
-                     </button>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{message.preview.excerpt}</p>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        {message.preview.category}
-                      </Badge>
-                      <Badge className="bg-amber-50 text-xs text-amber-700 hover:bg-amber-50">Draft</Badge>
+                    <div className="space-y-2">
+                      {editingField === "title" ? (
+                        <div className="flex gap-2"><input className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm" value={editValue} onChange={(e) => setEditValue(e.target.value)} /><Button size="sm" onClick={applyEdit}><Check className="size-4" /></Button></div>
+                      ) : (
+                        <h3 className="text-lg font-bold leading-tight text-slate-950">{message.draft.title}</h3>
+                      )}
+                      {editingField === "excerpt" ? (
+                        <div className="flex gap-2"><textarea className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm" rows={2} value={editValue} onChange={(e) => setEditValue(e.target.value)} /><Button size="sm" onClick={applyEdit}><Check className="size-4" /></Button></div>
+                      ) : (
+                        <p className="text-sm leading-relaxed text-slate-600">{message.draft.excerpt}</p>
+                      )}
+                      {message.draft.eventDate && <p className="text-xs text-slate-500"><CalendarDays className="mr-1 inline size-3" />{new Date(message.draft.eventDate).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}</p>}
+                      {message.draft.categoryHint && <Badge variant="outline" className="text-xs">{message.draft.categoryHint}</Badge>}
                     </div>
-
-                    {message.showActions && publishedId !== message.id && (
-                      <div className="mt-5 flex gap-2">
-                         <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1"
-                           onClick={() => { setSelectedPreview(message.preview ?? null); setShowFullPreview(false); }}
-                        >
-                          <Eye className="size-4" />
-                          Preview Detail
-                        </Button>
-                         <Button size="sm" className="flex-1 bg-blue-700 hover:bg-blue-600" onClick={() => message.preview && void handlePublish(message.id, message.preview)}>
-                          <Check className="size-4" />
-                          Publikasikan
-                        </Button>
+                    {message.draft.needsImage && !attachedImage && (
+                      <Alert className="mt-4 border-amber-200 bg-amber-50 text-amber-800"><ImagePlus className="size-4" /><AlertDescription>{message.draft.imageDescription ? `Sebaiknya memakai gambar: ${message.draft.imageDescription}` : "Sebaiknya dilengkapi gambar."}</AlertDescription></Alert>
+                    )}
+                    {!message.publishedId && (
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" onClick={() => { setSelectedDraft(message.draft ?? null); setShowFullPreview(false); }}><Eye className="size-4" />Preview</Button>
+                        <Button size="sm" variant="outline" onClick={() => startEdit(message.draft!, "title")}><Pencil className="size-4" />Edit judul</Button>
+                        <Button size="sm" variant="outline" onClick={() => startEdit(message.draft!, "excerpt")}><Pencil className="size-4" />Edit ringkasan</Button>
+                        {message.draft.contentType !== "prestasi" && <Button size="sm" variant="outline" onClick={() => startEdit(message.draft!, "body")}><Pencil className="size-4" />Edit isi</Button>}
+                        <Button size="sm" variant="outline" onClick={() => { setCurrentDraft(message.draft!); setTarget(message.draft!.contentType); setPendingEdit(true); }}><Bot className="size-4" />Edit via AI</Button>
+                        <Button size="sm" className="ml-auto bg-blue-700 hover:bg-blue-600" onClick={() => void publishDraft(message.id, message.draft!)}><Check className="size-4" />Publikasikan</Button>
                       </div>
                     )}
+                    {message.publishedId && <Alert className="mt-4 border-emerald-200 bg-emerald-50 text-emerald-800"><Check className="size-4" /><AlertDescription>Konten berhasil diterbitkan.</AlertDescription></Alert>}
+                  </div>
+                )}
 
-                    {publishedId === message.id && (
-                      <Alert className="mt-4 border-emerald-200 bg-emerald-50 text-emerald-800">
-                        <Check className="size-4" />
-                         <AlertDescription>Konten berhasil diterbitkan{publishedPostId ? ` dengan ID #${publishedPostId}` : ""}.</AlertDescription>
-                      </Alert>
+                {message.resourceDraft && (
+                  <div className="w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-3 flex items-center justify-between">
+                      <Badge variant="outline" className="flex items-center gap-1.5">{resourceTypeLabel[message.resourceDraft.resourceType]}</Badge>
+                      <Badge className="bg-amber-50 text-xs text-amber-700">Draft</Badge>
+                    </div>
+                    <h3 className="text-lg font-bold leading-tight text-slate-950">{message.resourceDraft.name}</h3>
+                    {message.resourceDraft.position && <p className="mt-1 text-xs font-semibold text-blue-700">{message.resourceDraft.position}</p>}
+                    {message.resourceDraft.tefaName && <Badge variant="outline" className="mt-2">{message.resourceDraft.tefaName}</Badge>}
+                    {message.resourceDraft.description && <p className="mt-2 text-sm leading-relaxed text-slate-600">{message.resourceDraft.description}</p>}
+                    {message.resourceDraft.slug && <Badge variant="outline" className="mt-2 text-xs">/{message.resourceDraft.slug}</Badge>}
+                    {!message.publishedId && (
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" onClick={() => { setCurrentResource(message.resourceDraft!); setTarget(message.resourceDraft!.resourceType); setPendingEdit(true); }}><Bot className="size-4" />Edit via AI</Button>
+                        <Button size="sm" variant="outline" onClick={() => void saveResource(message.id, message.resourceDraft!, false)}><FileText className="size-4" />Simpan draft</Button>
+                        <Button size="sm" className="ml-auto bg-blue-700 hover:bg-blue-600" onClick={() => void saveResource(message.id, message.resourceDraft!, true)}><Check className="size-4" />Simpan & publikasikan</Button>
+                      </div>
                     )}
+                    {message.publishedId && <Alert className="mt-4 border-emerald-200 bg-emerald-50 text-emerald-800"><Check className="size-4" /><AlertDescription>Data berhasil disimpan.</AlertDescription></Alert>}
                   </div>
                 )}
               </div>
@@ -303,14 +438,7 @@ export default function AdminChatbotPage() {
               <p className="text-center text-sm font-medium text-slate-600">Coba contoh prompt:</p>
               <div className="flex flex-wrap justify-center gap-2">
                 {examplePrompts.map((prompt) => (
-                  <button
-                    key={prompt}
-                    type="button"
-                    onClick={() => handleExampleClick(prompt)}
-                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-left text-sm text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
-                  >
-                    {prompt}
-                  </button>
+                  <button key={prompt} type="button" onClick={() => handleExampleClick(prompt)} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-left text-sm text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800">{prompt}</button>
                 ))}
               </div>
             </motion.div>
@@ -319,32 +447,64 @@ export default function AdminChatbotPage() {
       </div>
 
       <div className="border-t bg-white px-6 py-4">
-        <div className="mx-auto max-w-5xl">
-           <form onSubmit={handleSend} className="flex gap-3">
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Tulis instruksi untuk membuat konten..."
-              disabled={isProcessing}
-              className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-            <Button type="submit" disabled={!input.trim() || isProcessing} className="bg-blue-700 hover:bg-blue-600">
-              <Send className="size-4" />
-              Kirim
-            </Button>
+        <div className="mx-auto max-w-5xl space-y-2">
+          {(attachedImage || sourceUrls.length > 0) && (
+            <div className="flex flex-wrap items-center gap-2">
+              {attachedImage && (
+                <span className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 py-1 pl-1 pr-2 text-xs text-slate-600">
+                  <Image src={attachedImage} alt="Lampiran" width={24} height={24} className="size-6 rounded-full object-cover" />Gambar
+                  <button type="button" onClick={() => setAttachedImage(null)} aria-label="Hapus gambar"><X className="size-3" /></button>
+                </span>
+              )}
+              {sourceUrls.map((url) => (
+                <span key={url} className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600">{new URL(url).hostname}<button type="button" onClick={() => removeSourceUrl(url)} aria-label="Hapus sumber"><X className="size-3" /></button></span>
+              ))}
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <input ref={urlRef} value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSourceUrl(); } }} placeholder="Tempel URL sumber artikel (opsional)..." className="hidden min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 sm:block" />
+            <Button type="button" variant="outline" size="icon" onClick={addSourceUrl} aria-label="Tambah URL sumber" className="hidden sm:inline-flex"><Link2 className="size-4" /></Button>
+            <Button type="button" variant="outline" size="icon" onClick={() => fileRef.current?.click()} disabled={uploading} aria-label="Upload gambar"><ImagePlus className="size-4" /></Button>
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadImage(file); e.target.value = ""; }} />
+          </div>
+          <form onSubmit={handleSend} className="flex gap-3">
+            <input ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder={pendingEdit ? "Jelaskan perubahan yang diinginkan..." : isPendingClarification ? "Jawab pertanyaan AI untuk melengkapi data..." : "Tulis instruksi untuk membuat data baru..."} disabled={isProcessing} className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-50" />
+            <Button type="submit" disabled={!input.trim() || isProcessing} className="bg-blue-700 hover:bg-blue-600">{isProcessing ? <LoaderCircle className="size-4 animate-spin" /> : <Send className="size-4" />}Kirim</Button>
           </form>
         </div>
       </div>
 
-      <Dialog open={Boolean(selectedPreview)} onOpenChange={(open) => { if (!open) setSelectedPreview(null); }}>
+      <Dialog open={Boolean(selectedDraft)} onOpenChange={(open) => { if (!open) setSelectedDraft(null); }}>
         <DialogContainer>
           <DialogContent className="relative flex h-[min(760px,92vh)] w-[min(1100px,95vw)] flex-col overflow-hidden rounded-[20px] bg-white shadow-2xl">
             <DialogClose className="z-20 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-slate-900 shadow-md" />
-            {selectedPreview && <div className="grid min-h-0 flex-1 lg:grid-cols-[0.9fr_1.1fr]">
-              <div className="relative min-h-[220px] overflow-hidden bg-slate-900 lg:min-h-full"><Image src={selectedPreview.imageUrl || "/banner.jpeg"} alt={selectedPreview.title} fill className="object-cover brightness-90" sizes="45vw" /><div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-slate-950/80 to-transparent p-7 pt-20 text-white"><p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-200">{selectedPreview.category}</p><p className="mt-3 flex items-center gap-2 text-sm text-white/75"><CalendarDays className="size-4" />{selectedPreview.date}</p></div></div>
-              <div className="flex min-h-0 flex-col p-6 sm:p-9"><div className="min-h-0 flex-1 overflow-y-auto pr-1"><div className="mb-5 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-[0.13em] text-blue-800"><span className="rounded-full bg-blue-50 px-3 py-1.5">{selectedPreview.type}</span><span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-500">{selectedPreview.department}</span></div><DialogTitle className="pr-8 text-3xl font-bold leading-tight text-slate-950">{selectedPreview.title}</DialogTitle><DialogDescription className="mt-5 text-sm leading-7 text-slate-600"><p className="text-lg font-medium leading-8 text-slate-700">{selectedPreview.excerpt}</p>{showFullPreview ? <div className="mt-6 space-y-4">{selectedPreview.body.split("\n\n").map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div> : <p className="mt-6">Konten ini telah disusun dan siap ditinjau sebelum diterbitkan.</p>}</DialogDescription></div><div className="mt-6 border-t border-slate-200 pt-5"><Button type="button" className="w-full bg-blue-700 hover:bg-blue-600" onClick={() => setShowFullPreview((current) => !current)}>{showFullPreview ? "Kembali ke Ringkasan" : "Lihat Detail Lengkap"}<ChevronRight className="size-4" /></Button></div></div>
-            </div>}
+            {selectedDraft && (
+              <div className="grid min-h-0 flex-1 lg:grid-cols-[0.9fr_1.1fr]">
+                <div className="relative min-h-[220px] overflow-hidden bg-slate-900 lg:min-h-full">
+                  <Image src={attachedImage || "/banner.jpeg"} alt={selectedDraft.title} fill className="object-cover brightness-90" sizes="45vw" />
+                  <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-slate-950/80 to-transparent p-7 pt-20 text-white">
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-200">{contentTypeLabel[selectedDraft.contentType]}</p>
+                    {selectedDraft.eventDate && <p className="mt-3 flex items-center gap-2 text-sm text-white/75"><CalendarDays className="size-4" />{new Date(selectedDraft.eventDate).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}</p>}
+                  </div>
+                </div>
+                <div className="flex min-h-0 flex-col p-6 sm:p-9">
+                  <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+                    <div className="mb-5 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-[0.13em] text-blue-800">
+                      <span className="rounded-full bg-blue-50 px-3 py-1.5">{contentTypeLabel[selectedDraft.contentType]}</span>
+                      {selectedDraft.jurusanHint && <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-500">{selectedDraft.jurusanHint}</span>}
+                    </div>
+                    <DialogTitle className="pr-8 text-3xl font-bold leading-tight text-slate-950">{selectedDraft.title}</DialogTitle>
+                    <DialogDescription className="mt-5 text-sm leading-7 text-slate-600">
+                      <p className="text-lg font-medium leading-8 text-slate-700">{selectedDraft.excerpt}</p>
+                      {showFullPreview && selectedDraft.body ? <div className="prose prose-slate mt-6 max-w-none" dangerouslySetInnerHTML={{ __html: selectedDraft.body }} /> : <p className="mt-6">Konten ini telah disusun dan siap ditinjau sebelum diterbitkan.</p>}
+                    </DialogDescription>
+                  </div>
+                  <div className="mt-6 border-t border-slate-200 pt-5">
+                    <Button type="button" className="w-full bg-blue-700 hover:bg-blue-600" onClick={() => setShowFullPreview((current) => !current)}>{showFullPreview ? "Kembali ke Ringkasan" : "Lihat Detail Lengkap"}<ChevronRight className="size-4" /></Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </DialogContainer>
       </Dialog>

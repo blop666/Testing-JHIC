@@ -19,16 +19,26 @@ import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 
-const news = [
+export interface NewsShowcaseItem {
+  id: number;
+  title: string;
+  excerpt: string;
+  date: string;
+  category: string;
+  image: string;
+  slug: string;
+  isNew: boolean;
+}
+
+const fallbackNews: NewsShowcaseItem[] = [
   {
     id: 1,
     image: "/smkn-hero-banner.png",
     category: "Kegiatan Sekolah",
     title: "Membangun Generasi Unggul dan Siap Berkarya",
-    description: "Kegiatan pembelajaran dan pengembangan karakter siswa SMKN 1 Cibinong.",
+    excerpt: "Kegiatan pembelajaran dan pengembangan karakter siswa SMKN 1 Cibinong.",
     date: "12 Agustus 2026",
     slug: "membangun-generasi-unggul",
-    ratio: "aspect-[16/9]",
     isNew: true,
   },
   {
@@ -36,10 +46,9 @@ const news = [
     image: "/hero-banner.jpeg",
     category: "Kompetensi",
     title: "Kolaborasi Industri untuk Pembelajaran Relevan",
-    description: "Sinergi sekolah dan industri memperkuat kesiapan lulusan menghadapi dunia kerja.",
+    excerpt: "Sinergi sekolah dan industri memperkuat kesiapan lulusan menghadapi dunia kerja.",
     date: "8 Agustus 2026",
     slug: "kolaborasi-industri",
-    ratio: "aspect-[4/3]",
     isNew: false,
   },
   {
@@ -47,10 +56,9 @@ const news = [
     image: "/hero-banner.png",
     category: "Teknologi",
     title: "Inovasi Digital di Lingkungan Sekolah",
-    description: "Pemanfaatan teknologi untuk pengalaman belajar yang efektif dan adaptif.",
+    excerpt: "Pemanfaatan teknologi untuk pengalaman belajar yang efektif dan adaptif.",
     date: "4 Agustus 2026",
     slug: "inovasi-digital-sekolah",
-    ratio: "aspect-[4/3]",
     isNew: false,
   },
   {
@@ -58,10 +66,9 @@ const news = [
     image: "/smkn-hero-banner.png",
     category: "Pengumuman",
     title: "Agenda Sekolah Semester Baru",
-    description: "Informasi kegiatan akademik dan nonakademik untuk seluruh warga sekolah.",
+    excerpt: "Informasi kegiatan akademik dan nonakademik untuk seluruh warga sekolah.",
     date: "1 Agustus 2026",
     slug: "agenda-sekolah-semester-baru",
-    ratio: "aspect-[16/9]",
     isNew: false,
   },
   {
@@ -69,10 +76,9 @@ const news = [
     image: "/hero-banner.jpeg",
     category: "Profil",
     title: "Lingkungan Belajar yang Aman dan Inspiratif",
-    description: "Ruang tumbuh siswa untuk mengembangkan kompetensi, kreativitas, dan karakter.",
+    excerpt: "Ruang tumbuh siswa untuk mengembangkan kompetensi, kreativitas, dan karakter.",
     date: "28 Juli 2026",
     slug: "lingkungan-belajar-inspiratif",
-    ratio: "aspect-[16/9]",
     isNew: false,
   },
   {
@@ -80,15 +86,15 @@ const news = [
     image: "/hero-banner.png",
     category: "Kesiswaan",
     title: "Kreativitas Siswa dalam Kegiatan Sekolah",
-    description: "Beragam karya dan kegiatan menjadi wadah aktualisasi potensi siswa.",
+    excerpt: "Beragam karya dan kegiatan menjadi wadah aktualisasi potensi siswa.",
     date: "24 Juli 2026",
     slug: "kreativitas-siswa",
-    ratio: "aspect-[4/3]",
     isNew: false,
   },
-] as const;
+];
 
-export function NewsShowcase() {
+export function NewsShowcase({ items }: { items?: NewsShowcaseItem[] }) {
+  const news = items && items.length ? items : fallbackNews;
   return (
     <section className="relative z-10 bg-white px-4 py-20 text-slate-950 md:px-8 md:py-28">
       <div className="relative mx-auto max-w-7xl border-t border-blue-950/10 pt-10">
@@ -102,14 +108,14 @@ export function NewsShowcase() {
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-5 sm:block sm:columns-2 lg:columns-3">
-          {news.map((item) => <NewsCard key={item.id} item={item} />)}
+          {news.map((item, index) => <NewsCard key={item.id} item={item} ratio={index % 3 === 1 ? "aspect-[4/3]" : "aspect-[16/9]"} />)}
         </div>
       </div>
     </section>
   );
 }
 
-function NewsCard({ item }: { item: (typeof news)[number] }) {
+function NewsCard({ item, ratio }: { item: NewsShowcaseItem; ratio: string }) {
   const variants = useCutoutContentStaggerVariants();
 
   return (
@@ -125,7 +131,7 @@ function NewsCard({ item }: { item: (typeof news)[number] }) {
             <div className="p-6 sm:p-8">
               <span className="inline-flex items-center gap-2 text-xs text-slate-500"><CalendarDays className="size-4" />{item.date}</span>
               <h2 id={`dialog-title-${layoutId}`} className="mt-4 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">{item.title}</h2>
-              <p className="mt-4 leading-relaxed text-slate-600">{item.description}</p>
+              <p className="mt-4 leading-relaxed text-slate-600">{item.excerpt}</p>
               <Link href={`/berita/${item.slug}`} className="mt-7 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-600">
                 Baca berita lengkap <ArrowUpRight className="size-4" />
               </Link>
@@ -136,7 +142,7 @@ function NewsCard({ item }: { item: (typeof news)[number] }) {
         {({ layoutId }) => (
           <SharedLayout layoutId={`dialog-${layoutId}`}>
             <CutoutCard className={cutoutCardSurfaceClassName}>
-              <CutoutCardMedia className={`aspect-[16/9] ${item.ratio === "aspect-[4/3]" ? "sm:aspect-[4/3]" : "sm:aspect-[16/9]"}`}>
+              <CutoutCardMedia className={`aspect-[16/9] ${ratio === "aspect-[4/3]" ? "sm:aspect-[4/3]" : "sm:aspect-[16/9]"}`}>
                 <CutoutCardImage src={item.image} alt={item.title} />
                 <CutoutCardOverlay />
                 {item.isNew && <CutoutCardPin className="right-3 top-3 rounded-full bg-card/95 px-4 py-2 text-xs font-semibold text-card-foreground shadow-sm backdrop-blur-sm">Terbaru</CutoutCardPin>}
@@ -146,7 +152,7 @@ function NewsCard({ item }: { item: (typeof news)[number] }) {
               <CutoutCardContent className="p-5 sm:p-6">
                 <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }} variants={variants.container}>
                   <motion.h3 variants={variants.item} className="text-xl font-semibold tracking-tight">{item.title}</motion.h3>
-                  <motion.p variants={variants.item} className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.description}</motion.p>
+                  <motion.p variants={variants.item} className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.excerpt}</motion.p>
                   <motion.div variants={variants.item}>
                     <CutoutCardFooter className="mt-5 border-t border-border pt-4 pr-14 text-xs text-muted-foreground">
                       <span className="inline-flex items-center gap-2"><CalendarDays className="size-4" />{item.date}</span>

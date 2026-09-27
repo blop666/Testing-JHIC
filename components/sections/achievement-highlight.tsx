@@ -3,49 +3,43 @@
 import { ChevronLeft, ChevronRight, MoveUpRight } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
+import dynamic from "next/dynamic";
+import { Dialog } from "@/components/ui/linear-dialog";
 
-const achievements = [
-  {
-    id: 1,
-    image: "/smkn-hero-banner.png",
-    title: "Juara LKS Tingkat Nasional",
-    slug: "juara-lks-tingkat-nasional",
-    level: "nasional",
-  },
-  {
-    id: 2,
-    image: "/hero-banner.jpeg",
-    title: "Medali LKS Tingkat Provinsi",
-    slug: "medali-lks-tingkat-provinsi",
-    level: "provinsi",
-  },
-  {
-    id: 3,
-    image: "/hero-banner.png",
-    title: "Juara Kompetensi Kabupaten",
-    slug: "juara-kompetensi-kabupaten",
-    level: "kabupaten",
-  },
-  {
-    id: 4,
-    image: "/smkn-hero-banner.png",
-    title: "Prestasi Siswa SMKN 1 Cibinong",
-    slug: "prestasi-siswa-smkn-1-cibinong",
-    level: "sekolah",
-  },
-] as const;
+import type { Achievement } from "./berita/prestasi-gallery";
 
-const spans = {
+const loadAchievementModal = () => import("./berita/achievement-modal").then((module) => module.AchievementModal);
+
+const AchievementModal = dynamic(loadAchievementModal, { ssr: false });
+
+const fallbackAchievements: Achievement[] = [
+  { id: 1, image: "/smkn-hero-banner.png", title: "Juara LKS Tingkat Nasional", level: "Nasional", recipient: "SMKN 1 Cibinong", date: "", ratio: "landscape", description: "" },
+  { id: 2, image: "/hero-banner.jpeg", title: "Medali LKS Tingkat Provinsi", level: "Provinsi", recipient: "SMKN 1 Cibinong", date: "", ratio: "landscape", description: "" },
+  { id: 3, image: "/hero-banner.png", title: "Juara Kompetensi Kabupaten", level: "Kabupaten", recipient: "SMKN 1 Cibinong", date: "", ratio: "landscape", description: "" },
+  { id: 4, image: "/smkn-hero-banner.png", title: "Prestasi Siswa SMKN 1 Cibinong", level: "Sekolah", recipient: "SMKN 1 Cibinong", date: "", ratio: "landscape", description: "" },
+];
+
+const spans: Record<string, string> = {
   nasional: "sm:col-span-7",
+  Nasional: "sm:col-span-7",
   provinsi: "sm:col-span-5",
+  Provinsi: "sm:col-span-5",
   kabupaten: "sm:col-span-5",
+  Kabupaten: "sm:col-span-5",
   sekolah: "sm:col-span-7",
+  Sekolah: "sm:col-span-7",
 };
 
-export function AchievementHighlight() {
+export function AchievementHighlight({ achievements }: { achievements?: Achievement[] }) {
   const [page, setPage] = useState(0);
+  const [selected, setSelected] = useState<Achievement | null>(null);
+  const list = achievements && achievements.length ? achievements : fallbackAchievements;
+
+  const openAchievement = (achievement: Achievement) => {
+    void loadAchievementModal();
+    setSelected(achievement);
+  };
 
   return (
     <section className="relative z-10 overflow-hidden bg-[radial-gradient(circle_at_50%_0%,#2865c7_0%,#124ba3_38%,#082e70_100%)] px-4 pb-16 pt-64 sm:pt-44 md:px-8 md:pb-24 md:pt-48">
@@ -58,14 +52,16 @@ export function AchievementHighlight() {
         </div>
 
         <div className="grid grid-cols-12 gap-4">
-          {achievements.map((achievement, index) => (
-            <motion.article
+          {list.map((achievement, index) => (
+            <motion.button
               key={achievement.id}
+              type="button"
+              onClick={() => openAchievement(achievement)}
               initial={{ y: 40, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.45, ease: "easeOut", delay: index * 0.06 }}
               viewport={{ once: true, amount: 0.2 }}
-              className={`group relative col-span-12 aspect-[4/3] overflow-hidden rounded-2xl ${index !== page ? "hidden sm:block" : ""} ${spans[achievement.level]} sm:aspect-auto sm:min-h-72 md:min-h-96`}
+              className={`group relative col-span-12 aspect-[4/3] cursor-pointer overflow-hidden rounded-2xl text-left ${index !== page ? "hidden sm:block" : ""} ${spans[achievement.level] ?? "sm:col-span-6"} sm:aspect-auto sm:min-h-72 md:min-h-96`}
             >
               <Image
                 src={achievement.image}
@@ -79,15 +75,13 @@ export function AchievementHighlight() {
                 <h3 className="max-w-[80%] rounded-xl bg-black px-4 py-2 text-sm font-medium text-white md:text-xl">
                   {achievement.title}
                 </h3>
-                <Link
-                  href={`/berita/${achievement.slug}`}
-                  aria-label={`Baca ${achievement.title}`}
+                <span
                   className="grid size-11 shrink-0 place-content-center rounded-full bg-white text-blue-800 shadow-sm transition group-hover:-translate-y-1 md:size-12"
                 >
                   <MoveUpRight />
-                </Link>
+                </span>
               </div>
-            </motion.article>
+            </motion.button>
           ))}
         </div>
 
@@ -95,13 +89,13 @@ export function AchievementHighlight() {
           <button
             type="button"
             aria-label="Prestasi sebelumnya"
-            onClick={() => setPage((page - 1 + achievements.length) % achievements.length)}
+            onClick={() => setPage((page - 1 + list.length) % list.length)}
             className="grid size-11 place-content-center rounded-full border border-white/25 text-white"
           >
             <ChevronLeft className="size-5" />
           </button>
-          <div className="flex gap-2" aria-label={`Halaman ${page + 1} dari ${achievements.length}`}>
-            {achievements.map((achievement, index) => (
+          <div className="flex gap-2" aria-label={`Halaman ${page + 1} dari ${list.length}`}>
+            {list.map((achievement, index) => (
               <button
                 key={achievement.id}
                 type="button"
@@ -116,13 +110,19 @@ export function AchievementHighlight() {
           <button
             type="button"
             aria-label="Prestasi berikutnya"
-            onClick={() => setPage((page + 1) % achievements.length)}
+            onClick={() => setPage((page + 1) % list.length)}
             className="grid size-11 place-content-center rounded-full border border-white/25 text-white"
           >
             <ChevronRight className="size-5" />
           </button>
         </div>
       </div>
+
+      {selected && (
+        <Dialog open onOpenChange={(open) => !open && setSelected(null)}>
+          <AchievementModal achievement={selected} />
+        </Dialog>
+      )}
     </section>
   );
 }

@@ -13,6 +13,21 @@ const initialMessage: Message = {
   text: "Halo! Saya asisten virtual SMKN 1 Cibinong. Ada yang bisa saya bantu?",
 };
 
+function renderMarkdown(text: string) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/^###\s+(.+)$/gm, "<h3>$1</h3>")
+    .replace(/^##\s+(.+)$/gm, "<h3>$1</h3>")
+    .replace(/^#\s+(.+)$/gm, "<h3>$1</h3>")
+    .replace(/^\s*[-*•]\s+(.+)$/gm, "<li>$1</li>")
+    .replace(/(<li>[\s\S]*?<\/li>)/g, "<ul>$1</ul>")
+    .replace(/\n{2,}/g, "<br/><br/>")
+    .replace(/\n/g, "<br/>");
+}
+
 export default function AIChatCard({ className }: { className?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
@@ -20,7 +35,7 @@ export default function AIChatCard({ className }: { className?: string }) {
   const [isTyping, setIsTyping] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
-  const replyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -35,20 +50,43 @@ export default function AIChatCard({ className }: { className?: string }) {
   }, [messages, isTyping]);
 
   useEffect(() => () => {
-    if (replyTimerRef.current) clearTimeout(replyTimerRef.current);
+    abortRef.current?.abort();
   }, []);
 
-  const handleSend = (event: FormEvent) => {
+  const handleSend = async (event: FormEvent) => {
     event.preventDefault();
     const text = input.trim();
     if (!text || isTyping) return;
     setMessages((current) => [...current, { id: Date.now(), sender: "user", text }]);
     setInput("");
     setIsTyping(true);
-    replyTimerRef.current = setTimeout(() => {
-      setMessages((current) => [...current, { id: Date.now() + 1, sender: "ai", text: "Fitur jawaban AI sedang disiapkan. Untuk saat ini, silakan hubungi pihak sekolah melalui halaman Kontak." }]);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    try {
+      const response = await fetch("/api/chatbot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: text }),
+        signal: controller.signal,
+      });
+      const result = (await response.json()) as {
+        success?: boolean;
+        data?: { answer?: string };
+        error?: { message?: string };
+      };
+
+      const answer = result.data?.answer ?? result.error?.message ?? "Maaf, layanan chatbot sedang tidak tersedia. Silakan hubungi pihak sekolah melalui halaman Kontak.";
+      setMessages((current) => [...current, { id: Date.now() + 1, sender: "ai", text: answer }]);
+    } catch {
+      setMessages((current) => [...current, { id: Date.now() + 1, sender: "ai", text: "Maaf, layanan chatbot sedang tidak tersedia. Silakan coba lagi nanti." }]);
+    } finally {
+      clearTimeout(timeoutId);
+      abortRef.current = null;
       setIsTyping(false);
-    }, 700);
+    }
   };
 
   return (
@@ -81,7 +119,11 @@ export default function AIChatCard({ className }: { className?: string }) {
               <div ref={messagesRef} className="flex flex-1 flex-col gap-3 overflow-y-auto bg-[#f5f8ff] p-4 text-sm" aria-live="polite">
                 {messages.map((message) => (
                   <motion.div key={message.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn("max-w-[84%] rounded-2xl px-4 py-3 leading-relaxed shadow-sm", message.sender === "ai" ? "self-start rounded-bl-md bg-white text-slate-700" : "self-end rounded-br-md bg-blue-700 text-white")}>
-                    {message.text}
+                    {message.sender === "ai" ? (
+                      <div className="chat-markdown space-y-2 [&_h3]:text-sm [&_h3]:font-bold [&_h3]:text-blue-900 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1 [&_strong]:font-semibold [&_strong]:text-slate-900" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.text) }} />
+                    ) : (
+                      message.text
+                    )}
                   </motion.div>
                 ))}
                 {isTyping && <div className="flex w-fit gap-1.5 self-start rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-sm" aria-label="Asisten sedang mengetik">{[0, 1, 2].map((dot) => <motion.span key={dot} className="size-2 rounded-full bg-blue-500" animate={{ y: [0, -4, 0] }} transition={{ duration: 0.7, repeat: Infinity, delay: dot * 0.12 }} />)}</div>}

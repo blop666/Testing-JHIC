@@ -3,8 +3,10 @@ import { z } from "zod";
 export const listQuerySchema = z.object({
   jurusan_id: z.coerce.number().int().positive().optional(),
   category: z.coerce.number().int().positive().optional(),
+  q: z.string().trim().max(200).optional(),
+  status: z.enum(["draft", "published"]).optional(),
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(50).default(10),
+  limit: z.coerce.number().int().min(1).max(100).default(15),
 });
 
 const nullableUrl = z.union([z.url(), z.string().startsWith("/")]).nullable().optional();
@@ -25,6 +27,26 @@ export const facilityInputSchema = z.object({
   description: z.string().trim().max(5_000).nullable().optional(),
   imageUrl: nullableUrl,
   presentationSlot: z.enum(["featured_large", "standard", "tall", "wide"]).default("standard"),
+  sortOrder: z.number().int().min(0).default(0),
+  isPublished: z.boolean().default(false),
+});
+
+export const programUnggulanInputSchema = z.object({
+  title: z.string().trim().min(1).max(240),
+  description: z.string().trim().min(1).max(5_000),
+  label: z.string().trim().min(1).max(120),
+  imageUrl: nullableUrl,
+  jurusanId: z.number().int().positive().nullable().optional(),
+  sortOrder: z.number().int().min(0).default(0),
+  isPublished: z.boolean().default(false),
+});
+
+export const fasilitasVokasiInputSchema = z.object({
+  title: z.string().trim().min(1).max(240),
+  description: z.string().trim().max(5_000).nullable().optional(),
+  imageUrl: nullableUrl,
+  jurusanId: z.number().int().positive().nullable().optional(),
+  tefaName: z.string().trim().max(160).nullable().optional(),
   sortOrder: z.number().int().min(0).default(0),
   isPublished: z.boolean().default(false),
 });
