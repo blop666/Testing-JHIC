@@ -9,6 +9,7 @@ import { SchoolProfileVideo } from "@/components/sections/school-profile-video";
 import { IndustryPartners } from "@/components/sections/industry-partners";
 import { FeaturedPrograms } from "@/components/sections/featured-programs";
 import { getPublicPosts, getPublicPartners, getPublicPrograms } from "@/server/queries/public-content";
+import { generateSlugWithId } from "@/lib/slug";
 
 function toDate(value: Date | null) {
   if (!value) return "";
@@ -41,7 +42,7 @@ export default async function HomePage() {
     date: toDate(post.publishedAt),
     category: post.category?.name ?? "Berita",
     image: post.imageUrl ?? "/banner.jpeg",
-    slug: post.slug,
+    slug: generateSlugWithId(post.title, post.id),
     isNew: index === 0,
   }));
 
@@ -62,7 +63,7 @@ export default async function HomePage() {
     date: item.publishedAt ? new Date(item.publishedAt) : null,
     image: item.imageUrl ?? "",
     label: item.category?.name ?? "Pengumuman",
-    slug: item.slug,
+    slug: generateSlugWithId(item.title, item.id),
   }));
 
   const partnerItems = partners.map((item) => ({
@@ -84,7 +85,7 @@ export default async function HomePage() {
       endDate: item.eventEndDate ?? null,
       location: item.eventLocation ?? "",
       image: item.imageUrl ?? "/banner.jpeg",
-      slug: item.slug,
+      slug: generateSlugWithId(item.title, item.id),
     }));
 
   return (

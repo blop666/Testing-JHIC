@@ -31,26 +31,40 @@ export async function getPublicPostBySlug(slug: string) {
   if (!process.env.DATABASE_URL) return null;
   return unstable_cache(async () => {
     const { db } = await import("@/db");
-    const normalized = slug.replace(/-\d+$/, "");
-    const idMatch = slug.match(/(\d+)$/);
-    const id = idMatch ? Number(idMatch[1]) : null;
-    const conditions = [eq(posts.slug, slug), eq(posts.slug, normalized)];
-    if (id !== null && Number.isInteger(id) && id > 0) conditions.push(eq(posts.id, id));
-    const [post] = await db.select({
-      id: posts.id,
-      title: posts.title,
-      slug: posts.slug,
+    const selectPost = (where: ReturnType<typeof eq>) => db.select({
+       id: posts.id,
+       title: posts.title,
+       slug: posts.slug,
       excerpt: posts.excerpt,
       body: posts.body,
       imageUrl: posts.imageUrl,
       galleryUrls: posts.galleryUrls,
       publishedAt: posts.publishedAt,
       eventDate: posts.eventDate,
-      eventEndDate: posts.eventEndDate,
-      eventLocation: posts.eventLocation,
-      category: { name: postCategories.name, slug: postCategories.slug },
-    }).from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).where(and(or(...conditions), eq(posts.isPublished, true))).limit(1);
-    return post ?? null;
+       eventEndDate: posts.eventEndDate,
+       eventLocation: posts.eventLocation,
+       category: { name: postCategories.name, slug: postCategories.slug },
+    }).from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).where(and(where, eq(posts.isPublished, true))).limit(1);
+
+    const idMatch = slug.match(/-(\d+)$/);
+    if (idMatch) {
+      const id = Number(idMatch[1]);
+      if (Number.isInteger(id) && id > 0) {
+        const [post] = await selectPost(eq(posts.id, id));
+        if (post) return post;
+      }
+    }
+
+    const [exactPost] = await selectPost(eq(posts.slug, slug));
+    if (exactPost) return exactPost;
+
+    const normalized = slug.replace(/-\d+$/, "");
+    if (normalized !== slug) {
+      const [normalizedPost] = await selectPost(eq(posts.slug, normalized));
+      if (normalizedPost) return normalizedPost;
+    }
+
+    return null;
   }, [`public-post-${slug}`], { tags: ["public-posts", "public-post-detail"] })();
 }
 
