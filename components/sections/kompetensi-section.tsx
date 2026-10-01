@@ -42,7 +42,7 @@ const JURUSAN_DATA: Jurusan[] = [
     logoUrl: "/logo jurusan/sija.png",
     category: "IT",
     durasi: "4 Tahun (Setara D1)",
-    bgImage: "/img_ref/banner.jpg",
+    bgImage: "/hero-banner.jpeg",
     kompetensi: ["Cybersecurity", "Cloud Computing", "Networking", "Web Development", "Database Management", "System Administration", "IoT (Internet of Things)", "Network Security"],
     prospek: "Network Administrator, System Administrator, Cybersecurity Specialist, Cloud Engineer, IT Support, Network Engineer, DevOps Engineer",
   },
@@ -54,7 +54,7 @@ const JURUSAN_DATA: Jurusan[] = [
     logoUrl: "/logo jurusan/rpl.png",
     category: "IT",
     durasi: "3 Tahun",
-    bgImage: "/img_ref/banner.jpg",
+    bgImage: "/hero-banner.jpeg",
     kompetensi: ["Algoritma dan Pemrograman", "Basis Data & SQL", "Pemrograman Berorientasi Objek", "Web Design & Development", "Aplikasi Berbasis Desktop", "Aplikasi Berbasis Mobile", "Software Testing", "Pemrograman Visual"],
     prospek: "Software Developer, Web Developer, Mobile Developer, Database Administrator, Software Tester, System Analyst, Full Stack Developer",
   },
@@ -66,7 +66,7 @@ const JURUSAN_DATA: Jurusan[] = [
     logoUrl: "/logo jurusan/logo-DKV_New-Revisi_Fix-1-e1731551656251.png",
     category: "IT",
     durasi: "3 Tahun",
-    bgImage: "/img_ref/banner.jpg",
+    bgImage: "/hero-banner.jpeg",
     kompetensi: ["Desain Grafis", "Ilustrasi Digital", "Fotografi", "Video Editing", "Animasi 2D/3D", "Multimedia", "Digital Imaging", "Typography", "UI/UX Design"],
     prospek: "Graphic Designer, Illustrator, Video Editor, Animator, Content Creator, Photographer, UI/UX Designer, Multimedia Designer",
   },
@@ -78,7 +78,7 @@ const JURUSAN_DATA: Jurusan[] = [
     logoUrl: "/logo jurusan/tkj.png",
     category: "IT",
     durasi: "3 Tahun",
-    bgImage: "/img_ref/banner.jpg",
+    bgImage: "/hero-banner.jpeg",
     kompetensi: ["Instalasi dan Perakitan Komputer", "Sistem Operasi", "Jaringan Komputer", "Wide Area Network (WAN)", "Server Administration", "Network Security", "Database", "Troubleshooting", "Mikrotik"],
     prospek: "Network Technician, IT Support, Network Administrator, System Administrator, Server Administrator, Network Engineer, IT Infrastructure Specialist",
   },
@@ -90,7 +90,7 @@ const JURUSAN_DATA: Jurusan[] = [
     logoUrl: "/logo jurusan/tkp baru.png",
     category: "Teknik",
     durasi: "3 Tahun",
-    bgImage: "/img_ref/banner.jpg",
+    bgImage: "/hero-banner.jpeg",
     kompetensi: ["Konstruksi Bangunan", "Pekerjaan Kayu", "Sambungan Kayu", "Struktur Bangunan", "Bekisting", "Pekerjaan Atap", "Pembuatan Pintu dan Jendela", "Finishing Bangunan", "Carpentry"],
     prospek: "Teknisi Konstruksi, Pelaksana Lapangan, Tukang Kayu Profesional, Supervisor Bangunan, Estimator Konstruksi, Drafter Konstruksi",
   },
@@ -102,7 +102,7 @@ const JURUSAN_DATA: Jurusan[] = [
     logoUrl: "/logo jurusan/Logo-TP-1536x991.png",
     category: "Teknik",
     durasi: "3 Tahun",
-    bgImage: "/img_ref/banner.jpg",
+    bgImage: "/hero-banner.jpeg",
     kompetensi: ["Gambar Teknik", "Metrologi Industri", "Teknik Pemesinan", "CNC Operation", "Mesin Produksi", "Proses Manufaktur", "Quality Control", "Kerja Bangku", "NC/CNC Programming"],
     prospek: "Operator Mesin CNC, Operator Produksi, Teknisi Pemesinan, Quality Control Inspector, Teknisi Manufaktur, Machinist",
   },
@@ -114,7 +114,7 @@ const JURUSAN_DATA: Jurusan[] = [
     logoUrl: "/logo jurusan/toi.png",
     category: "Teknik",
     durasi: "3 Tahun",
-    bgImage: "/img_ref/banner.jpg",
+    bgImage: "/hero-banner.jpeg",
     kompetensi: ["PLC Programming", "SCADA System", "Industrial Automation", "Sensor dan Transducer", "Pneumatik & Elektropneumatik", "Motor Listrik", "Sistem Kendali Digital", "Electrical Control", "Aktuator"],
     prospek: "Teknisi Otomasi Industri, PLC Programmer, Teknisi Maintenance, Teknisi Electrical Control, Automation Engineer, Control System Technician",
   },
@@ -126,7 +126,7 @@ const JURUSAN_DATA: Jurusan[] = [
     logoUrl: "/logo jurusan/tkr.png",
     category: "Teknik",
     durasi: "3 Tahun",
-    bgImage: "/img_ref/banner.jpg",
+    bgImage: "/hero-banner.jpeg",
     kompetensi: ["Mesin Kendaraan", "Sistem Kelistrikan Otomotif", "Chassis & Powertrain", "Sistem Pemindah Tenaga", "Sistem Rem", "Sistem Kemudi", "Sistem Suspensi", "Sistem AC Kendaraan", "Troubleshooting", "Engine Tune-up"],
     prospek: "Teknisi Otomotif, Mekanik Kendaraan Ringan, Service Advisor, Teknisi Kelistrikan Kendaraan, Workshop Supervisor, Automotive Engineer",
   },
@@ -138,7 +138,7 @@ const JURUSAN_DATA: Jurusan[] = [
     logoUrl: "/logo jurusan/tflm.png",
     category: "Teknik",
     durasi: "3 Tahun",
-    bgImage: "/img_ref/banner.jpg",
+    bgImage: "/hero-banner.jpeg",
     kompetensi: ["Gambar Teknik", "Fabrikasi Logam", "Teknik Pengelasan", "Teknik Pemesinan", "Proses Manufaktur", "Metrologi", "Pengoperasian Mesin Produksi", "Pembuatan Komponen", "Welding Technology"],
     prospek: "Welder Profesional, Teknisi Fabrikasi, Operator Produksi, Quality Control, Teknisi Pengelasan, Supervisor Produksi, Fabrication Engineer",
   },
@@ -150,7 +150,7 @@ const JURUSAN_DATA: Jurusan[] = [
     logoUrl: "/logo jurusan/dpib.png",
     category: "Teknik",
     durasi: "3 Tahun",
-    bgImage: "/img_ref/banner.jpg",
+    bgImage: "/hero-banner.jpeg",
     kompetensi: ["Gambar Teknik Bangunan", "BIM Modeling", "Gambar Konstruksi", "Konstruksi Kayu", "Desain Interior & Eksterior", "Pemodelan Bangunan", "CAD Software", "Konstruksi Beton", "Utilitas Bangunan"],
     prospek: "Drafter Bangunan, BIM Modeler, Desainer Bangunan, Teknisi Konstruksi, CAD Operator, Building Designer, Estimator Proyek",
   },
@@ -366,7 +366,7 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
                 className="absolute inset-0 group cursor-pointer rounded-2xl overflow-hidden border border-[#E5E7EB]"
                 onClick={handleModalOpen}
                 style={{
-                  backgroundImage: `url(${focusedJurusan?.bgImage || "/img_ref/banner.jpg"})`,
+                  backgroundImage: `url(${focusedJurusan?.bgImage || "/hero-banner.jpeg"})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -435,7 +435,7 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
                       isFocused ? "border-[#1C4E97] ring-2 ring-[#1C4E97]" : "border-[#E5E7EB]"
                     )}
                     style={{
-                      backgroundImage: `url(/img_ref/banner.jpg)`,
+                      backgroundImage: `url(/hero-banner.jpeg)`,
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                       backgroundRepeat: "no-repeat",
@@ -533,7 +533,7 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
               <div
                 className="relative h-56 overflow-hidden md:h-72"
                 style={{
-                  backgroundImage: `url(${focusedJurusan.bgImage || "/img_ref/banner.jpg"})`,
+                  backgroundImage: `url(${focusedJurusan.bgImage || "/hero-banner.jpeg"})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}

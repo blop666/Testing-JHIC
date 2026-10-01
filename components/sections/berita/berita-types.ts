@@ -6,5 +6,10 @@ export interface NewsItem {
   category: string;
   image: string;
   popularRank: number;
+  isHighlighted?: boolean;
+  isPopularOverride?: boolean;
+  viewCount?: number;
+  sortDate?: number;
+  uploadDate?: string;
   content: string[][];
 }

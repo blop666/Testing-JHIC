@@ -4,7 +4,9 @@ import Image from "next/image";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoaderCircle, Save, Send, UploadCloud } from "lucide-react";
+import { toast } from "sonner";
 
+import { apiErrorMessage } from "@/lib/api-response";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,7 +36,7 @@ async function request(url: string, init?: RequestInit) {
   const text = await response.text();
   let result: { success?: boolean; data?: any; error?: { message?: string } } = {};
   try { result = JSON.parse(text); } catch { /* non-JSON response */ }
-  if (!response.ok || !result.success) throw new Error(result.error?.message ?? "Permintaan gagal.");
+  if (!response.ok || !result.success) throw new Error(apiErrorMessage(result.error, "Permintaan gagal."));
   return result.data;
 }
 
@@ -88,6 +90,7 @@ export function EditorPage({ kind, id }: { kind: Kind; id?: string }) {
     try {
       const body = new FormData();
       body.set("file", file);
+      body.set("category", kind);
       const result = await requestWithRetry("/api/uploads", { method: "POST", body });
       set(kind === "kerjasama-industri" ? "logoUrl" : "imageUrl", result.url);
     } catch (cause) {
@@ -115,10 +118,13 @@ export function EditorPage({ kind, id }: { kind: Kind; id?: string }) {
       if (type !== "agenda") { delete payload.eventDate; delete payload.eventEndDate; delete payload.eventLocation; }
       if (payload.categoryId === "" || payload.categoryId === null) payload.categoryId = null;
       await requestWithRetry(id ? `/api/${kind}/${id}` : `/api/${kind}`, { method: id ? "PUT" : "POST", body: JSON.stringify(payload) });
-      router.replace(`/admin/${kind === "posts" ? "konten" : kind}`);
+      toast.success(mode === "publish" ? "Konten diterbitkan." : "Konten disimpan sebagai draft.");
+       const adminPath = kind === "posts" ? "konten" : kind === "kerjasama-industri" ? "mitra-industri" : kind;
+       router.replace(`/admin/${adminPath}`);
       router.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Perubahan gagal.");
+      toast.error(cause instanceof Error ? cause.message : "Perubahan gagal.");
     } finally {
       setPending(false);
     }

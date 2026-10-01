@@ -1,5 +1,13 @@
 import type { NextConfig } from "next";
 
+const mediaBase = process.env.S3_PUBLIC_URL?.trim() || process.env.S3_ENDPOINT?.trim();
+const mediaRemotePatterns = mediaBase
+  ? (() => {
+      const url = new URL(mediaBase);
+      return [{ protocol: url.protocol.replace(":", "") as "http" | "https", hostname: url.hostname, pathname: "/**" }];
+    })()
+  : [];
+
 const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
@@ -10,6 +18,7 @@ const nextConfig: NextConfig = {
         hostname: "i.ytimg.com",
         pathname: "/vi/**",
       },
+      ...mediaRemotePatterns,
     ],
   },
 };

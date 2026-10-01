@@ -90,28 +90,32 @@ const fallbackGuruStaffData = [
 ];
 
 type GuruItem = { id: number; name: string; position: string; bio: string; image: string; category: string };
+type GuruCategory = { id: number; name: string; slug: string };
 
-const guruFilters = ['General', 'Staff', 'SIJA', 'RPL', 'TKJ', 'DKV', 'TKP', 'TFLM', 'TP', 'DPIB', 'TKR', 'TOI'];
-
-export function GuruStaffSection({ items }: { items: GuruItem[] }) {
-  const guruStaffData = items.length ? items : fallbackGuruStaffData;
+export function GuruStaffSection({ items, categories = [] }: { items: GuruItem[]; categories?: GuruCategory[] }) {
+  const guruStaffData = items;
   const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [open, setOpen] = useState(false);
   const [detailItem, setDetailItem] = useState(guruStaffData[0]);
-  const [activeFilter, setActiveFilter] = useState('General');
+  const [activeFilter, setActiveFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
   const [lastInteractionTime, setLastInteractionTime] = useState(0);
   const [isSectionVisible, setIsSectionVisible] = useState(false);
 
+  // Filter tabs come from the Guru & Staff categories configured in the admin,
+  // then merge any categories that actually exist in the data (fallback).
+  const adminCategories = categories.map((category) => category.name);
+  const dataCategories = Array.from(new Set(guruStaffData.map((item) => item.category || 'General').filter(Boolean)));
+  const guruFilters = Array.from(new Set([...adminCategories, ...dataCategories]));
+  const effectiveFilter = activeFilter || guruFilters[0] || 'General';
+
   // Filter data based on active filter
-  const filteredData = activeFilter === 'General' 
-    ? guruStaffData.filter(item => item.category === 'General')
-    : guruStaffData.filter(item => item.category === activeFilter);
+  const filteredData = guruStaffData.filter((item) => (item.category || 'General') === effectiveFilter);
 
   // Pagination: 5 items per page
   const itemsPerPage = 5;
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / itemsPerPage));
   const paginatedData = filteredData.slice(
     currentPage * itemsPerPage,
     (currentPage + 1) * itemsPerPage
@@ -151,6 +155,10 @@ export function GuruStaffSection({ items }: { items: GuruItem[] }) {
     setCurrentPage(0);
     setActiveIndex(0);
   }, [activeFilter]);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [currentPage]);
 
   const handleOpenDetail = (item: GuruItem) => {
     setDetailItem(item);
@@ -193,12 +201,12 @@ export function GuruStaffSection({ items }: { items: GuruItem[] }) {
                 type="button"
                 onClick={() => setActiveFilter(filter)}
                 className="relative rounded-xl px-1 py-2.5 text-xs font-semibold"
-                aria-pressed={activeFilter === filter}
+                aria-pressed={effectiveFilter === filter}
               >
-                {activeFilter === filter && (
+                {effectiveFilter === filter && (
                   <motion.span layoutId="mobile-guru-filter" className="absolute inset-0 rounded-xl bg-blue-600 shadow-sm" transition={{ type: "spring", stiffness: 420, damping: 34 }} />
                 )}
-                <span className={`relative z-10 transition-colors duration-200 ${activeFilter === filter ? "text-white" : "text-slate-600"}`}>{filter}</span>
+                <span className={`relative z-10 transition-colors duration-200 ${effectiveFilter === filter ? "text-white" : "text-slate-600"}`}>{filter}</span>
               </button>
             ))}
           </div>
@@ -216,7 +224,7 @@ export function GuruStaffSection({ items }: { items: GuruItem[] }) {
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
                   className={`shrink-0 snap-start rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 ${
-                  activeFilter === filter
+                  effectiveFilter === filter
                     ? 'bg-blue-600 text-white shadow-lg scale-105'
                     : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-200'
                 }`}
@@ -227,7 +235,15 @@ export function GuruStaffSection({ items }: { items: GuruItem[] }) {
           </motion.div>
         </div>
 
+        {guruStaffData.length === 0 && (
+          <div className="mx-auto mt-4 max-w-xl rounded-3xl border-2 border-dashed border-blue-200 bg-white/70 px-8 py-16 text-center shadow-sm">
+            <p className="text-lg font-semibold text-blue-900">Data guru saat ini tidak ada</p>
+            <p className="mt-2 text-sm text-slate-500">Data guru dan staff akan muncul di sini setelah ditambahkan melalui CMS.</p>
+          </div>
+        )}
+
         {/* Mobile uses one readable card instead of the desktop five-panel accordion. */}
+        {guruStaffData.length > 0 && (<>
         <AnimatePresence mode="wait">
           <motion.article
             key={`mobile-${paginatedData[activeIndex]?.id}`}
@@ -240,12 +256,9 @@ export function GuruStaffSection({ items }: { items: GuruItem[] }) {
             {paginatedData[activeIndex] && (
               <>
                 <Image src={paginatedData[activeIndex].image} alt={paginatedData[activeIndex].name} fill quality={55} sizes="100vw" className="object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-950 via-blue-700/80 to-blue-600/60" />
-                <div className="relative flex min-h-[440px] flex-col justify-end p-5 text-white">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-blue-100">{activeFilter}</p>
-                  <h3 className="text-2xl font-bold leading-tight">{paginatedData[activeIndex].name}</h3>
-                  <p className="mt-2 text-sm font-medium text-blue-50">{paginatedData[activeIndex].position}</p>
-                  <p className="mt-4 text-sm leading-relaxed text-white/85">{paginatedData[activeIndex].bio}</p>
+                <div className="relative flex min-h-[440px] flex-col justify-end bg-gradient-to-t from-slate-950/70 via-slate-900/20 to-transparent p-5 text-white">
+                  <h3 className="text-2xl font-bold leading-tight drop-shadow-sm">{paginatedData[activeIndex].name}</h3>
+                  <p className="mt-2 text-sm font-medium text-white/90">{paginatedData[activeIndex].position}</p>
                 </div>
               </>
             )}
@@ -268,7 +281,7 @@ export function GuruStaffSection({ items }: { items: GuruItem[] }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="relative hidden h-[70vh] min-h-[480px] overflow-hidden sm:block"
+          className="relative mx-auto hidden h-[70vh] min-h-[520px] max-w-7xl overflow-hidden sm:block"
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -283,7 +296,7 @@ export function GuruStaffSection({ items }: { items: GuruItem[] }) {
                 <motion.div
                   key={item.id}
                   layout
-                  className={`relative min-w-0 cursor-pointer overflow-hidden rounded-2xl border-2 border-blue-200 shadow-2xl transition-[flex] duration-500 ease-in-out sm:rounded-3xl ${
+                  className={`relative min-w-0 cursor-pointer overflow-hidden rounded-2xl border-2 border-blue-200 shadow-2xl transition-all duration-500 ease-in-out sm:rounded-3xl ${
                     activeIndex === index ? 'flex-[4]' : 'flex-[0.5]'
                   }`}
                   onClick={() => {
@@ -298,13 +311,13 @@ export function GuruStaffSection({ items }: { items: GuruItem[] }) {
                   src={item.image}
                   alt={item.name}
                   fill
-                  className="object-cover object-center"
+                  className="object-cover object-top"
                   quality={55}
-                  sizes="(max-width: 640px) 30vw, 20vw"
+                  sizes="(max-width: 640px) 30vw, 40vw"
                 />
-                <div 
-                  className="absolute inset-0 bg-gradient-to-br from-blue-800/90 to-blue-600/90"
-                />
+                {activeIndex === index && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-900/25 to-transparent" />
+                )}
               </div>
 
               {/* Content Container */}
@@ -319,44 +332,13 @@ export function GuruStaffSection({ items }: { items: GuruItem[] }) {
                       transition={{ duration: 0.4 }}
                       className="h-full flex flex-col justify-end"
                     >
-                      {/* Badge */}
-                      {/* <motion.div
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.1 }}
-                        className="inline-flex absolute top-22 items-center gap-2 rounded-full border-2 border-white/30 bg-white/10 backdrop-blur-md px-4 py-2 text-sm text-white w-fit mb-4"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 2v20M2 12h20"/>
-                        </svg>
-                        <span>Person</span>
-                      </motion.div> */}
-
-                      <h3 className="mb-1 text-lg font-bold text-white sm:mb-2 sm:text-2xl md:text-3xl lg:text-4xl">
+                      <h3 className="mb-1 text-lg font-bold text-white drop-shadow-sm sm:mb-2 sm:text-2xl md:text-3xl">
                         {item.name}
                       </h3>
 
-                      <p className="mb-3 text-sm text-white/90 sm:mb-6 sm:text-lg md:text-xl">
+                      <p className="mb-2 text-sm text-white/90 sm:text-base md:text-lg">
                         {item.position}
                       </p>
-
-                      <p className="line-clamp-4 text-xs leading-relaxed text-justify text-white/80 sm:text-sm">
-                        {item.bio}
-                      </p>
-
-                      {/* Button detail */}
-                      {/* <motion.button
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenDetail(item);
-                        }}
-                        className="mt-auto bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-xl font-semibold backdrop-blur-sm transition-colors"
-                      >
-                        Lihat Detail
-                      </motion.button> */}
                     </motion.div>
                   ) : (
                     <div aria-hidden className="h-full" />
@@ -393,6 +375,7 @@ export function GuruStaffSection({ items }: { items: GuruItem[] }) {
             />
           ))}
         </motion.div>
+        </>)}
       </div>
 
       {/* Detail Modal */}

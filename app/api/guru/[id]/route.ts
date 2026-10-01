@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
+import { z } from "zod";
 
 import { guru } from "@/db/schema";
 import { apiError, apiSuccess } from "@/lib/api-response";
@@ -9,6 +10,8 @@ import { routeError } from "@/server/http";
 import { revalidatePublicResource } from "@/server/cache";
 import { assertGuruCategoryScope } from "@/server/repositories/categories";
 import { guruInputSchema, idSchema } from "@/server/validators/content";
+
+const statusSchema = z.object({ isPublished: z.boolean() });
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -46,6 +49,20 @@ export async function PUT(request: NextRequest, context: Context) {
   } catch (error) { return routeError(error); }
 }
 
+export async function PATCH(request: NextRequest, context: Context) {
+  try {
+    const id = idSchema.parse((await context.params).id);
+    const { session, record } = await findScopedGuru(id);
+    if (!session) return apiError({ code: "UNAUTHENTICATED", message: "Silakan masuk terlebih dahulu." }, { status: 401 });
+    if (!record) return apiError({ code: "NOT_FOUND", message: "Data guru tidak ditemukan." }, { status: 404 });
+    const { isPublished } = statusSchema.parse(await request.json());
+    const { db } = await import("@/db");
+    const [updated] = await db.update(guru).set({ isPublished, updatedAt: new Date() }).where(eq(guru.id, id)).returning();
+    revalidatePublicResource("guru");
+    return apiSuccess(updated);
+  } catch (error) { return routeError(error); }
+}
+
 export async function DELETE(_: NextRequest, context: Context) {
   try {
     const id = idSchema.parse((await context.params).id);
@@ -53,8 +70,8 @@ export async function DELETE(_: NextRequest, context: Context) {
     if (!session) return apiError({ code: "UNAUTHENTICATED", message: "Silakan masuk terlebih dahulu." }, { status: 401 });
     if (!record) return apiError({ code: "NOT_FOUND", message: "Data guru tidak ditemukan." }, { status: 404 });
     const { db } = await import("@/db");
-    const [updated] = await db.update(guru).set({ isPublished: false, updatedAt: new Date() }).where(eq(guru.id, id)).returning();
+    await db.delete(guru).where(eq(guru.id, id));
     revalidatePublicResource("guru");
-    return apiSuccess(updated);
+    return apiSuccess({ id });
   } catch (error) { return routeError(error); }
 }

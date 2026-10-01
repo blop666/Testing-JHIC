@@ -21,14 +21,16 @@ export function IndustryPartners({ partners }: { partners?: PartnerItem[] }) {
   const list = partners && partners.length ? partners : fallbackPartners;
   const logos: LogoItem[] = list.map((partner) => ({
     node: (
-      <span className="flex h-16 items-center gap-3 rounded-2xl border border-blue-950/10 bg-white px-6 text-slate-700 shadow-sm">
+      <span className="flex h-24 w-64 shrink-0 items-center gap-4 rounded-2xl border border-white/15 bg-[#1b4d96] px-5 text-white shadow-lg">
         {partner.logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={partner.logoUrl} alt="" className="h-12 w-auto max-w-[120px] object-contain" />
+          <span className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-white/30">
+            <img src={partner.logoUrl} alt={partner.name} className="max-h-full max-w-full object-contain" />
+          </span>
         ) : (
-          <span className="grid size-12 shrink-0 place-content-center rounded-full bg-blue-50 text-blue-700 ring-1 ring-blue-950/10"><Building2 className="size-6" /></span>
+          <span className="flex h-16 w-28 shrink-0 items-center justify-center rounded-xl bg-white text-[#1b4d96] ring-1 ring-white/30"><Building2 className="size-8" /></span>
         )}
-        <span className="whitespace-nowrap text-sm font-semibold tracking-tight">{partner.name}</span>
+        <span className="min-w-0 flex-1 truncate text-base font-semibold tracking-tight">{partner.name}</span>
       </span>
     ),
     title: partner.name,
@@ -42,7 +44,7 @@ export function IndustryPartners({ partners }: { partners?: PartnerItem[] }) {
         <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] md:text-5xl">Mitra Industri Kami</h2>
         <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">Bersama mitra industri, kami menghadirkan pembelajaran yang relevan dengan kebutuhan dunia kerja.</p>
       </div>
-      <LogoLoop logos={logos} speed={52} direction="left" logoHeight={72} gap={20} hoverSpeed={10} scaleOnHover fadeOut fadeOutColor="#f5f8ff" ariaLabel="Daftar mitra industri SMKN 1 Cibinong" />
+      <LogoLoop logos={logos} speed={40} direction="left" logoHeight={96} gap={24} hoverSpeed={10} scaleOnHover fadeOut fadeOutColor="#f5f8ff" ariaLabel="Daftar mitra industri SMKN 1 Cibinong" />
     </section>
   );
 }

@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
+import { z } from "zod";
 
 import { posts } from "@/db/schema";
 import { apiError, apiSuccess } from "@/lib/api-response";
@@ -9,6 +10,8 @@ import { routeError } from "@/server/http";
 import { postIdSchema, postInputSchema } from "@/server/validators/posts";
 import { assertPostCategoryScope } from "@/server/repositories/categories";
 import { revalidatePublicResource } from "@/server/cache";
+
+const statusSchema = z.object({ isPublished: z.boolean() });
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -52,6 +55,22 @@ export async function PUT(request: NextRequest, context: Context) {
   }
 }
 
+export async function PATCH(request: NextRequest, context: Context) {
+  try {
+    const id = postIdSchema.parse((await context.params).id);
+    const { session, post } = await findScopedPost(id);
+    if (!session) return apiError({ code: "UNAUTHENTICATED", message: "Silakan masuk terlebih dahulu." }, { status: 401 });
+    if (!post) return apiError({ code: "NOT_FOUND", message: "Post tidak ditemukan." }, { status: 404 });
+    const { isPublished } = statusSchema.parse(await request.json());
+    const { db } = await import("@/db");
+    const [updated] = await db.update(posts).set({ isPublished, publishedAt: isPublished ? (post.publishedAt ?? new Date()) : post.publishedAt, updatedAt: new Date() }).where(eq(posts.id, id)).returning();
+    revalidatePublicResource("posts", post.type);
+    return apiSuccess(updated);
+  } catch (error) {
+    return routeError(error);
+  }
+}
+
 export async function DELETE(_: NextRequest, context: Context) {
   try {
     const id = postIdSchema.parse((await context.params).id);
@@ -59,9 +78,9 @@ export async function DELETE(_: NextRequest, context: Context) {
     if (!session) return apiError({ code: "UNAUTHENTICATED", message: "Silakan masuk terlebih dahulu." }, { status: 401 });
     if (!post) return apiError({ code: "NOT_FOUND", message: "Post tidak ditemukan." }, { status: 404 });
     const { db } = await import("@/db");
-    const [updated] = await db.update(posts).set({ isPublished: false, updatedAt: new Date() }).where(eq(posts.id, id)).returning();
+    await db.delete(posts).where(eq(posts.id, id));
     revalidatePublicResource("posts", post.type);
-    return apiSuccess(updated);
+    return apiSuccess({ id });
   } catch (error) {
     return routeError(error);
   }

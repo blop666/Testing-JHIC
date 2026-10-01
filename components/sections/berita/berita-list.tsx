@@ -3,7 +3,7 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { SearchX } from "lucide-react";
+import { ChevronLeft, ChevronRight, SearchX } from "lucide-react";
 
 import { BeritaCard } from "./berita-card";
 import { BeritaSidebar } from "./berita-sidebar";
@@ -207,6 +207,7 @@ export const BeritaList = memo(function BeritaList({ items, categoryOptions, ini
 
           {totalPages > 1 && (
             <div className="mt-8 flex items-center justify-center gap-2" role="group" aria-label="Pagination daftar berita">
+              <button aria-label="Halaman berita sebelumnya" className="grid size-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-[#1d4f98] hover:text-[#1d4f98] disabled:cursor-not-allowed disabled:opacity-40" disabled={page === 0} onClick={() => { setTransitionDirection(-1); setPage((current) => Math.max(0, current - 1)); }} type="button"><ChevronLeft className="size-4" /></button>
               {Array.from({ length: totalPages }, (_, index) => (
                 <button
                   aria-current={index === page ? "true" : undefined}
@@ -223,6 +224,7 @@ export const BeritaList = memo(function BeritaList({ items, categoryOptions, ini
                   {index === page && <motion.span className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#1d4f98]" layoutId="news-page-dot" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
                 </button>
               ))}
+              <button aria-label="Halaman berita berikutnya" className="grid size-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-[#1d4f98] hover:text-[#1d4f98] disabled:cursor-not-allowed disabled:opacity-40" disabled={page === totalPages - 1} onClick={() => { setTransitionDirection(1); setPage((current) => Math.min(totalPages - 1, current + 1)); }} type="button"><ChevronRight className="size-4" /></button>
             </div>
           )}
         </div>

@@ -6,6 +6,7 @@ const navLinks = [
   { label: "Profil Sekolah", href: "/profil-sekolah" },
   { label: "Program Keahlian", href: "/kompetensi-keahlian" },
   { label: "Berita", href: "/berita" },
+  { label: "Prestasi", href: "/berita/prestasi" },
   { label: "Kontak", href: "/kontak" },
 ];
 
@@ -52,7 +53,7 @@ const socialLinks = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-[#0036ab] text-white">
+    <footer className="relative z-10 bg-[#0036ab] text-white">
       <div className="mx-auto max-w-[1600px] px-6 py-16 md:px-10 md:py-20 lg:px-14">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div>

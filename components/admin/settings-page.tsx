@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BadgeCheck, LoaderCircle, Save, Target } from "lucide-react";
+import { apiErrorMessage } from "@/lib/api-response";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 const settings = { school_vision_mission: { title: "Visi & Misi", icon: Target, description: "Kelola konten visi dan misi halaman Profil Sekolah." }, school_accreditation: { title: "Akreditasi", icon: BadgeCheck, description: "Kelola kartu akreditasi dan standar pendidikan." } } as const;
 type Key = keyof typeof settings;
-async function request(key: string, init?: RequestInit) { const response = await fetch(`/api/settings/${key}`, { ...init, headers: { "Content-Type": "application/json", ...init?.headers } }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.error?.message ?? "Permintaan gagal."); return result.data; }
+async function request(key: string, init?: RequestInit) { const response = await fetch(`/api/settings/${key}`, { ...init, headers: { "Content-Type": "application/json", ...init?.headers } }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(apiErrorMessage(result.error, "Permintaan gagal.")); return result.data; }
 
 async function requestWithRetry(key: string, init?: RequestInit, attempts = 2) { let lastError: unknown; for (let attempt = 1; attempt <= attempts; attempt++) { try { return await request(key, init); } catch (error) { lastError = error; if (attempt < attempts) await new Promise((resolve) => setTimeout(resolve, 500 * attempt)); } } throw lastError; }
 

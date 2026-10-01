@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./logo-loop.css";
 
 export type LogoItem =
@@ -24,6 +26,33 @@ export interface LogoLoopProps {
 }
 
 export default function LogoLoop({ logos, speed = 60, direction = "left", width = "100%", logoHeight = 28, gap = 32, fadeOut = false, fadeOutColor, scaleOnHover = false, renderItem, ariaLabel = "Logo mitra", className, style }: LogoLoopProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLUListElement>(null);
+  const [copies, setCopies] = useState(2);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const measure = measureRef.current;
+    if (!container || !measure || !logos.length) return;
+    const compute = () => {
+      const containerWidth = container.clientWidth;
+      const setWidth = measure.scrollWidth;
+      if (!containerWidth || !setWidth) return;
+      // Each half of the track must exceed the container width so the -50%
+      // loop never shows a gap. Minimum 2 sets per half.
+      const perHalf = Math.max(2, Math.ceil(containerWidth / setWidth) * 2);
+      setCopies(perHalf * 2);
+    };
+    compute();
+    const observer = new ResizeObserver(compute);
+    observer.observe(container);
+    window.addEventListener("resize", compute);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", compute);
+    };
+  }, [logos]);
+
   const renderLogo = (item: LogoItem, key: React.Key) => {
     if (renderItem) return <li className="logoloop__item" key={key}>{renderItem(item, key)}</li>;
     const isNode = "node" in item;
@@ -44,9 +73,12 @@ export default function LogoLoop({ logos, speed = 60, direction = "left", width 
     ...style,
   } as React.CSSProperties;
 
-  return <div className={rootClassName} style={containerStyle} role="region" aria-label={ariaLabel}>
+  return <div ref={containerRef} className={rootClassName} style={containerStyle} role="region" aria-label={ariaLabel}>
     <div className="logoloop__track">
-      {[0, 1].map((copyIndex) => <ul className="logoloop__list" key={copyIndex} aria-hidden={copyIndex > 0}>{logos.map((item, index) => renderLogo(item, `${copyIndex}-${index}`))}</ul>)}
+      {Array.from({ length: copies }, (_, index) => (
+        <ul className="logoloop__list" key={`set-${index}`} aria-hidden={index > 0}>{logos.map((item, itemIndex) => renderLogo(item, `${index}-${itemIndex}`))}</ul>
+      ))}
     </div>
+    <ul ref={measureRef} className="logoloop__list logoloop__measure" aria-hidden>{logos.map((item, index) => renderLogo(item, `measure-${index}`))}</ul>
   </div>;
 }

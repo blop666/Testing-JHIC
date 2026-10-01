@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogoCloud } from "@/components/ui/logo-cloud";
-import { X } from "lucide-react";
+import LogoLoop, { type LogoItem } from "@/components/ui/logo-loop";
+import { Building2, X } from "lucide-react";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -103,21 +103,53 @@ const fallbackPartnerLogos = [
 
 type Partner = { id: number; name: string; logoUrl: string | null; description: string | null; websiteUrl: string | null };
 
+type PartnerLogo = {
+  src: string;
+  alt: string;
+  width: number;
+  name: string;
+  description: string;
+};
+
 export function KerjaSamaIndustriSection({ partners }: { partners: Partner[] }) {
-  const partnerLogos = partners.length ? partners.map((partner) => ({
+  const partnerLogos: PartnerLogo[] = partners.length ? partners.map((partner) => ({
     src: partner.logoUrl ?? "/banner.jpeg",
     alt: partner.name,
     width: 120,
     name: partner.name,
     description: partner.description ?? "",
   })) : fallbackPartnerLogos;
-  const [selectedCompany, setSelectedCompany] = useState<typeof partnerLogos[0] | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<PartnerLogo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleLogoClick = (logo: typeof partnerLogos[0], index: number) => {
+  const handleLogoClick = (logo: PartnerLogo) => {
     setSelectedCompany(logo);
     setIsModalOpen(true);
   };
+
+  const logos: LogoItem[] = partnerLogos.map((logo) => ({
+    node: (
+      <button
+        type="button"
+        onClick={() => handleLogoClick(logo)}
+        className="flex h-24 w-64 shrink-0 items-center gap-4 rounded-2xl border border-white/15 bg-white/10 px-5 text-left shadow-lg backdrop-blur-sm transition-transform hover:scale-105"
+      >
+        <span className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-white/30">
+          {logo.src && logo.src !== "/banner.jpeg" ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logo.src} alt={logo.alt} className="max-h-full max-w-full object-contain" loading="lazy" />
+          ) : (
+            <Building2 className="h-8 w-8 text-[#1b4d96]" />
+          )}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-base font-semibold text-white">{logo.name}</span>
+          <span className="block text-xs font-medium text-white/70">Mitra Industri</span>
+        </span>
+      </button>
+    ),
+    title: logo.name,
+  }));
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -163,7 +195,7 @@ export function KerjaSamaIndustriSection({ partners }: { partners: Partner[] }) 
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          <LogoCloud logos={partnerLogos} onLogoClick={handleLogoClick} />
+          <LogoLoop logos={logos} speed={40} direction="left" logoHeight={96} gap={24} fadeOut fadeOutColor="#1b4d96" ariaLabel="Daftar mitra kerja sama industri" />
         </motion.div>
       </div>
 

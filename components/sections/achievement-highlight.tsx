@@ -36,8 +36,8 @@ export function AchievementHighlight({ achievements }: { achievements?: Achievem
   const [selected, setSelected] = useState<Achievement | null>(null);
   const list = achievements && achievements.length ? achievements : fallbackAchievements;
 
-  const openAchievement = (achievement: Achievement) => {
-    void loadAchievementModal();
+  const openAchievement = async (achievement: Achievement) => {
+    await loadAchievementModal();
     setSelected(achievement);
   };
 
@@ -56,7 +56,7 @@ export function AchievementHighlight({ achievements }: { achievements?: Achievem
             <motion.button
               key={achievement.id}
               type="button"
-              onClick={() => openAchievement(achievement)}
+              onClick={() => void openAchievement(achievement)}
               initial={{ y: 40, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.45, ease: "easeOut", delay: index * 0.06 }}

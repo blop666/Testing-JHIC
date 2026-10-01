@@ -33,7 +33,7 @@ export default function AIChatCard({ className }: { className?: string }) {
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -129,9 +129,9 @@ export default function AIChatCard({ className }: { className?: string }) {
                 {isTyping && <div className="flex w-fit gap-1.5 self-start rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-sm" aria-label="Asisten sedang mengetik">{[0, 1, 2].map((dot) => <motion.span key={dot} className="size-2 rounded-full bg-blue-500" animate={{ y: [0, -4, 0] }} transition={{ duration: 0.7, repeat: Infinity, delay: dot * 0.12 }} />)}</div>}
               </div>
 
-              <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-slate-200 bg-white p-3">
+              <form onSubmit={handleSend} className="flex items-end gap-2 border-t border-slate-200 bg-white p-3">
                 <label htmlFor="ai-chat-input" className="sr-only">Tulis pertanyaan</label>
-                <input ref={inputRef} id="ai-chat-input" value={input} onChange={(event) => setInput(event.target.value)} placeholder="Tanyakan tentang sekolah..." autoComplete="off" className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                <textarea ref={inputRef} id="ai-chat-input" value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder="Tanyakan tentang sekolah..." rows={1} className="min-h-11 min-w-0 flex-1 resize-none overflow-y-auto wrap-break-word rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
                 <button type="submit" disabled={!input.trim() || isTyping} aria-label="Kirim pesan" className="grid size-11 shrink-0 place-content-center rounded-xl bg-blue-700 text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200"><Send className="size-4" /></button>
               </form>
             </motion.section>

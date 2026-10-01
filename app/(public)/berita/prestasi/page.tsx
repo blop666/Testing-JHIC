@@ -12,7 +12,7 @@ function formatDate(value: Date | null) {
 }
 
 export default async function PrestasiPage() {
-  const [posts, jurusan] = await Promise.all([getPublicPosts("prestasi", 50), getPublicJurusan()]);
+  const [posts, jurusan] = await Promise.all([getPublicPosts("prestasi", 50, true), getPublicJurusan()]);
   const achievements = posts.map((post, index) => {
     const description = post.excerpt ?? "Prestasi siswa SMKN 1 Cibinong.";
     return {

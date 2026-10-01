@@ -119,8 +119,8 @@ const InteractiveImageBentoGallery: React.FC<
 
       const singleSetWidth = gridRef.current ? gridRef.current.scrollWidth / 4 : 0
 
-      if (singleSetWidth > 0 && Math.abs(newX) >= singleSetWidth * 3) {
-        x.set(newX + singleSetWidth)
+       if (singleSetWidth > 0 && newX <= -singleSetWidth) {
+         x.set(newX + singleSetWidth)
       } else {
         x.set(newX)
       }
@@ -187,7 +187,7 @@ const InteractiveImageBentoGallery: React.FC<
             if (singleSetWidth > 0) {
               if (currentX > 0) {
                 x.set(0)
-              } else if (Math.abs(currentX) >= singleSetWidth * 3) {
+              } else if (Math.abs(currentX) >= singleSetWidth) {
                 const normalizedPosition = -(Math.abs(currentX) % singleSetWidth)
                 x.set(normalizedPosition)
               }

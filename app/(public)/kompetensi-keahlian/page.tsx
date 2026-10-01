@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { KompetensiSection } from "@/components/sections/kompetensi-section";
 import { FasilitasVokasi } from "@/components/sections/fasilitas-vokasi";
-import { SiteFooter } from "@/components/sections/site-footer";
 import { getPublicFasilitasVokasi } from "@/server/queries/public-content";
 
 const keunggulan = [
@@ -110,7 +109,6 @@ export default async function KompetensiKeahlianPage() {
         </div>
       </section>
 
-      <SiteFooter />
     </main>
   );
 }

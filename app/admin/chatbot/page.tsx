@@ -10,11 +10,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContainer, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/linear-dialog";
 import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "@/components/ui/native-select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { generateSlug } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 
 type ContentType = "berita" | "pengumuman" | "prestasi" | "agenda";
-type ResourceType = "mitra-industri" | "sarana-prasarana" | "guru" | "kategori-konten" | "kategori-guru" | "program-unggulan" | "fasilitas-vokasi";
+type ResourceType = "mitra-industri" | "sarana-prasarana" | "guru" | "kategori-konten" | "kategori-guru" | "program-unggulan" | "fasilitas-vokasi" | "chatbot-knowledge";
 
 type Target = ContentType | ResourceType;
 
@@ -34,6 +44,8 @@ type Draft = {
   warnings: string[];
   missingFields: string[];
   confidence: number;
+  existingId?: number;
+  existingPublished?: boolean;
 };
 
 type ResourceDraft = {
@@ -53,6 +65,8 @@ type ResourceDraft = {
   warnings: string[];
   missingFields: string[];
   confidence: number;
+  existingId?: number;
+  existingPublished?: boolean;
 };
 
 type Message = {
@@ -64,12 +78,15 @@ type Message = {
   resourceDraft?: ResourceDraft;
   publishedId?: number;
   sources?: Array<{ title: string; url: string }>;
+  operation?: { action: "created" | "updated" | "draft" | "published" | "deleted"; label: string; title: string };
 };
 
+type PublishChoice = { messageId: number; draft: Draft };
+
 const contentTypeLabel: Record<ContentType, string> = { berita: "Berita", pengumuman: "Pengumuman", prestasi: "Prestasi", agenda: "Agenda" };
-const resourceTypeLabel: Record<ResourceType, string> = { "mitra-industri": "Mitra Industri", "sarana-prasarana": "Sarana & Prasarana", guru: "Guru & Staff", "kategori-konten": "Kategori Konten", "kategori-guru": "Kategori Guru", "program-unggulan": "Program Unggulan", "fasilitas-vokasi": "Fasilitas Praktik Vokasi" };
+const resourceTypeLabel: Record<ResourceType, string> = { "mitra-industri": "Mitra Industri", "sarana-prasarana": "Sarana & Prasarana", guru: "Guru & Staff", "kategori-konten": "Kategori Konten", "kategori-guru": "Kategori Guru", "program-unggulan": "Program Unggulan", "fasilitas-vokasi": "Fasilitas Praktik Vokasi", "chatbot-knowledge": "Knowledge Chatbot" };
 const contentTypes: ContentType[] = ["berita", "pengumuman", "prestasi", "agenda"];
-const resourceTypes: ResourceType[] = ["mitra-industri", "sarana-prasarana", "guru", "kategori-konten", "kategori-guru", "program-unggulan", "fasilitas-vokasi"];
+const resourceTypes: ResourceType[] = ["mitra-industri", "sarana-prasarana", "guru", "kategori-konten", "kategori-guru", "program-unggulan", "fasilitas-vokasi", "chatbot-knowledge"];
 
 function isResourceType(target: Target): target is ResourceType {
   return resourceTypes.includes(target as ResourceType);
@@ -106,13 +123,21 @@ export default function AdminChatbotPage() {
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [sourceUrl, setSourceUrl] = useState("");
   const [sourceUrls, setSourceUrls] = useState<string[]>([]);
+  const [pendingSourceUrl, setPendingSourceUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [selectedDraft, setSelectedDraft] = useState<Draft | null>(null);
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [editingField, setEditingField] = useState<"title" | "excerpt" | "body" | null>(null);
   const [editValue, setEditValue] = useState("");
   const [pendingEdit, setPendingEdit] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [publishChoice, setPublishChoice] = useState<PublishChoice | null>(null);
+  const [publishHighlight, setPublishHighlight] = useState(false);
+  const [publishPopular, setPublishPopular] = useState(false);
+  const [existingAction, setExistingAction] = useState<{ draft: Draft; action: "update" | "draft" | "delete" } | null>(null);
+  const [resourceAction, setResourceAction] = useState<{ draft: ResourceDraft; action: "update" | "draft" | "publish" | "delete" } | null>(null);
+  const [resourceSave, setResourceSave] = useState<{ messageId: number; draft: ResourceDraft; publish: boolean } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const urlRef = useRef<HTMLInputElement>(null);
@@ -126,14 +151,49 @@ export default function AdminChatbotPage() {
   }
 
   async function generateContent(prompt: string, baseDraft?: Draft): Promise<{ chat: true; answer: string } | { chat: false; draft: Draft; sources: Array<{ title: string; url: string }> }> {
-    const payload: Record<string, unknown> = { prompt, mode: baseDraft ? "edit" : "create", sourceUrls };
+    const payload: Record<string, unknown> = { prompt, contentType: target as ContentType, mode: baseDraft ? "edit" : "create", sourceUrls };
     if (attachedImage) payload.imageUrl = attachedImage;
     if (baseDraft) payload.baseDraft = baseDraft;
     const data = await request("/api/ai/content/generate", { method: "POST", body: JSON.stringify(payload) });
     if (data.kind === "chat") return { chat: true, answer: data.answer as string };
-    const draft = data.draft as Draft;
+    const draft = { ...(data.draft as Draft), ...(baseDraft?.existingId ? { existingId: baseDraft.existingId, existingPublished: baseDraft.existingPublished, slug: (baseDraft as Draft & { slug?: string }).slug, imageUrl: (baseDraft as Draft & { imageUrl?: string | null }).imageUrl, isHighlighted: (baseDraft as Draft & { isHighlighted?: boolean }).isHighlighted, isPopularOverride: (baseDraft as Draft & { isPopularOverride?: boolean }).isPopularOverride } : {}) } as Draft;
     setCurrentDraft(draft);
     return { chat: false, draft, sources: (data.sources ?? []) as Array<{ title: string; url: string }> };
+  }
+
+  function requestedPostTitle(prompt: string) {
+    const quoted = prompt.match(/[“"']([^”"']+)[”"']/);
+    if (quoted) return quoted[1].trim();
+    return prompt.replace(/^(tolong\s+)?(edit|ubah|hapus|delete)\s+/i, "").replace(/^(berita|pengumuman|prestasi|agenda)\s+(ini\s+)?/i, "").replace(/^(supaya|agar|menjadi|diubah menjadi|judulnya?)\s*[:,-]?\s*/i, "").trim();
+  }
+
+  async function findExistingNews(prompt: string, contentType: ContentType) {
+    const q = requestedPostTitle(prompt);
+    const result = await request(`/api/ai/admin/posts?q=${encodeURIComponent(q)}&type=${contentType}`) as Array<Record<string, unknown>>;
+    if (result.length !== 1) return null;
+    const post = result[0];
+    return {
+      id: Number(post.id), contentType, title: String(post.title), excerpt: String(post.excerpt ?? ""), body: String(post.body ?? ""),
+      eventDate: post.eventDate ? String(post.eventDate) : null, eventEndDate: post.eventEndDate ? String(post.eventEndDate) : null, eventLocation: post.eventLocation ? String(post.eventLocation) : null,
+      categoryHint: null, jurusanHint: null, imageDescription: null, needsImage: false, sourceUrls: [], warnings: [], missingFields: [], confidence: 1,
+      existingId: Number(post.id), existingPublished: Boolean(post.isPublished), imageUrl: post.imageUrl ? String(post.imageUrl) : null,
+      isHighlighted: Boolean(post.isHighlighted), isPopularOverride: Boolean(post.isPopularOverride), slug: String(post.slug),
+    } as Draft & Record<string, unknown>;
+  }
+
+  async function saveExisting(draft: Draft, action: "update" | "draft" | "delete") {
+    if (!draft.existingId) return;
+    if (saving) return;
+    setSaving(true);
+    try {
+      await request("/api/ai/admin/posts", { method: "POST", body: JSON.stringify({ action, id: draft.existingId, data: action === "delete" ? undefined : { title: draft.title, slug: (draft as Draft & { slug?: string }).slug ?? generateSlug(draft.title), excerpt: draft.excerpt || null, body: draft.body || null, imageUrl: (draft as Draft & { imageUrl?: string | null }).imageUrl ?? null, eventDate: draft.eventDate, eventEndDate: draft.eventEndDate, eventLocation: draft.eventLocation, isHighlighted: Boolean((draft as Draft & { isHighlighted?: boolean }).isHighlighted), isPopularOverride: Boolean((draft as Draft & { isPopularOverride?: boolean }).isPopularOverride) } }) });
+      const label = contentTypeLabel[draft.contentType];
+      addMessage({ sender: "ai", text: `${label} berhasil diproses.`, operation: { action: action === "delete" ? "deleted" : action === "draft" ? "draft" : "updated", label, title: draft.title } });
+    } catch (error) {
+      addMessage({ sender: "ai", text: error instanceof Error ? error.message : "Gagal memproses." });
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function generateResource(prompt: string, resourceType: ResourceType, baseDraft?: ResourceDraft): Promise<{ chat: true; answer: string } | { chat: false; draft: ResourceDraft }> {
@@ -142,9 +202,57 @@ export default function AdminChatbotPage() {
     if (baseDraft) payload.baseDraft = baseDraft;
     const data = await request("/api/ai/resource/generate", { method: "POST", body: JSON.stringify(payload) });
     if (data.kind === "chat") return { chat: true, answer: data.answer as string };
-    const draft = data.draft as ResourceDraft;
+    const draft = { ...(data.draft as ResourceDraft), ...(baseDraft?.existingId ? { existingId: baseDraft.existingId, existingPublished: baseDraft.existingPublished } : {}) };
     setCurrentResource(draft);
     return { chat: false, draft };
+  }
+
+  function resourceSearchTerm(prompt: string) {
+    const quoted = prompt.match(/[“"']([^”"']+)[”"']/);
+    if (quoted) return quoted[1].trim();
+    return prompt.replace(/^(tolong\s+)?(edit|ubah|hapus|delete|publikasikan|terbitkan)\s+/i, "").replace(/^(data|item|yang|praktik vokasi|fasilitas praktik vokasi)\s+/i, "").trim();
+  }
+
+  async function findExistingResource(prompt: string, resourceType: ResourceType) {
+    const rows = await request(`/api/ai/admin/resources?resourceType=${encodeURIComponent(resourceType)}&q=${encodeURIComponent(resourceSearchTerm(prompt))}`) as Array<Record<string, unknown>>;
+    const normalized = resourceSearchTerm(prompt).toLowerCase();
+    const exact = rows.filter((row) => String(row.name ?? row.title ?? row.contentText ?? "").toLowerCase().includes(normalized));
+    if (exact.length !== 1 && rows.length !== 1) return null;
+    const row = (exact.length === 1 ? exact : rows)[0];
+    return {
+      resourceType, existingId: Number(row.id), existingPublished: Boolean(row.isPublished),
+      name: String(row.name ?? row.title ?? row.contentText ?? ""), description: row.description == null ? (row.contentText == null ? null : String(row.contentText)) : String(row.description),
+      imageUrl: row.imageUrl == null ? (row.logoUrl == null ? null : String(row.logoUrl)) : String(row.imageUrl), websiteUrl: row.websiteUrl == null ? null : String(row.websiteUrl),
+      position: row.position == null ? null : String(row.position), bio: row.bio == null ? null : String(row.bio), slug: row.slug == null ? null : String(row.slug),
+      label: row.label == null ? null : String(row.label), tefaName: row.tefaName == null ? null : String(row.tefaName), presentationSlot: (row.presentationSlot as ResourceDraft["presentationSlot"]) ?? null,
+      jurusanHint: null, categoryHint: null, warnings: [], missingFields: [], confidence: 1,
+    } satisfies ResourceDraft;
+  }
+
+  function resourcePayload(draft: ResourceDraft) {
+    const type = draft.resourceType;
+    if (type === "mitra-industri") return { name: draft.name, logoUrl: draft.imageUrl, description: draft.description, websiteUrl: draft.websiteUrl, sortOrder: 0 };
+    if (type === "sarana-prasarana") return { title: draft.name, description: draft.description, imageUrl: draft.imageUrl, presentationSlot: draft.presentationSlot ?? "standard", sortOrder: 0 };
+    if (type === "guru") return { name: draft.name, position: draft.position, bio: draft.bio, imageUrl: draft.imageUrl, sortOrder: 0 };
+    if (type === "program-unggulan") return { title: draft.name, description: draft.description ?? "", label: draft.label ?? draft.name, imageUrl: draft.imageUrl, sortOrder: 0 };
+    if (type === "fasilitas-vokasi") return { title: draft.name, description: draft.description, imageUrl: draft.imageUrl, tefaName: draft.tefaName, sortOrder: 0 };
+    if (type === "chatbot-knowledge") return { title: draft.name, contentText: draft.description ?? "", isActive: true, isPublished: true, sourceUrl: draft.websiteUrl };
+    return { name: draft.name, slug: draft.slug ?? generateSlug(draft.name), description: draft.description, sortOrder: 0 };
+  }
+
+  async function saveExistingResource(draft: ResourceDraft, action: "update" | "draft" | "publish" | "delete") {
+    if (!draft.existingId) return;
+    if (saving) return;
+    setSaving(true);
+    try {
+      await request("/api/ai/admin/resources", { method: "POST", body: JSON.stringify({ resourceType: draft.resourceType, action, id: draft.existingId, confirm: true, data: action === "delete" ? undefined : resourcePayload(draft) }) });
+      const label = resourceTypeLabel[draft.resourceType];
+      addMessage({ sender: "ai", text: `${label} berhasil diproses.`, operation: { action: action === "delete" ? "deleted" : action === "draft" ? "draft" : action === "publish" ? "published" : "updated", label, title: draft.name } });
+    } catch (error) {
+      addMessage({ sender: "ai", text: error instanceof Error ? error.message : "Gagal memproses." });
+    } finally {
+      setSaving(false);
+    }
   }
 
   function startNewSession() {
@@ -176,6 +284,15 @@ export default function AdminChatbotPage() {
 
     try {
       if (isResourceType(target)) {
+        if (!pendingEdit && /\b(edit|ubah|hapus|delete|publikasikan|terbitkan)\b/i.test(text)) {
+          const existing = await findExistingResource(text, target);
+          if (!existing) { addMessage({ sender: "ai", text: "Data tidak ditemukan atau hasil pencarian lebih dari satu. Sertakan nama lengkap." }); return; }
+          setCurrentResource(existing);
+          setPendingEdit(!/\b(hapus|delete|publikasikan|terbitkan)\b/i.test(text));
+          addMessage({ sender: "ai", text: /\b(hapus|delete)\b/i.test(text) ? `Saya menemukan ${resourceTypeLabel[target]} ini. Periksa preview sebelum menghapus.` : `Saya menemukan ${resourceTypeLabel[target]} ini. Periksa preview, lalu jelaskan perubahan jika diperlukan.` });
+          addMessage({ sender: "ai", resourceDraft: existing });
+          return;
+        }
         const base = pendingEdit ? currentResource ?? undefined : undefined;
         const result = await generateResource(text, target, base);
         setPendingEdit(false);
@@ -190,6 +307,15 @@ export default function AdminChatbotPage() {
         else addMessage({ sender: "ai", text: `Saya telah menyusun data **${resourceTypeLabel[target]}** dengan keyakinan ${Math.round(draft.confidence * 100)}%.` });
         addMessage({ sender: "ai", resourceDraft: draft });
       } else {
+        if (!pendingEdit && /\b(edit|ubah|hapus|delete)\b/i.test(text)) {
+          const existing = await findExistingNews(text, target);
+          if (!existing) { addMessage({ sender: "ai", text: `${contentTypeLabel[target]} yang dimaksud tidak ditemukan atau hasilnya lebih dari satu. Sertakan judul lengkap.` }); return; }
+          setCurrentDraft(existing);
+          setPendingEdit(!/\b(hapus|delete)\b/i.test(text));
+          addMessage({ sender: "ai", text: /\b(hapus|delete)\b/i.test(text) ? `Saya menemukan ${contentTypeLabel[target]} ini. Periksa preview sebelum menghapus.` : `Saya menemukan ${contentTypeLabel[target]} ini. Jelaskan perubahan yang ingin dilakukan setelah memeriksa preview.` });
+          addMessage({ sender: "ai", draft: existing });
+          return;
+        }
         const base = pendingEdit ? currentDraft ?? undefined : undefined;
         const result = await generateContent(text, base);
         setPendingEdit(false);
@@ -217,6 +343,7 @@ export default function AdminChatbotPage() {
     try {
       const body = new FormData();
       body.set("file", file);
+      body.set("category", "chatbot");
       const result = await request("/api/uploads", { method: "POST", body });
       setAttachedImage(result.url);
     } catch (error) {
@@ -229,20 +356,35 @@ export default function AdminChatbotPage() {
   function addSourceUrl() {
     const url = sourceUrl.trim();
     if (!url) return;
-    try { new URL(url); } catch { addMessage({ sender: "ai", text: "URL sumber tidak valid." }); return; }
-    if (!sourceUrls.includes(url)) setSourceUrls((current) => [...current, url]);
+    let parsed: URL;
+    try { parsed = new URL(url); } catch { addMessage({ sender: "ai", text: "URL sumber tidak valid. Pastikan memakai format lengkap, contoh https://sekolah.sch.id/artikel." }); return; }
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") { addMessage({ sender: "ai", text: "URL harus memakai protokol http atau https." }); return; }
+    if (sourceUrls.includes(url)) { addMessage({ sender: "ai", text: "URL ini sudah ditambahkan." }); return; }
+    setPendingSourceUrl(url);
+  }
+
+  function confirmSourceUrl() {
+    if (!pendingSourceUrl) return;
+    setSourceUrls((current) => [...current, pendingSourceUrl]);
+    setPendingSourceUrl(null);
     setSourceUrl("");
+  }
+
+  function cancelSourceUrl() {
+    setPendingSourceUrl(null);
   }
 
   function removeSourceUrl(url: string) {
     setSourceUrls((current) => current.filter((item) => item !== url));
   }
 
-  async function publishDraft(messageId: number, draft: Draft) {
+  async function publishDraft(messageId: number, draft: Draft, isHighlighted: boolean, isPopularOverride: boolean) {
     if (draft.contentType === "agenda" && !draft.eventDate) {
       addMessage({ sender: "ai", text: "Konten agenda belum bisa diterbitkan karena tanggal belum diisi." });
       return;
     }
+    if (saving) return;
+    setSaving(true);
     try {
       await request("/api/posts", {
         method: "POST",
@@ -260,14 +402,16 @@ export default function AdminChatbotPage() {
           isPublished: true,
           publishedAt: new Date().toISOString(),
           isFeatured: false,
-          isHighlighted: false,
-          isPopularOverride: false,
+           isHighlighted,
+           isPopularOverride,
         }),
       });
       setMessages((current) => current.map((m) => (m.id === messageId ? { ...m, publishedId: 1 } : m)));
-      addMessage({ sender: "ai", text: `Konten “${draft.title}” berhasil diterbitkan.` });
+      addMessage({ sender: "ai", text: `${contentTypeLabel[draft.contentType]} berhasil diterbitkan.`, operation: { action: "published", label: contentTypeLabel[draft.contentType], title: draft.title } });
     } catch (error) {
       addMessage({ sender: "ai", text: error instanceof Error ? error.message : "Konten gagal diterbitkan." });
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -276,6 +420,8 @@ export default function AdminChatbotPage() {
     const image = attachedImage ?? draft.imageUrl;
     let endpoint = "";
     let payload: Record<string, unknown>;
+    if (saving) return;
+    setSaving(true);
     try {
       if (type === "mitra-industri") {
         endpoint = "/api/kerjasama-industri";
@@ -292,6 +438,9 @@ export default function AdminChatbotPage() {
       } else if (type === "fasilitas-vokasi") {
         endpoint = "/api/fasilitas-vokasi";
         payload = { title: draft.name, description: draft.description, imageUrl: image, tefaName: draft.tefaName, isPublished: publish, sortOrder: 0 };
+      } else if (type === "chatbot-knowledge") {
+        endpoint = "/api/chatbot-knowledge";
+        payload = { title: draft.name, contentText: draft.description ?? "", sourceUrl: draft.websiteUrl, isActive: true, isPublished: publish };
       } else {
         endpoint = type === "kategori-konten" ? "/api/post-categories" : "/api/guru-categories";
         const slug = draft.slug ?? generateSlug(draft.name);
@@ -299,9 +448,11 @@ export default function AdminChatbotPage() {
       }
       await request(endpoint, { method: "POST", body: JSON.stringify(payload) });
       setMessages((current) => current.map((m) => (m.id === messageId ? { ...m, publishedId: 1 } : m)));
-      addMessage({ sender: "ai", text: `Data “${draft.name}” berhasil ${publish ? "disimpan & dipublikasikan" : "disimpan sebagai draft"}.` });
+      addMessage({ sender: "ai", text: `${resourceTypeLabel[draft.resourceType]} berhasil ${publish ? "disimpan dan dipublikasikan" : "disimpan sebagai draft"}.`, operation: { action: publish ? "published" : "draft", label: resourceTypeLabel[draft.resourceType], title: draft.name } });
     } catch (error) {
       addMessage({ sender: "ai", text: error instanceof Error ? error.message : "Data gagal disimpan." });
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -364,7 +515,12 @@ export default function AdminChatbotPage() {
                   <div className="flex w-fit gap-1.5 rounded-2xl rounded-tl-sm bg-white px-5 py-3 shadow-sm">
                     {[0, 1, 2].map((dot) => <motion.span key={dot} className="size-2 rounded-full bg-blue-500" animate={{ y: [0, -4, 0] }} transition={{ duration: 0.7, repeat: Infinity, delay: dot * 0.12 }} />)}
                   </div>
-                ) : message.text ? (
+                 ) : message.operation ? (
+                   <div className="flex w-full min-w-[280px] items-start gap-3 rounded-2xl rounded-tl-sm border border-emerald-200 bg-linear-to-br from-emerald-50 to-white px-4 py-3 text-sm text-emerald-950 shadow-sm">
+                     <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white"><Check className="size-4" /></span>
+                     <div><p className="font-semibold">{message.operation.action === "deleted" ? "Data berhasil dihapus" : message.operation.action === "draft" ? "Draft berhasil disimpan" : message.operation.action === "published" ? "Berhasil dipublikasikan" : "Perubahan berhasil disimpan"}</p><p className="mt-1 text-emerald-800">{message.operation.label}: <span className="font-medium">{message.operation.title}</span></p></div>
+                   </div>
+                 ) : message.text ? (
                   <div className={cn("whitespace-pre-line rounded-2xl px-5 py-3 text-sm leading-relaxed shadow-sm", message.sender === "ai" ? "rounded-tl-sm bg-white text-slate-700" : "rounded-tr-sm bg-blue-700 text-white")} dangerouslySetInnerHTML={{ __html: message.text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") }} />
                 ) : null}
 
@@ -401,7 +557,12 @@ export default function AdminChatbotPage() {
                         <Button size="sm" variant="outline" onClick={() => startEdit(message.draft!, "excerpt")}><Pencil className="size-4" />Edit ringkasan</Button>
                         {message.draft.contentType !== "prestasi" && <Button size="sm" variant="outline" onClick={() => startEdit(message.draft!, "body")}><Pencil className="size-4" />Edit isi</Button>}
                         <Button size="sm" variant="outline" onClick={() => { setCurrentDraft(message.draft!); setTarget(message.draft!.contentType); setPendingEdit(true); }}><Bot className="size-4" />Edit via AI</Button>
-                        <Button size="sm" className="ml-auto bg-blue-700 hover:bg-blue-600" onClick={() => void publishDraft(message.id, message.draft!)}><Check className="size-4" />Publikasikan</Button>
+                        {message.draft.existingId && <>
+                          <Button size="sm" variant="outline" onClick={() => setExistingAction({ draft: message.draft!, action: "draft" })}><FileText className="size-4" />Simpan draft</Button>
+                          <Button size="sm" className="bg-blue-700 hover:bg-blue-600" onClick={() => setExistingAction({ draft: message.draft!, action: "update" })}><Check className="size-4" />Simpan perubahan</Button>
+                           <Button size="sm" variant="destructive" onClick={() => setExistingAction({ draft: message.draft!, action: "delete" })}>Hapus {contentTypeLabel[message.draft.contentType]}</Button>
+                        </>}
+                        <Button size="sm" className="ml-auto bg-blue-700 hover:bg-blue-600" onClick={() => { setPublishChoice({ messageId: message.id, draft: message.draft! }); setPublishHighlight(false); setPublishPopular(false); }}><Check className="size-4" />Publikasikan</Button>
                       </div>
                     )}
                     {message.publishedId && <Alert className="mt-4 border-emerald-200 bg-emerald-50 text-emerald-800"><Check className="size-4" /><AlertDescription>Konten berhasil diterbitkan.</AlertDescription></Alert>}
@@ -422,8 +583,14 @@ export default function AdminChatbotPage() {
                     {!message.publishedId && (
                       <div className="mt-5 flex flex-wrap gap-2">
                         <Button size="sm" variant="outline" onClick={() => { setCurrentResource(message.resourceDraft!); setTarget(message.resourceDraft!.resourceType); setPendingEdit(true); }}><Bot className="size-4" />Edit via AI</Button>
-                        <Button size="sm" variant="outline" onClick={() => void saveResource(message.id, message.resourceDraft!, false)}><FileText className="size-4" />Simpan draft</Button>
-                        <Button size="sm" className="ml-auto bg-blue-700 hover:bg-blue-600" onClick={() => void saveResource(message.id, message.resourceDraft!, true)}><Check className="size-4" />Simpan & publikasikan</Button>
+                         {message.resourceDraft.existingId ? <>
+                           <Button size="sm" variant="outline" onClick={() => setResourceAction({ draft: message.resourceDraft!, action: "draft" })}><FileText className="size-4" />Simpan draft</Button>
+                           <Button size="sm" className="bg-blue-700 hover:bg-blue-600" onClick={() => setResourceAction({ draft: message.resourceDraft!, action: "publish" })}><Check className="size-4" />Simpan perubahan</Button>
+                           <Button size="sm" variant="destructive" onClick={() => setResourceAction({ draft: message.resourceDraft!, action: "delete" })}>Hapus</Button>
+                         </> : <>
+                           <Button size="sm" variant="outline" onClick={() => setResourceSave({ messageId: message.id, draft: message.resourceDraft!, publish: false })}><FileText className="size-4" />Simpan draft</Button>
+                           <Button size="sm" className="ml-auto bg-blue-700 hover:bg-blue-600" onClick={() => setResourceSave({ messageId: message.id, draft: message.resourceDraft!, publish: true })}><Check className="size-4" />Simpan & publikasikan</Button>
+                         </>}
                       </div>
                     )}
                     {message.publishedId && <Alert className="mt-4 border-emerald-200 bg-emerald-50 text-emerald-800"><Check className="size-4" /><AlertDescription>Data berhasil disimpan.</AlertDescription></Alert>}
@@ -468,11 +635,79 @@ export default function AdminChatbotPage() {
             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadImage(file); e.target.value = ""; }} />
           </div>
           <form onSubmit={handleSend} className="flex gap-3">
-            <input ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder={pendingEdit ? "Jelaskan perubahan yang diinginkan..." : isPendingClarification ? "Jawab pertanyaan AI untuk melengkapi data..." : "Tulis instruksi untuk membuat data baru..."} disabled={isProcessing} className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-50" />
+             <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); e.currentTarget.form?.requestSubmit(); } }} placeholder={pendingEdit ? "Jelaskan perubahan yang diinginkan..." : isPendingClarification ? "Jawab pertanyaan AI untuk melengkapi data..." : "Tulis instruksi untuk membuat data baru..."} rows={1} disabled={isProcessing} className="min-h-11 min-w-0 flex-1 resize-none overflow-y-auto wrap-break-word rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-50" />
             <Button type="submit" disabled={!input.trim() || isProcessing} className="bg-blue-700 hover:bg-blue-600">{isProcessing ? <LoaderCircle className="size-4 animate-spin" /> : <Send className="size-4" />}Kirim</Button>
           </form>
         </div>
       </div>
+
+      <AlertDialog open={pendingSourceUrl !== null} onOpenChange={(open) => { if (!open) cancelSourceUrl(); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Gunakan URL ini sebagai sumber?</AlertDialogTitle>
+            <AlertDialogDescription>
+              AI akan mengambil isi artikel dari <span className="break-all font-semibold text-foreground">{pendingSourceUrl}</span>. URL sudah lolos validasi format. Pastikan kontennya relevan; sumber tetap dapat diedit secara manual.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction className="bg-blue-700 hover:bg-blue-600" onClick={confirmSourceUrl}>Ya, gunakan URL</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={publishChoice !== null} onOpenChange={(open) => { if (!open && !saving) setPublishChoice(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Atur tampilan konten</AlertDialogTitle>
+            <AlertDialogDescription>Pilih apakah konten ini ditampilkan pada banner highlight dan tab Populer.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3 py-2">
+            <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 p-4">
+              <span><span className="block text-sm font-semibold text-slate-900">Tampilkan di banner highlight berita</span><span className="text-xs text-slate-500">Urutan mengikuti tanggal terbit terbaru.</span></span>
+              <input checked={publishHighlight} onChange={(event) => setPublishHighlight(event.target.checked)} type="checkbox" disabled={saving} />
+            </label>
+            <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 p-4">
+              <span><span className="block text-sm font-semibold text-slate-900">Tandai sebagai populer</span><span className="text-xs text-slate-500">Prioritaskan pada tab Populer.</span></span>
+              <input checked={publishPopular} onChange={(event) => setPublishPopular(event.target.checked)} type="checkbox" disabled={saving} />
+            </label>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Batal</AlertDialogCancel>
+            <AlertDialogAction disabled={saving} onClick={async () => { if (publishChoice) await publishDraft(publishChoice.messageId, publishChoice.draft, publishHighlight, publishPopular); setPublishChoice(null); }}>{saving ? <LoaderCircle className="size-4 animate-spin" /> : null}Terbitkan konten</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={existingAction !== null} onOpenChange={(open) => { if (!open && !saving) setExistingAction(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{existingAction?.action === "delete" ? `Hapus ${existingAction ? contentTypeLabel[existingAction.draft.contentType] : "konten"} ini?` : existingAction?.action === "draft" ? "Simpan sebagai draft?" : "Simpan perubahan konten?"}</AlertDialogTitle>
+            <AlertDialogDescription>{existingAction?.action === "delete" ? `${existingAction ? contentTypeLabel[existingAction.draft.contentType] : "Konten"} terkait akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.` : `Perubahan pada “${existingAction?.draft.title ?? "konten"}” akan disimpan.`}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Batal</AlertDialogCancel>
+            <AlertDialogAction disabled={saving} onClick={async () => { if (existingAction) await saveExisting(existingAction.draft, existingAction.action); setExistingAction(null); }} className={existingAction?.action === "delete" ? "bg-red-600 hover:bg-red-700" : undefined}>{saving ? <LoaderCircle className="size-4 animate-spin" /> : null}{existingAction?.action === "delete" ? "Hapus permanen" : "Konfirmasi"}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={resourceAction !== null} onOpenChange={(open) => { if (!open && !saving) setResourceAction(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{resourceAction?.action === "delete" ? `Hapus ${resourceAction ? resourceTypeLabel[resourceAction.draft.resourceType] : "data"} ini?` : "Konfirmasi perubahan data"}</AlertDialogTitle>
+            <AlertDialogDescription>{resourceAction?.action === "delete" ? `“${resourceAction.draft.name}” akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.` : `Perubahan pada “${resourceAction?.draft.name ?? "data"}” akan disimpan.`}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel disabled={saving}>Batal</AlertDialogCancel><AlertDialogAction disabled={saving} className={resourceAction?.action === "delete" ? "bg-red-600 hover:bg-red-700" : undefined} onClick={async () => { if (resourceAction) await saveExistingResource(resourceAction.draft, resourceAction.action); setResourceAction(null); }}>{saving ? <LoaderCircle className="size-4 animate-spin" /> : null}{resourceAction?.action === "delete" ? "Hapus permanen" : "Ya, simpan"}</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={resourceSave !== null} onOpenChange={(open) => { if (!open && !saving) setResourceSave(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader><AlertDialogTitle>Konfirmasi penyimpanan</AlertDialogTitle><AlertDialogDescription>Data “{resourceSave?.draft.name}” akan {resourceSave?.publish ? "dipublikasikan" : "disimpan sebagai draft"}.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel disabled={saving}>Batal</AlertDialogCancel><AlertDialogAction disabled={saving} onClick={async () => { if (resourceSave) await saveResource(resourceSave.messageId, resourceSave.draft, resourceSave.publish); setResourceSave(null); }}>{saving ? <LoaderCircle className="size-4 animate-spin" /> : null}Konfirmasi</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={Boolean(selectedDraft)} onOpenChange={(open) => { if (!open) setSelectedDraft(null); }}>
         <DialogContainer>

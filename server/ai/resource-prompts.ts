@@ -8,6 +8,7 @@ Anda mengisi satu dari tujuh jenis data berikut sesuai "resourceType" yang diber
 - "kategori-guru": kategori guru (field: name, slug).
 - "program-unggulan": program unggulan sekolah di halaman utama (field: name, description, label singkat, imageUrl).
 - "fasilitas-vokasi": fasilitas praktik vokasi / Teaching Factory (TEFA) per jurusan (field: name, description, imageUrl, tefaName, jurusanHint).
+- "chatbot-knowledge": sumber pengetahuan chatbot (field: name sebagai judul, description sebagai isi fakta, websiteUrl sebagai URL sumber).
 
 Aturan wajib:
 - Tulis data hanya berdasarkan fakta yang diberikan admin. Jangan mengarang nama, nomor telepon, email, URL, jabatan, atau prestasi.

@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
+import { z } from "zod";
 
 import { programUnggulan } from "@/db/schema";
 import { apiError, apiSuccess } from "@/lib/api-response";
@@ -8,6 +9,8 @@ import { getSession } from "@/server/auth/session";
 import { routeError } from "@/server/http";
 import { revalidatePublicResource } from "@/server/cache";
 import { idSchema, programUnggulanInputSchema } from "@/server/validators/content";
+
+const statusSchema = z.object({ isPublished: z.boolean() });
 
 type Context = { params: Promise<{ id: string }> };
 async function adminRecord(id: number) {
@@ -26,6 +29,9 @@ export async function GET(_: NextRequest, context: Context) {
 export async function PUT(request: NextRequest, context: Context) {
   try { const id = idSchema.parse((await context.params).id); const { session, record } = await adminRecord(id); if (!session) return apiError({ code: "UNAUTHENTICATED", message: "Silakan masuk terlebih dahulu." }, { status: 401 }); if (!record) return apiError({ code: "NOT_FOUND", message: "Program tidak ditemukan." }, { status: 404 }); const input = programUnggulanInputSchema.parse(await request.json()); const { db } = await import("@/db"); const [updated] = await db.update(programUnggulan).set({ ...input, jurusanId: record.jurusanId, updatedAt: new Date() }).where(eq(programUnggulan.id, id)).returning(); revalidatePublicResource("programs"); return apiSuccess(updated); } catch (error) { return routeError(error); }
 }
+export async function PATCH(request: NextRequest, context: Context) {
+  try { const id = idSchema.parse((await context.params).id); const { session, record } = await adminRecord(id); if (!session) return apiError({ code: "UNAUTHENTICATED", message: "Silakan masuk terlebih dahulu." }, { status: 401 }); if (!record) return apiError({ code: "NOT_FOUND", message: "Program tidak ditemukan." }, { status: 404 }); const { isPublished } = statusSchema.parse(await request.json()); const { db } = await import("@/db"); const [updated] = await db.update(programUnggulan).set({ isPublished, updatedAt: new Date() }).where(eq(programUnggulan.id, id)).returning(); revalidatePublicResource("programs"); return apiSuccess(updated); } catch (error) { return routeError(error); }
+}
 export async function DELETE(_: NextRequest, context: Context) {
-  try { const id = idSchema.parse((await context.params).id); const { session, record } = await adminRecord(id); if (!session) return apiError({ code: "UNAUTHENTICATED", message: "Silakan masuk terlebih dahulu." }, { status: 401 }); if (!record) return apiError({ code: "NOT_FOUND", message: "Program tidak ditemukan." }, { status: 404 }); const { db } = await import("@/db"); const [updated] = await db.update(programUnggulan).set({ isPublished: false, updatedAt: new Date() }).where(eq(programUnggulan.id, id)).returning(); revalidatePublicResource("programs"); return apiSuccess(updated); } catch (error) { return routeError(error); }
+  try { const id = idSchema.parse((await context.params).id); const { session, record } = await adminRecord(id); if (!session) return apiError({ code: "UNAUTHENTICATED", message: "Silakan masuk terlebih dahulu." }, { status: 401 }); if (!record) return apiError({ code: "NOT_FOUND", message: "Program tidak ditemukan." }, { status: 404 }); const { db } = await import("@/db"); await db.delete(programUnggulan).where(eq(programUnggulan.id, id)); revalidatePublicResource("programs"); return apiSuccess({ id }); } catch (error) { return routeError(error); }
 }

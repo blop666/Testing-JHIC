@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Plus, Pencil, RefreshCw, SearchX } from "lucide-react";
+import { apiErrorMessage } from "@/lib/api-response";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -34,7 +36,7 @@ export function CategoryPage({ resource, title, description }: { resource: "post
       if (status) params.set("status", status);
       const res = await fetch(`/api/${resource}?${params}`);
       const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error?.message ?? "Data tidak dapat dimuat.");
+      if (!res.ok || !data.success) throw new Error(apiErrorMessage(data.error, "Data tidak dapat dimuat."));
       setItems(data.data);
       setTotal(data.meta?.total ?? 0);
       setPage(targetPage);
@@ -56,9 +58,10 @@ export function CategoryPage({ resource, title, description }: { resource: "post
   async function save() {
     const response = await fetch(editing ? `/api/${resource}/${editing.id}` : `/api/${resource}`, { method: editing ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
     const result = await response.json();
-    if (!response.ok || !result.success) return setError(result.error?.message ?? "Perubahan gagal.");
+    if (!response.ok || !result.success) return setError(apiErrorMessage(result.error, "Perubahan gagal."));
     setOpen(false);
     await load(page);
+    toast.success(editing ? "Kategori diperbarui." : "Kategori berhasil dibuat.");
   }
 
   return (
@@ -69,7 +72,7 @@ export function CategoryPage({ resource, title, description }: { resource: "post
           <h1 className="text-2xl font-bold">{title}</h1>
           <p className="mt-2 text-sm text-slate-500">{description}</p>
         </div>
-        <Button className="bg-[#1D4F98] hover:bg-[#0B3477]" onClick={() => start()}><Plus />Tambah kategori</Button>
+        <Button className="h-11 bg-[#1D4F98] px-6 hover:bg-[#0B3477]" onClick={() => start()}><Plus className="size-5" />Tambah kategori</Button>
       </div>
 
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
@@ -105,7 +108,7 @@ export function CategoryPage({ resource, title, description }: { resource: "post
                     <TableCell className="font-semibold">{item.name}</TableCell>
                     <TableCell className="text-slate-500">{item.slug}</TableCell>
                     <TableCell>{item.sortOrder ?? 0}</TableCell>
-                    <TableCell><Switch checked={item.isActive} onCheckedChange={async (value) => { await fetch(`/api/${resource}/${item.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...item, isActive: value }) }); await load(page); }} /></TableCell>
+                    <TableCell><Switch checked={item.isActive} onCheckedChange={async (value) => { await fetch(`/api/${resource}/${item.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...item, isActive: value }) }); toast.success(value ? "Kategori diaktifkan." : "Kategori dinonaktifkan."); await load(page); }} /></TableCell>
                     <TableCell><Button variant="ghost" size="icon" onClick={() => start(item)} aria-label="Edit kategori"><Pencil /></Button></TableCell>
                   </TableRow>
                 ))}

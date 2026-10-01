@@ -50,13 +50,14 @@ function DeferredSection({ children, rootMargin = "320px 0px" }: { children: Rea
 
 type Facility = { id: number; title: string; description: string | null; imageUrl: string | null; presentationSlot: string };
 type GuruItem = { id: number; name: string; position: string; bio: string; image: string; category: string };
+type GuruCategory = { id: number; name: string; slug: string };
 type Partner = { id: number; name: string; logoUrl: string | null; description: string | null; websiteUrl: string | null };
 
-export function ProfileSections({ facilities, guru, partners }: { facilities: Facility[]; guru: GuruItem[]; partners: Partner[] }) {
+export function ProfileSections({ facilities, guru, guruCategories, partners }: { facilities: Facility[]; guru: GuruItem[]; guruCategories: GuruCategory[]; partners: Partner[] }) {
   return (
     <>
       <DeferredSection rootMargin="700px 0px"><VisiMisiSection /></DeferredSection>
-      <DeferredSection><GuruStaffSection items={guru} /></DeferredSection>
+      <DeferredSection><GuruStaffSection items={guru} categories={guruCategories} /></DeferredSection>
       <DeferredSection><SaranaPrasaranaSection facilities={facilities} /></DeferredSection>
       <DeferredSection><AkreditasiSection /></DeferredSection>
       <DeferredSection><KerjaSamaIndustriSection partners={partners} /></DeferredSection>

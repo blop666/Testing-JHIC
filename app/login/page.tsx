@@ -4,6 +4,7 @@ import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { apiErrorMessage } from "@/lib/api-response";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +20,8 @@ export default function LoginPage() {
     const form = new FormData(event.currentTarget);
     try {
       const response = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: form.get("email"), password: form.get("password") }) });
-      const result = await response.json() as { success: boolean; error?: { message?: string } };
-      if (!result.success) { setError(result.error?.message ?? "Email atau kata sandi tidak valid."); return; }
+      const result = await response.json() as { success: boolean; error?: { message?: string; details?: Array<{ field: string; message: string }> } };
+      if (!result.success) { setError(apiErrorMessage(result.error, "Email atau kata sandi tidak valid.")); return; }
       router.replace("/admin"); router.refresh();
     } catch { setError("Terjadi kendala. Coba lagi."); } finally { setPending(false); }
   }

@@ -53,7 +53,7 @@ export function HeroBanner() {
           style={{ clipPath: heroClip }}
         >
           <Image
-            src="/smkn-hero-banner.png"
+            src="/smkn-hero-banner.webp"
             alt="Gedung SMKN 1 Cibinong"
             fill
             priority

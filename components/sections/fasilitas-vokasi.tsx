@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type FasilitasVokasiItem = {
@@ -43,6 +44,10 @@ export function FasilitasVokasi({ fasilitas = fallbackFasilitas }: { fasilitas?:
 
   const current = items[active] ?? items[0];
 
+  const move = (direction: -1 | 1) => {
+    setActive((index) => (index + direction + items.length) % items.length);
+  };
+
   return (
     <section className="bg-[#F9FAFB] py-16 md:py-20">
       <div className="mx-auto max-w-[1600px] px-5 md:px-10 lg:px-14">
@@ -51,7 +56,7 @@ export function FasilitasVokasi({ fasilitas = fallbackFasilitas }: { fasilitas?:
           <p className="mt-3 text-base text-[#364153]">Teaching Factory &amp; standarisasi industri untuk pembelajaran yang relevan dengan dunia kerja.</p>
         </div>
 
-        <div className="relative mt-10 h-[420px] md:h-[460px]" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+        <div className="group relative mt-10 h-[420px] md:h-[460px]" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
           <AnimatePresence mode="wait">
             <motion.button
               key={current.id}
@@ -82,6 +87,24 @@ export function FasilitasVokasi({ fasilitas = fallbackFasilitas }: { fasilitas?:
               </div>
             </motion.button>
           </AnimatePresence>
+          <div className="pointer-events-none absolute inset-x-4 top-1/2 z-20 flex -translate-y-1/2 justify-between opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
+            <button
+              type="button"
+              aria-label="Fasilitas vokasi sebelumnya"
+              onClick={() => move(-1)}
+              className="pointer-events-auto grid size-11 place-items-center rounded-full border border-white/30 bg-black/25 text-white shadow-lg backdrop-blur-md transition hover:scale-105 hover:bg-black/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <ChevronLeft className="size-5" />
+            </button>
+            <button
+              type="button"
+              aria-label="Fasilitas vokasi berikutnya"
+              onClick={() => move(1)}
+              className="pointer-events-auto grid size-11 place-items-center rounded-full border border-white/30 bg-black/25 text-white shadow-lg backdrop-blur-md transition hover:scale-105 hover:bg-black/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <ChevronRight className="size-5" />
+            </button>
+          </div>
         </div>
 
         <div className="mt-6 flex justify-center gap-2">

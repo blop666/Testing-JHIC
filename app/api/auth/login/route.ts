@@ -8,7 +8,10 @@ import { createSession, previewSessionCookie, sessionCookie, verifyPassword } fr
 import { routeError } from "@/server/http";
 import { checkRateLimit, requestIp } from "@/server/rate-limit";
 
-const loginSchema = z.object({ email: z.string().trim().email(), password: z.string().min(1).max(1024) });
+const loginSchema = z.object({
+  email: z.string().trim().email("Alamat email tidak valid."),
+  password: z.string().min(1, "Kata sandi wajib diisi.").max(1024),
+});
 
 export async function POST(request: NextRequest) {
   try {

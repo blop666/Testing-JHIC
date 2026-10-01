@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const aiResourceTypes = ["mitra-industri", "sarana-prasarana", "guru", "kategori-konten", "kategori-guru", "program-unggulan", "fasilitas-vokasi"] as const;
+export const aiResourceTypes = ["mitra-industri", "sarana-prasarana", "guru", "kategori-konten", "kategori-guru", "program-unggulan", "fasilitas-vokasi", "chatbot-knowledge"] as const;
 
 export const aiResourceTypeSchema = z.enum(aiResourceTypes);
 

@@ -11,6 +11,7 @@
 .logoloop--right .logoloop__track { animation-direction: reverse; }
 .logoloop:hover .logoloop__track { animation-play-state: paused; }
 .logoloop__list { display: flex; align-items: center; }
+.logoloop__measure { position: absolute; visibility: hidden; pointer-events: none; }
 .logoloop__item { flex: 0 0 auto; margin-right: var(--logoloop-gap); font-size: var(--logoloop-logoHeight); line-height: 1; }
 .logoloop__node, .logoloop__link { display: inline-flex; align-items: center; }
 .logoloop__link { border-radius: 4px; text-decoration: none; transition: opacity .2s ease; }

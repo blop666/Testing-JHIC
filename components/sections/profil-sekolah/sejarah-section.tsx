@@ -128,7 +128,7 @@ export function SejarahSection() {
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           >
             <Image
-              src="/banner.jpeg"
+              src="/banner.webp"
               alt="SMKN 1 Cibinong"
               fill
               className="object-cover opacity-40"

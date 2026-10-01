@@ -7,7 +7,7 @@ function toDate(value: Date | null) {
   return Number.isNaN(date.getTime()) ? "" : new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long", year: "numeric" }).format(date);
 }
 
-function toNewsItem(post: { id: number; title: string; slug: string; excerpt: string | null; imageUrl: string | null; publishedAt: Date | null; eventDate?: Date | null; category: { name: string; slug: string } | null }, rank: number, categoryOverride?: string) {
+function toNewsItem(post: { id: number; title: string; slug: string; excerpt: string | null; imageUrl: string | null; publishedAt: Date | null; createdAt: Date; eventDate?: Date | null; category: { name: string; slug: string } | null; isHighlighted?: boolean; isPopularOverride?: boolean; viewCount?: number }, rank: number, categoryOverride?: string) {
   return {
     id: post.id,
     title: post.title,
@@ -16,6 +16,11 @@ function toNewsItem(post: { id: number; title: string; slug: string; excerpt: st
     category: categoryOverride ?? post.category?.name ?? "Berita",
     image: post.imageUrl ?? "/banner.jpeg",
     popularRank: rank,
+    isHighlighted: post.isHighlighted,
+    isPopularOverride: post.isPopularOverride,
+    viewCount: post.viewCount,
+    sortDate: new Date(post.eventDate ?? post.publishedAt ?? 0).getTime(),
+    uploadDate: toDate(post.createdAt),
     content: [[post.excerpt ?? ""]],
   };
 }
@@ -33,7 +38,7 @@ export default async function BeritaPage({ searchParams }: { searchParams: Promi
   const beritaItems = posts.map((post, index) => toNewsItem(post, index + 1));
   const pengumumanItems = announcements.map((post, index) => toNewsItem(post, beritaItems.length + index + 1, "Pengumuman"));
   const agendaItems = agenda.map((post, index) => toNewsItem(post, beritaItems.length + pengumumanItems.length + index + 1, "Agenda"));
-  const newsItems = [...beritaItems, ...pengumumanItems, ...agendaItems].sort((a, b) => (b.date < a.date ? -1 : 1));
+  const newsItems = [...beritaItems, ...pengumumanItems, ...agendaItems].sort((a, b) => (b.sortDate ?? 0) - (a.sortDate ?? 0));
   const categoryCounts = new Map(newsItems.map((item) => [item.category, (newsItems.filter((news) => news.category === item.category).length)]));
   const categoryOptions = postCategories.map((category) => ({ name: category.name, total: categoryCounts.get(category.name) ?? 0 }));
   if (!categoryOptions.some((category) => category.name === "Pengumuman") && pengumumanItems.length) categoryOptions.push({ name: "Pengumuman", total: pengumumanItems.length });

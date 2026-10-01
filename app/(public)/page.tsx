@@ -40,6 +40,7 @@ export default async function HomePage() {
     title: post.title,
     excerpt: post.excerpt ?? "",
     date: toDate(post.publishedAt),
+    sortDate: new Date(post.createdAt).getTime(),
     category: post.category?.name ?? "Berita",
     image: post.imageUrl ?? "/banner.jpeg",
     slug: generateSlugWithId(post.title, post.id),

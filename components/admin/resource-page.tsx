@@ -3,15 +3,27 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, MoreHorizontal, Plus, RefreshCw, SearchX } from "lucide-react";
+import { toast } from "sonner";
+import { apiErrorMessage } from "@/lib/api-response";
+import { ChevronLeft, ChevronRight, MoreHorizontal, Plus, RefreshCw, SearchX, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export type ResourceItem = { id: number; title?: string; name?: string; type?: string; position?: string | null; isPublished?: boolean; sortOrder?: number; category?: { name?: string } | null; websiteUrl?: string | null; presentationSlot?: string; label?: string; description?: string | null; tefaName?: string | null; jurusan?: { code?: string; name?: string } | null };
 
@@ -27,6 +39,7 @@ export type ResourceConfig = {
   fields: (item: ResourceItem) => React.ReactNode[];
   filters?: FilterDef[];
   statusKey?: "isPublished" | "isActive";
+  itemLabel?: (item: ResourceItem) => string;
 };
 
 const PAGE_SIZE = 15;
@@ -34,7 +47,7 @@ const PAGE_SIZE = 15;
 async function request(url: string, init?: RequestInit) {
   const response = await fetch(url, { cache: "no-store", ...init, headers: { "Content-Type": "application/json", ...init?.headers } });
   const result = await response.json();
-  if (!response.ok || !result.success) throw new Error(result.error?.message ?? "Permintaan gagal.");
+  if (!response.ok || !result.success) throw new Error(apiErrorMessage(result.error, "Permintaan gagal."));
   return result;
 }
 
@@ -70,6 +83,7 @@ export function ResourcePage({ config, children }: { config: ResourceConfig; chi
   const [status, setStatus] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ResourceItem | null>(null);
 
   async function load(targetPage = 1) {
     setError("");
@@ -94,11 +108,36 @@ export function ResourcePage({ config, children }: { config: ResourceConfig; chi
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  async function deactivate(id: number) {
+  function label(item: ResourceItem) {
+    return config.itemLabel?.(item) ?? item.title ?? item.name ?? String(item.id);
+  }
+
+  async function setPublish(item: ResourceItem, isPublished: boolean) {
     setPending(true);
-    try { await request(`/api/${config.resource}/${id}`, { method: "DELETE" }); await load(page); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Perubahan gagal."); }
-    finally { setPending(false); }
+    try {
+      await request(`/api/${config.resource}/${item.id}`, { method: "PATCH", body: JSON.stringify({ isPublished }) });
+      toast.success(isPublished ? `"${label(item)}" diterbitkan.` : `"${label(item)}" dinonaktifkan.`);
+      await load(page);
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : "Perubahan gagal.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function hardDelete() {
+    if (!deleteTarget) return;
+    setPending(true);
+    try {
+      await request(`/api/${config.resource}/${deleteTarget.id}`, { method: "DELETE" });
+      toast.success(`"${label(deleteTarget)}" dihapus permanen.`);
+      setDeleteTarget(null);
+      await load(page);
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : "Penghapusan gagal.");
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -109,7 +148,7 @@ export function ResourcePage({ config, children }: { config: ResourceConfig; chi
           <h1 className="text-2xl font-bold tracking-[-.03em]">{config.title}</h1>
           <p className="mt-2 text-sm text-slate-500">{config.description}</p>
         </div>
-        <Link href={config.createHref} className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-[#1D4F98] px-2.5 text-sm font-medium text-white hover:bg-[#0B3477]"><Plus className="size-4" />Tambah</Link>
+        <Link href={config.createHref} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#1D4F98] px-6 text-sm font-semibold text-white hover:bg-[#0B3477]"><Plus className="size-5" />Tambah</Link>
       </div>
 
       {children}
@@ -161,7 +200,11 @@ export function ResourcePage({ config, children }: { config: ResourceConfig; chi
                         <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label="Buka aksi"><MoreHorizontal className="size-4" /></Button>} />
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => router.push(`${config.editPrefix}/${item.id}`)}>Edit</DropdownMenuItem>
-                          <DropdownMenuItem disabled={pending} onClick={() => void deactivate(item.id)}>Nonaktifkan</DropdownMenuItem>
+                          {item.isPublished
+                            ? <DropdownMenuItem disabled={pending} onClick={() => void setPublish(item, false)}>Nonaktifkan</DropdownMenuItem>
+                            : <DropdownMenuItem disabled={pending} onClick={() => void setPublish(item, true)}>Aktifkan</DropdownMenuItem>}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem variant="destructive" disabled={pending} onClick={() => setDeleteTarget(item)}><Trash2 className="size-4" />Hapus permanen</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -173,6 +216,21 @@ export function ResourcePage({ config, children }: { config: ResourceConfig; chi
           </CardContent>
         </Card>
       )}
+
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus permanen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget ? <>Apakah yakin menghapus <span className="font-semibold text-foreground">{label(deleteTarget)}</span>? Tindakan ini tidak dapat dibatalkan.</> : "Apakah yakin menghapus konten ini? Tindakan ini tidak dapat dibatalkan."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={pending}>Batal</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" disabled={pending} onClick={() => void hardDelete()}>Ya, hapus</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

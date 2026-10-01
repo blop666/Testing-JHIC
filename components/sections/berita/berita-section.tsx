@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CalendarDays } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays } from "lucide-react";
 
 import {
   CutoutCard,
@@ -202,7 +202,7 @@ const FALLBACK_NEWS_ITEMS: NewsItem[] = [
   },
 ];
 
-const AUTO_PLAY_DELAY = 5500;
+const AUTO_PLAY_DELAY = 5000;
 
 export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initialCategory, categoryOptions }: { items?: NewsItem[]; achievements?: import("./prestasi-gallery").Achievement[]; initialCategory?: string; categoryOptions?: { name: string; total: number }[] }) {
   const reduceMotion = useReducedMotion();
@@ -213,10 +213,15 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initi
   const newsItems = items.length ? items : FALLBACK_NEWS_ITEMS;
   const sideNews =
     activeFilter === "popular"
-      ? [...newsItems.slice(0, 3)].sort((first, second) => first.popularRank - second.popularRank)
-      : newsItems.slice(0, 3);
-  const carouselNews = newsItems.slice(0, 3);
+      ? [...newsItems].sort((first, second) => Number(second.isPopularOverride) - Number(first.isPopularOverride) || (second.viewCount ?? 0) - (first.viewCount ?? 0)).slice(0, 3)
+      : newsItems.slice().sort((first, second) => (second.sortDate ?? 0) - (first.sortDate ?? 0)).slice(0, 3);
+  const highlightedNews = newsItems.filter((news) => news.isHighlighted).sort((first, second) => (second.sortDate ?? 0) - (first.sortDate ?? 0)).slice(0, 3);
+  const carouselNews = highlightedNews.length ? highlightedNews : sideNews;
   const activeNews = carouselNews[activeIndex] ?? carouselNews[0];
+
+  const moveCarousel = (direction: -1 | 1) => {
+    setActiveIndex((current) => (current + direction + carouselNews.length) % carouselNews.length);
+  };
   useEffect(() => {
     if (isPaused || reduceMotion) return;
 
@@ -243,7 +248,7 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initi
           <Dialog
             onOpenChange={setIsPaused}
           >
-            <div className="relative min-h-[520px] lg:h-full" data-aos="fade-up">
+            <div className="group relative min-h-[520px] lg:h-full" data-aos="fade-up">
               <AnimatePresence initial={false} mode="wait">
                 <DialogTrigger
                   className="h-full rounded-[20px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1d4f98]"
@@ -314,6 +319,24 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initi
                 </CutoutCard>
                 </DialogTrigger>
               </AnimatePresence>
+              <div className="pointer-events-none absolute inset-x-4 top-1/2 z-30 flex -translate-y-1/2 justify-between opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
+                <button
+                  type="button"
+                  aria-label="Berita sebelumnya"
+                  onClick={() => moveCarousel(-1)}
+                  className="pointer-events-auto grid size-11 place-items-center rounded-full border border-white/30 bg-slate-950/35 text-white shadow-lg backdrop-blur-md transition hover:scale-105 hover:bg-slate-950/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                >
+                  <ArrowLeft className="size-5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Berita berikutnya"
+                  onClick={() => moveCarousel(1)}
+                  className="pointer-events-auto grid size-11 place-items-center rounded-full border border-white/30 bg-slate-950/35 text-white shadow-lg backdrop-blur-md transition hover:scale-105 hover:bg-slate-950/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                >
+                  <ArrowRight className="size-5" />
+                </button>
+              </div>
               <div className="absolute right-5 top-5 z-20 flex items-center gap-1 rounded-full bg-slate-950/30 p-1.5" role="group" aria-label="Pagination banner berita">
                 {carouselNews.map((news, index) => (
                   <button
@@ -335,7 +358,7 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initi
           </Dialog>
 
           <aside className="flex min-h-[520px] flex-col gap-5 lg:h-full" data-aos="fade-up" data-aos-delay="100">
-            <div className="flex min-h-0 flex-1 flex-col rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_-28px_rgba(15,23,42,0.4)] ring-1 ring-slate-100">
+             <div className="flex h-fit flex-col rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_-28px_rgba(15,23,42,0.4)] ring-1 ring-slate-100">
               <div
                 aria-label="Urutkan berita"
                 className="mb-4 grid grid-cols-2 border-b border-slate-200"
@@ -366,7 +389,7 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initi
               <AnimatePresence initial={false} mode="wait">
                 <motion.div
                   animate={{ opacity: 1, x: 0 }}
-                  className="grid min-h-0 flex-1 gap-3 sm:grid-cols-1"
+                   className="grid gap-3 sm:grid-cols-1"
                   exit={{ opacity: 0, x: -10 }}
                   initial={{ opacity: 0, x: 10 }}
                   key={activeFilter}
@@ -376,15 +399,21 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initi
                     const isActive = news.id === activeNews.id;
                     const carouselIndex = carouselNews.findIndex((item) => item.id === news.id);
                     return (
+                      <motion.div
+                        key={news.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        layout
+                        transition={{ duration: reduceMotion ? 0.12 : 0.28, ease: [0.23, 1, 0.32, 1] }}
+                      >
                       <CutoutCard
                         aria-label={`Pilih berita: ${news.title}`}
                         aria-pressed={isActive}
                         className={cn(
                           cutoutCardSurfaceClassName,
-                          "grid min-h-0 grid-cols-[112px_minmax(0,1fr)] rounded-xl border-slate-200/80 bg-white p-2.5 text-left shadow-none ring-1 ring-slate-100 hover:border-slate-300 hover:shadow-none",
+                           "grid min-h-[114px] grid-cols-[112px_minmax(0,1fr)] rounded-xl border-slate-200/80 bg-white p-2.5 text-left shadow-none ring-1 ring-slate-100 hover:border-slate-300 hover:shadow-none",
                           isActive && "border-[#d7e6f0] bg-[#e8f1f6] shadow-none ring-[#d7e6f0]",
                         )}
-                        key={news.id}
                         onClick={() => setActiveIndex(carouselIndex)}
                         onKeyDown={(event) => {
                           if (event.key === "Enter" || event.key === " ") {
@@ -404,6 +433,7 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initi
                           <span className="mt-2 text-[11px] font-semibold text-slate-700">{news.date}</span>
                         </CutoutCardContent>
                       </CutoutCard>
+                      </motion.div>
                     );
                   })}
                 </motion.div>

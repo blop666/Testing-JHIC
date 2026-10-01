@@ -13,14 +13,15 @@ import type { NewsItem } from "./berita-types";
 interface BeritaDetailClientProps {
   news: NewsItem;
   relatedNews: NewsItem[];
+  popularNews?: NewsItem[];
 }
 
-export function BeritaDetailClient({ news, relatedNews }: BeritaDetailClientProps) {
+export function BeritaDetailClient({ news, relatedNews, popularNews = [] }: BeritaDetailClientProps) {
   const [activeTab, setActiveTab] = useState<"latest" | "popular">("latest");
 
   const displayedNews =
     activeTab === "popular"
-      ? [...relatedNews].sort((a, b) => a.popularRank - b.popularRank)
+      ? popularNews.length ? popularNews : [...relatedNews].sort((a, b) => Number(b.isPopularOverride) - Number(a.isPopularOverride) || (b.viewCount ?? 0) - (a.viewCount ?? 0))
       : relatedNews;
 
   const rawContent = news.content.flat().join("\n\n");

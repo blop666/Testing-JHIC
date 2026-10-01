@@ -1,14 +1,15 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiErrorMessage } from "@/lib/api-response";
 
 type RecordItem = { id: number; title?: string; name?: string; isPublished?: boolean };
-type ApiList = { success: boolean; data: RecordItem[]; meta?: { total: number }; error?: { message: string } };
+type ApiList = { success: boolean; data: RecordItem[]; meta?: { total: number }; error?: { message: string; details?: Array<{ field: string; message: string }> } };
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...init?.headers } });
   const result = await response.json();
-  if (!response.ok || !result.success) throw new Error(result.error?.message ?? "Permintaan gagal.");
+  if (!response.ok || !result.success) throw new Error(apiErrorMessage(result.error, "Permintaan gagal."));
   return result;
 }
 

@@ -3,7 +3,19 @@ import { ZodError } from "zod";
 import { apiError } from "@/lib/api-response";
 
 export function routeError(error: unknown) {
-  if (error instanceof ZodError) return apiError({ code: "VALIDATION_ERROR", message: "Data tidak valid." }, { status: 422 });
+  if (error instanceof ZodError) {
+    return apiError(
+      {
+        code: "VALIDATION_ERROR",
+        message: "Beberapa data yang dimasukkan tidak valid.",
+        details: error.issues.map((issue) => ({
+          field: issue.path.join(".") || "(umum)",
+          message: issue.message,
+        })),
+      },
+      { status: 422 },
+    );
+  }
   if (error instanceof Error && error.message === "CATEGORY_NOT_FOUND") return apiError({ code: "VALIDATION_ERROR", message: "Kategori tidak ditemukan." }, { status: 422 });
   if (error instanceof Error && error.message === "FORBIDDEN_CATEGORY_SCOPE") return apiError({ code: "FORBIDDEN", message: "Kategori tidak dapat digunakan untuk jurusan ini." }, { status: 403 });
   if (error instanceof Error && error.message.startsWith("FORBIDDEN")) return apiError({ code: "FORBIDDEN", message: "Anda tidak memiliki akses." }, { status: 403 });

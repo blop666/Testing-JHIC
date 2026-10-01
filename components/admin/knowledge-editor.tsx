@@ -4,6 +4,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bot, Check, Eye, LoaderCircle, Save, Send, UploadCloud } from "lucide-react";
 
+import { apiErrorMessage } from "@/lib/api-response";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +33,7 @@ async function request(url: string, init?: RequestInit) {
   const text = await response.text();
   let result: { success?: boolean; data?: any; error?: { message?: string } } = {};
   try { result = JSON.parse(text); } catch { /* ignore */ }
-  if (!response.ok || !result.success) throw new Error(result.error?.message ?? "Permintaan gagal.");
+  if (!response.ok || !result.success) throw new Error(apiErrorMessage(result.error, "Permintaan gagal."));
   return result.data;
 }
 

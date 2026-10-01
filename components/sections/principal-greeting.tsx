@@ -84,13 +84,15 @@ export function PrincipalGreeting() {
           <p className="mt-4">
             Wassalamualaikum Wr. Wb.
           </p>
-          <Link
-            href="/profil-sekolah"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-700 to-blue-500 px-8 py-3 font-medium text-white transition hover:-translate-y-0.5"
-          >
-            Lihat profil sekolah
-            <span aria-hidden="true">→</span>
-          </Link>
+          <div className="mt-8 flex justify-center">
+            <Link
+              href="/profil-sekolah"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-700 to-blue-500 px-8 py-3 font-medium text-white transition hover:-translate-y-0.5"
+            >
+              Lihat profil sekolah
+              <span aria-hidden="true">→</span>
+            </Link>
+          </div>
         </TimelineAnimation>
       </div>
     </section>
