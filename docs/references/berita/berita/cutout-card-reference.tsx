@@ -14,7 +14,7 @@ import {
 } from "react"
 import Image from "next/image"
 import { useControllableState } from "@radix-ui/react-use-controllable-state"
-import { motion, useReducedMotion } from "motion/react"
+import { motion, useReducedMotion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
