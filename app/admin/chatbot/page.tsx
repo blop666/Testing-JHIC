@@ -486,7 +486,7 @@ export default function AdminChatbotPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setHelpOpen(true)} aria-label="Petunjuk penggunaan AI"><HelpCircle className="size-4" />Petunjuk</Button>
+            <Button size="sm" className="bg-blue-700 text-white hover:bg-blue-600" onClick={() => setHelpOpen(true)} aria-label="Petunjuk penggunaan AI"><HelpCircle className="size-4" />Petunjuk</Button>
             <Button size="sm" variant="outline" onClick={startNewSession} disabled={isProcessing}><RotateCcw className="size-4" />Sesi baru</Button>
           </div>
         </div>

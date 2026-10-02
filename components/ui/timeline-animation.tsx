@@ -26,17 +26,16 @@ export function TimelineAnimation<T extends keyof HTMLElementTagNameMap = "div">
 }: TimelineAnimationProps<T>) {
   const defaultSequenceVariants: Variants = {
     visible: (i: number) => ({
-      filter: "blur(0px)",
       y: 0,
       opacity: 1,
       transition: {
-        delay: i * 0.5,
+        delay: i * 0.12,
         duration: 0.5,
+        ease: "easeOut",
       },
     }),
     hidden: {
-      filter: "blur(20px)",
-      y: 0,
+      y: 20,
       opacity: 0,
     },
   };
