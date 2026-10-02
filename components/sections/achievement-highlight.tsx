@@ -67,6 +67,9 @@ export function AchievementHighlight({ achievements }: { achievements?: Achievem
                 src={achievement.image}
                 alt={achievement.title}
                 fill
+                loading="lazy"
+                decoding="async"
+                quality={55}
                 sizes="(min-width: 640px) 60vw, 100vw"
                 className="object-cover transition duration-700 group-hover:scale-105"
               />

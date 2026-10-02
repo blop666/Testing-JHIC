@@ -16,8 +16,8 @@ export type FasilitasVokasiItem = {
 };
 
 const fallbackFasilitas: FasilitasVokasiItem[] = [
-  { id: 1, title: "Laboratorium Komputer Enterprise", description: "Lab komputer berstandar industri untuk praktik pemrograman dan jaringan. Dilengkapi workstation modern dan koneksi berkecepatan tinggi.", image: "/smkn-hero-banner.png", tefaName: "TeFa Software Development", jurusan: "RPL · SIJA" },
-  { id: 2, title: "Bengkel Praktik Mesin", description: "Bengkel produksi riil dengan mesin CNC dan peralatan manufaktur modern untuk pembelajaran berbasis Teaching Factory.", image: "/hero-banner.png", tefaName: "TeFa CNC Machining", jurusan: "TP · TFLM" },
+  { id: 1, title: "Laboratorium Komputer Enterprise", description: "Lab komputer berstandar industri untuk praktik pemrograman dan jaringan. Dilengkapi workstation modern dan koneksi berkecepatan tinggi.", image: "/smkn-hero-banner.webp", tefaName: "TeFa Software Development", jurusan: "RPL · SIJA" },
+  { id: 2, title: "Bengkel Praktik Mesin", description: "Bengkel produksi riil dengan mesin CNC dan peralatan manufaktur modern untuk pembelajaran berbasis Teaching Factory.", image: "/hero-banner.webp", tefaName: "TeFa CNC Machining", jurusan: "TP · TFLM" },
   { id: 3, title: "LSP Sertifikasi Kompetensi", description: "Tempat uji kompetensi berlisensi untuk sertifikasi profesi siswa, bekerja sama dengan asosiasi dan industri.", image: "/hero-banner.jpeg", tefaName: "TeFa Jaringan & Mikrotik", jurusan: "TKJ · TOI" },
 ];
 

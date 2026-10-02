@@ -124,7 +124,7 @@ function NewsCard({ item, ratio }: { item: NewsShowcaseItem; ratio: string }) {
         content={({ layoutId }) => (
           <>
             <div className="relative aspect-[16/9] overflow-hidden bg-slate-200">
-              <Image src={item.image} alt={item.title} fill sizes="48rem" className="object-cover" />
+              <Image src={item.image} alt={item.title} fill loading="lazy" decoding="async" quality={55} sizes="48rem" className="object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-slate-950/15" />
               <span className="absolute bottom-5 left-5 rounded-full bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-950">{item.category}</span>
             </div>

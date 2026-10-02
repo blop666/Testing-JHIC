@@ -78,6 +78,8 @@ export function HeroVideoDialog({
           src={thumbnailSrc}
           alt={thumbnailAlt}
           fill
+          loading="lazy"
+          decoding="async"
           sizes="(min-width: 1024px) 50vw, 100vw"
           className="object-cover transition duration-500 group-hover:scale-[1.02] group-hover:brightness-75"
         />

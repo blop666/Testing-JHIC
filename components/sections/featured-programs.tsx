@@ -91,7 +91,7 @@ export function FeaturedPrograms({ programs = fallbackPrograms }: { programs?: F
             {items.map((program) => (
               <article key={program.id} data-program-card className="group w-[84vw] shrink-0 snap-start sm:w-[calc((100%_-_1.25rem)/2)] lg:w-[calc((100%_-_3rem)/3)]">
                 <div className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-slate-900 shadow-[0_12px_32px_rgba(15,23,42,0.16)] transition-shadow duration-300 group-hover:shadow-[0_18px_42px_rgba(15,23,42,0.22)]">
-                  <Image src={program.image || "/hero-banner.webp"} alt="" fill sizes="380px" className="object-cover transition duration-700 group-hover:scale-105" />
+                  <Image src={program.image || "/hero-banner.webp"} alt="" fill loading="lazy" decoding="async" quality={55} sizes="380px" className="object-cover transition duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-b from-slate-950/10 via-slate-950/25 to-slate-950/95" />
                   <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-7">
                     <p className="text-xs font-medium uppercase tracking-[0.15em] text-blue-200">{program.label}</p>

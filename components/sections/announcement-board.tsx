@@ -41,7 +41,7 @@ export function AnnouncementBoard({ items }: { items?: Announcement[] }) {
           <article className="relative overflow-hidden rounded-3xl bg-blue-700 p-6 text-white md:min-h-[520px] md:p-10">
             {featured.image ? (
               <>
-                <Image src={featured.image} alt="" fill sizes="(min-width: 768px) 60vw, 100vw" className="object-cover" />
+                <Image src={featured.image} alt="" fill loading="lazy" decoding="async" quality={55} sizes="(min-width: 768px) 60vw, 100vw" className="object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-blue-950 via-blue-950/65 to-blue-900/20" />
               </>
             ) : (
@@ -74,7 +74,7 @@ export function AnnouncementBoard({ items }: { items?: Announcement[] }) {
                 <article key={item.slug} className="relative min-h-40 overflow-hidden rounded-3xl bg-blue-700 text-white">
                   {item.image ? (
                     <>
-                      <Image src={item.image} alt="" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover" />
+                      <Image src={item.image} alt="" fill loading="lazy" decoding="async" quality={55} sizes="(min-width: 768px) 40vw, 100vw" className="object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-950/95 via-blue-950/75 to-blue-900/30" />
                     </>
                   ) : (

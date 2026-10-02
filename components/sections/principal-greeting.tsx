@@ -38,7 +38,9 @@ export function PrincipalGreeting() {
             alt="Kepala SMKN 1 Cibinong"
             width={560}
             height={560}
-            quality={65}
+            quality={55}
+            loading="lazy"
+            decoding="async"
             sizes="(min-width: 768px) 384px, calc(100vw - 54px)"
             className="aspect-[4/5] w-full max-w-sm object-cover object-center md:h-full md:max-w-none"
           />

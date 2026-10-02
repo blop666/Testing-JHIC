@@ -92,8 +92,8 @@ async function seedProgramUnggulan() {
   const actor = (await db.select({ id: users.id }).from(users).where(eq(users.role, "super_admin")).limit(1))[0]?.id ?? null;
   const seeds = [
     { title: "Portal Belajar Online", description: "Lingkungan belajar digital untuk mendukung pembelajaran jarak jauh sesuai kurikulum sekolah.", label: "Pembelajaran digital", imageUrl: "/hero-banner.jpeg", sortOrder: 0 },
-    { title: "Academy Mikrotik", description: "Kelas Mikrotik bersertifikasi sebagai bagian dari kurikulum dan persiapan kompetensi siswa.", label: "Sertifikasi teknologi", imageUrl: "/smkn-hero-banner.png", sortOrder: 1 },
-    { title: "Sistem Informasi BK", description: "Layanan informasi bimbingan dan konseling yang lebih mudah dijangkau oleh siswa.", label: "Pendampingan siswa", imageUrl: "/hero-banner.png", sortOrder: 2 },
+    { title: "Academy Mikrotik", description: "Kelas Mikrotik bersertifikasi sebagai bagian dari kurikulum dan persiapan kompetensi siswa.", label: "Sertifikasi teknologi", imageUrl: "/smkn-hero-banner.webp", sortOrder: 1 },
+    { title: "Sistem Informasi BK", description: "Layanan informasi bimbingan dan konseling yang lebih mudah dijangkau oleh siswa.", label: "Pendampingan siswa", imageUrl: "/hero-banner.webp", sortOrder: 2 },
     { title: "Sertifikasi LSP", description: "Layanan sertifikasi kompetensi untuk membuktikan kesiapan siswa memasuki dunia kerja.", label: "Kompetensi profesi", imageUrl: "/hero-banner.jpeg", sortOrder: 3 },
   ];
   for (const item of seeds) {
@@ -109,8 +109,8 @@ async function seedFasilitasVokasi() {
   const tp = (await db.select({ id: jurusan.id }).from(jurusan).where(eq(jurusan.code, "TP")).limit(1))[0];
   const tkj = (await db.select({ id: jurusan.id }).from(jurusan).where(eq(jurusan.code, "TKJ")).limit(1))[0];
   const seeds = [
-    { title: "Laboratorium Komputer Enterprise", description: "Lab komputer berstandar industri untuk praktik pemrograman dan jaringan. Dilengkapi workstation modern dan koneksi berkecepatan tinggi.", imageUrl: "/smkn-hero-banner.png", tefaName: "TeFa Software Development", jurusanId: rpl?.id ?? null, sortOrder: 0 },
-    { title: "Bengkel Praktik Mesin", description: "Bengkel produksi riil dengan mesin CNC dan peralatan manufaktur modern untuk pembelajaran berbasis Teaching Factory.", imageUrl: "/hero-banner.png", tefaName: "TeFa CNC Machining", jurusanId: tp?.id ?? null, sortOrder: 1 },
+    { title: "Laboratorium Komputer Enterprise", description: "Lab komputer berstandar industri untuk praktik pemrograman dan jaringan. Dilengkapi workstation modern dan koneksi berkecepatan tinggi.", imageUrl: "/smkn-hero-banner.webp", tefaName: "TeFa Software Development", jurusanId: rpl?.id ?? null, sortOrder: 0 },
+    { title: "Bengkel Praktik Mesin", description: "Bengkel produksi riil dengan mesin CNC dan peralatan manufaktur modern untuk pembelajaran berbasis Teaching Factory.", imageUrl: "/hero-banner.webp", tefaName: "TeFa CNC Machining", jurusanId: tp?.id ?? null, sortOrder: 1 },
     { title: "LSP Sertifikasi Kompetensi", description: "Tempat uji kompetensi berlisensi untuk sertifikasi profesi siswa, bekerja sama dengan asosiasi dan industri.", imageUrl: "/hero-banner.jpeg", tefaName: "TeFa Jaringan & Mikrotik", jurusanId: tkj?.id ?? null, sortOrder: 2 },
   ];
   for (const item of seeds) {

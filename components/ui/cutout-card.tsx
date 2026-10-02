@@ -167,6 +167,9 @@ export function CutoutCardImage({
   className,
   alt = "",
   fill = true,
+  loading = "lazy",
+  decoding = "async",
+  quality = 55,
   sizes = "(max-width: 768px) 100vw, 28rem",
   ...props
 }: CutoutCardImageProps) {
@@ -181,6 +184,9 @@ export function CutoutCardImage({
       data-slot="cutout-card-image"
       {...props}
       fill={fill}
+      loading={loading}
+      decoding={decoding}
+      quality={quality}
       sizes={fill ? sizes : undefined}
     />
   );

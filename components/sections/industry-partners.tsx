@@ -23,9 +23,9 @@ export function IndustryPartners({ partners }: { partners?: PartnerItem[] }) {
     node: (
       <span className="flex h-24 w-64 shrink-0 items-center gap-4 rounded-2xl border border-white/15 bg-[#1b4d96] px-5 text-white shadow-lg">
         {partner.logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <span className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-white/30">
-            <img src={partner.logoUrl} alt={partner.name} className="max-h-full max-w-full object-contain" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={partner.logoUrl} alt={partner.name} loading="lazy" decoding="async" className="max-h-12 max-w-full object-contain" />
           </span>
         ) : (
           <span className="flex h-16 w-28 shrink-0 items-center justify-center rounded-xl bg-white text-[#1b4d96] ring-1 ring-white/30"><Building2 className="size-8" /></span>
