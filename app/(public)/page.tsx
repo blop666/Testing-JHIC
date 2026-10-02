@@ -32,7 +32,7 @@ export default async function HomePage() {
     title: item.title,
     description: item.description,
     label: item.label,
-    image: item.imageUrl ?? "/hero-banner.jpeg",
+    image: item.imageUrl ?? "/hero-banner.webp",
   }));
 
   const newsItems = berita.map((post, index) => ({
@@ -42,7 +42,7 @@ export default async function HomePage() {
     date: toDate(post.publishedAt),
     sortDate: new Date(post.createdAt).getTime(),
     category: post.category?.name ?? "Berita",
-    image: post.imageUrl ?? "/banner.jpeg",
+    image: post.imageUrl ?? "/banner.webp",
     slug: generateSlugWithId(post.title, post.id),
     isNew: index === 0,
   }));
@@ -53,7 +53,7 @@ export default async function HomePage() {
     recipient: post.excerpt ?? "SMKN 1 Cibinong",
     date: toDate(post.publishedAt),
     level: index % 4 === 0 ? "Nasional" : index % 4 === 1 ? "Provinsi" : index % 4 === 2 ? "Kabupaten" : "Sekolah",
-    image: post.imageUrl ?? "/banner.jpeg",
+    image: post.imageUrl ?? "/banner.webp",
     ratio: (index % 3 === 0 ? "portrait" : index % 3 === 1 ? "landscape" : "square") as "portrait" | "landscape" | "square",
     description: post.excerpt ?? "",
   }));
@@ -85,7 +85,7 @@ export default async function HomePage() {
       date: item.eventDate ?? null,
       endDate: item.eventEndDate ?? null,
       location: item.eventLocation ?? "",
-      image: item.imageUrl ?? "/banner.jpeg",
+      image: item.imageUrl ?? "/banner.webp",
       slug: generateSlugWithId(item.title, item.id),
     }));
 

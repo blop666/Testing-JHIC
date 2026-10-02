@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, MoveUpRight } from "lucide-react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState } from "react";
 import dynamic from "next/dynamic";
@@ -14,10 +14,10 @@ const loadAchievementModal = () => import("./berita/achievement-modal").then((mo
 const AchievementModal = dynamic(loadAchievementModal, { ssr: false });
 
 const fallbackAchievements: Achievement[] = [
-  { id: 1, image: "/smkn-hero-banner.png", title: "Juara LKS Tingkat Nasional", level: "Nasional", recipient: "SMKN 1 Cibinong", date: "", ratio: "landscape", description: "" },
-  { id: 2, image: "/hero-banner.jpeg", title: "Medali LKS Tingkat Provinsi", level: "Provinsi", recipient: "SMKN 1 Cibinong", date: "", ratio: "landscape", description: "" },
-  { id: 3, image: "/hero-banner.png", title: "Juara Kompetensi Kabupaten", level: "Kabupaten", recipient: "SMKN 1 Cibinong", date: "", ratio: "landscape", description: "" },
-  { id: 4, image: "/smkn-hero-banner.png", title: "Prestasi Siswa SMKN 1 Cibinong", level: "Sekolah", recipient: "SMKN 1 Cibinong", date: "", ratio: "landscape", description: "" },
+  { id: 1, image: "/smkn-hero-banner.webp", title: "Juara LKS Tingkat Nasional", level: "Nasional", recipient: "SMKN 1 Cibinong", date: "", ratio: "landscape", description: "" },
+  { id: 2, image: "/hero-banner.webp", title: "Medali LKS Tingkat Provinsi", level: "Provinsi", recipient: "SMKN 1 Cibinong", date: "", ratio: "landscape", description: "" },
+  { id: 3, image: "/hero-banner.webp", title: "Juara Kompetensi Kabupaten", level: "Kabupaten", recipient: "SMKN 1 Cibinong", date: "", ratio: "landscape", description: "" },
+  { id: 4, image: "/smkn-hero-banner.webp", title: "Prestasi Siswa SMKN 1 Cibinong", level: "Sekolah", recipient: "SMKN 1 Cibinong", date: "", ratio: "landscape", description: "" },
 ];
 
 const spans: Record<string, string> = {

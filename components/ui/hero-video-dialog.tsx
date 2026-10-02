@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Play, X } from "lucide-react";
-import { AnimatePresence, motion, type Variants } from "motion/react";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { TextAnimate } from "@/components/ui/text-animate";
-import { AnimatePresence, motion, useMotionTemplate, useScroll, useTransform } from "motion/react";
+import { AnimatePresence, motion, useMotionTemplate, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 

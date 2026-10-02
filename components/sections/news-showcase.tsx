@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/cutout-card";
 import { SharedLayout, SharedLayoutDialog } from "@/components/ui/shared-layout-dialog";
 import { ArrowUpRight, CalendarDays } from "lucide-react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -33,7 +33,7 @@ export interface NewsShowcaseItem {
 const fallbackNews: NewsShowcaseItem[] = [
   {
     id: 1,
-    image: "/smkn-hero-banner.png",
+    image: "/smkn-hero-banner.webp",
     category: "Kegiatan Sekolah",
     title: "Membangun Generasi Unggul dan Siap Berkarya",
     excerpt: "Kegiatan pembelajaran dan pengembangan karakter siswa SMKN 1 Cibinong.",
@@ -43,7 +43,7 @@ const fallbackNews: NewsShowcaseItem[] = [
   },
   {
     id: 2,
-    image: "/hero-banner.jpeg",
+    image: "/hero-banner.webp",
     category: "Kompetensi",
     title: "Kolaborasi Industri untuk Pembelajaran Relevan",
     excerpt: "Sinergi sekolah dan industri memperkuat kesiapan lulusan menghadapi dunia kerja.",
@@ -53,7 +53,7 @@ const fallbackNews: NewsShowcaseItem[] = [
   },
   {
     id: 3,
-    image: "/hero-banner.png",
+    image: "/hero-banner.webp",
     category: "Teknologi",
     title: "Inovasi Digital di Lingkungan Sekolah",
     excerpt: "Pemanfaatan teknologi untuk pengalaman belajar yang efektif dan adaptif.",
@@ -63,7 +63,7 @@ const fallbackNews: NewsShowcaseItem[] = [
   },
   {
     id: 4,
-    image: "/smkn-hero-banner.png",
+    image: "/smkn-hero-banner.webp",
     category: "Pengumuman",
     title: "Agenda Sekolah Semester Baru",
     excerpt: "Informasi kegiatan akademik dan nonakademik untuk seluruh warga sekolah.",
@@ -73,7 +73,7 @@ const fallbackNews: NewsShowcaseItem[] = [
   },
   {
     id: 5,
-    image: "/hero-banner.jpeg",
+    image: "/hero-banner.webp",
     category: "Profil",
     title: "Lingkungan Belajar yang Aman dan Inspiratif",
     excerpt: "Ruang tumbuh siswa untuk mengembangkan kompetensi, kreativitas, dan karakter.",
@@ -83,7 +83,7 @@ const fallbackNews: NewsShowcaseItem[] = [
   },
   {
     id: 6,
-    image: "/hero-banner.png",
+    image: "/hero-banner.webp",
     category: "Kesiswaan",
     title: "Kreativitas Siswa dalam Kegiatan Sekolah",
     excerpt: "Beragam karya dan kegiatan menjadi wadah aktualisasi potensi siswa.",

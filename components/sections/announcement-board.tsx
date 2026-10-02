@@ -12,10 +12,10 @@ type Announcement = {
 };
 
 const fallbackAnnouncements: Announcement[] = [
-  { title: "Daftar Ulang Peserta Didik Baru", excerpt: "Informasi daftar ulang peserta didik baru tahun ajaran 2026/2027.", date: new Date(2026, 7, 20), image: "/smkn-hero-banner.png", label: "Penting", slug: "daftar-ulang-peserta-didik-baru" },
+  { title: "Daftar Ulang Peserta Didik Baru", excerpt: "Informasi daftar ulang peserta didik baru tahun ajaran 2026/2027.", date: new Date(2026, 7, 20), image: "/smkn-hero-banner.webp", label: "Penting", slug: "daftar-ulang-peserta-didik-baru" },
   { title: "Pembagian Kelas Tahun Ajaran 2026/2027", excerpt: "Pengumuman pembagian kelas untuk seluruh siswa.", date: new Date(2026, 7, 18), image: "", label: "Akademik", slug: "pembagian-kelas-2026" },
   { title: "Jadwal Masa Pengenalan Lingkungan Sekolah", excerpt: "Jadwal resmi kegiatan MPLS siswa baru.", date: new Date(2026, 7, 15), image: "", label: "Kesiswaan", slug: "jadwal-mpls-2026" },
-  { title: "Pengambilan Kartu Pelajar Siswa Baru", excerpt: "Jadwal pengambilan kartu pelajar siswa baru.", date: new Date(2026, 7, 12), image: "/hero-banner.jpeg", label: "Administrasi", slug: "pengambilan-kartu-pelajar" },
+  { title: "Pengambilan Kartu Pelajar Siswa Baru", excerpt: "Jadwal pengambilan kartu pelajar siswa baru.", date: new Date(2026, 7, 12), image: "/hero-banner.webp", label: "Administrasi", slug: "pengambilan-kartu-pelajar" },
 ];
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];

@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, type HTMLMotionProps, motion } from "motion/react";
+import { AnimatePresence, type HTMLMotionProps, motion } from "framer-motion";
 import { createContext, type ButtonHTMLAttributes, type ReactNode, useContext, useState } from "react";
 
 import { cn } from "@/lib/utils";

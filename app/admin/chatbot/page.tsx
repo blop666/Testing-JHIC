@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Bot, CalendarDays, Check, ChevronRight, Eye, FileText, ImagePlus, Link2, LoaderCircle, MessageSquare, Pencil, RotateCcw, Send, X } from "lucide-react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
