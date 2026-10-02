@@ -1,3 +1,6 @@
+import { appendFile, mkdir } from "node:fs/promises";
+import path from "node:path";
+
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
@@ -39,8 +42,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      console.error("Contact relay error:", response.status, await response.text().catch(() => ""));
-      return apiError({ code: "DELIVERY_FAILED", message: "Pesan gagal terkirim. Silakan coba lagi nanti." }, { status: 502 });
+      const relayError = await response.text().catch(() => "");
+      console.error("Contact relay error:", response.status, relayError);
+      // Fallback: simpan pesan lokal agar tidak hilang saat relay belum aktif.
+      await persistLocal(payload);
+      return apiError({ code: "DELIVERY_FAILED", message: "Pesan belum terkirim ke email. Coba lagi nanti." }, { status: 502 });
     }
 
     return apiSuccess({ ok: true }, { status: 200 });
@@ -58,4 +64,14 @@ export async function POST(request: NextRequest) {
     console.error("Contact error:", error);
     return apiError({ code: "INTERNAL_ERROR", message: "Terjadi kesalahan. Silakan coba lagi." }, { status: 500 });
   }
+}
+
+async function persistLocal(payload: z.infer<typeof contactSchema>) {
+  const dir = path.join(process.cwd(), "data");
+  await mkdir(dir, { recursive: true });
+  await appendFile(
+    path.join(dir, "contact-messages.jsonl"),
+    `${JSON.stringify({ ...payload, receivedAt: new Date().toISOString() })}\n`,
+    "utf8",
+  );
 }
