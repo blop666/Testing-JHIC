@@ -435,7 +435,7 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
                       isFocused ? "border-[#1C4E97] ring-2 ring-[#1C4E97]" : "border-[#E5E7EB]"
                     )}
                     style={{
-                      backgroundImage: `url(/hero-banner.jpeg)`,
+                      backgroundImage: `url(${jurusan.bgImage || "/hero-banner.jpeg"})`,
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                       backgroundRepeat: "no-repeat",
@@ -455,12 +455,14 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
                     />
 
                     {/* Logo */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-                      <img
-                        src={jurusan.logoUrl}
-                        alt={jurusan.code}
-                        className="w-20 h-20 md:w-24 md:h-24 object-contain"
-                      />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="grid size-14 place-content-center rounded-xl bg-white p-1.5 shadow-sm md:size-16">
+                        <img
+                          src={jurusan.logoUrl}
+                          alt={jurusan.code}
+                          className="size-10 object-contain md:size-12"
+                        />
+                      </div>
                     </div>
 
                     {/* Duration badge */}

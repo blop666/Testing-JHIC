@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Bot, CalendarDays, Check, ChevronRight, Eye, FileText, ImagePlus, Link2, LoaderCircle, MessageSquare, Pencil, RotateCcw, Send, X } from "lucide-react";
+import { Bot, CalendarDays, Check, ChevronRight, Eye, FileText, HelpCircle, ImagePlus, Link2, LoaderCircle, MessageSquare, Pencil, RotateCcw, Send, X } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -136,6 +136,7 @@ export default function AdminChatbotPage() {
   const [resourceAction, setResourceAction] = useState<{ draft: ResourceDraft; action: "update" | "draft" | "publish" | "delete" } | null>(null);
   const [resourceSave, setResourceSave] = useState<{ messageId: number; draft: ResourceDraft; publish: boolean } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -485,6 +486,7 @@ export default function AdminChatbotPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setHelpOpen(true)} aria-label="Petunjuk penggunaan AI"><HelpCircle className="size-4" />Petunjuk</Button>
             <Button size="sm" variant="outline" onClick={startNewSession} disabled={isProcessing}><RotateCcw className="size-4" />Sesi baru</Button>
           </div>
         </div>
@@ -737,6 +739,68 @@ export default function AdminChatbotPage() {
           </DialogContent>
         </DialogContainer>
       </Dialog>
+
+      <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
+        <DialogContainer>
+          <DialogContent className="relative flex h-[min(700px,92vh)] w-[min(680px,95vw)] flex-col overflow-hidden rounded-[20px] bg-white shadow-2xl">
+            <DialogClose className="z-20 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-slate-900 shadow-md" />
+            <div className="min-h-0 flex-1 overflow-y-auto p-6 sm:p-8">
+              <DialogTitle className="text-2xl font-bold text-slate-950">Petunjuk Penggunaan AI</DialogTitle>
+              <DialogDescription className="mt-2 text-sm text-slate-500">Panduan singkat cara memakai AI Content Assistant.</DialogDescription>
+
+              <div className="mt-6 space-y-5">
+                <HelpSection n="1" title="Menulis prompt" icon={<MessageSquare className="size-4" />}>
+                  <li>Tulis instruksi dengan bahasa sehari-hari dan sejelas mungkin.</li>
+                  <li>Sebutkan jenis konten/data beserta detail penting, contoh: "Buatkan berita tentang kegiatan PKL kelas XI SIJA minggu ini."</li>
+                  <li>Untuk mengedit atau menghapus data yang sudah ada, ketik kata seperti "edit", "ubah", "hapus", atau "publikasikan" lalu sebutkan judul/nama lengkapnya.</li>
+                  <li>Jika data kurang lengkap, AI akan menanyakan detail yang dibutuhkan. Jawab pertanyaan tersebut.</li>
+                </HelpSection>
+
+                <HelpSection n="2" title="Menambahkan link sumber" icon={<Link2 className="size-4" />}>
+                  <li>Klik ikon <span className="font-semibold">Link</span> di kolom input, tempel URL, lalu tekan Enter atau klik tombol tambah.</li>
+                  <li>URL wajib memakai protokol <code className="rounded bg-slate-100 px-1">http://</code> atau <code className="rounded bg-slate-100 px-1">https://</code>.</li>
+                  <li>Setelah itu akan muncul konfirmasi; klik "Ya, gunakan URL" untuk menjadikannya sumber.</li>
+                  <li>Konten hasil AI akan merujuk pada URL sumber yang ditambahkan.</li>
+                </HelpSection>
+
+                <HelpSection n="3" title="Menambahkan gambar" icon={<ImagePlus className="size-4" />}>
+                  <li>Klik ikon <span className="font-semibold">gambar</span> lalu pilih file JPEG, PNG, WebP, atau AVIF (maks 5 MB).</li>
+                  <li>Gambar yang diunggah akan dianalisis dan digunakan sebagai konteks/konten.</li>
+                  <li>Gambar dapat dihapus dengan menekan tombol "×" pada lampiran.</li>
+                </HelpSection>
+
+                <HelpSection n="4" title="Preview & edit" icon={<Eye className="size-4" />}>
+                  <li>Setiap hasil AI menampilkan kartu draft dengan tombol <span className="font-semibold">Preview</span> untuk melihat tampilan konten.</li>
+                  <li>Gunakan <span className="font-semibold">Edit judul / ringkasan / isi</span> untuk mengubah langsung secara manual.</li>
+                  <li>Gunakan <span className="font-semibold">Edit via AI</span> untuk meminta AI mengubah bagian tertentu.</li>
+                </HelpSection>
+
+                <HelpSection n="5" title="Terbitkan, simpan, atau hapus" icon={<Check className="size-4" />}>
+                  <li><span className="font-semibold">Publikasikan</span> — konten langsung tampil di situs (dengan opsi tandai populer).</li>
+                  <li><span className="font-semibold">Simpan draft</span> — simpan tanpa diterbitkan.</li>
+                  <li><span className="font-semibold">Hapus</span> — hapus permanen (perlu konfirmasi).</li>
+                  <li>Klik <span className="font-semibold">Sesi baru</span> untuk memulai percakapan dari awal.</li>
+                </HelpSection>
+              </div>
+            </div>
+            <div className="border-t border-slate-200 p-4">
+              <Button type="button" className="w-full bg-blue-700 hover:bg-blue-600" onClick={() => setHelpOpen(false)}>Mengerti</Button>
+            </div>
+          </DialogContent>
+        </DialogContainer>
+      </Dialog>
+    </div>
+  );
+}
+
+function HelpSection({ n, title, icon, children }: { n: string; title: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
+      <div className="flex items-center gap-3">
+        <span className="grid size-7 place-items-center rounded-full bg-blue-700 text-xs font-bold text-white">{n}</span>
+        <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900">{icon}{title}</h3>
+      </div>
+      <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-600 list-disc pl-6">{children}</ul>
     </div>
   );
 }
