@@ -15,6 +15,7 @@ export const jurusan = pgTable("jurusan", {
   kompetensi: jsonb("kompetensi").$type<string[]>().notNull(),
   fokusKeahlian: jsonb("fokus_keahlian").$type<Array<{ title: string; icon: string }>>().notNull(),
   prospek: text("prospek").notNull(),
+  durasi: text("durasi").notNull().default("3 Tahun"),
   logoUrl: text("logo_url").notNull(),
   bgImageUrl: text("bg_image_url"),
   websiteUrl: text("website_url"),

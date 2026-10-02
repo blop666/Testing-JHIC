@@ -112,7 +112,6 @@ export function EditorPage({ kind, id }: { kind: Kind; id?: string }) {
         publishedAt: mode === "publish" ? new Date().toISOString() : null,
         body: type === "prestasi" ? null : form.body,
         slug: slug ? slug : undefined,
-        isHighlighted: Boolean(form.isHighlighted),
         isPopularOverride: Boolean(form.isPopularOverride),
       };
       if (type !== "agenda") { delete payload.eventDate; delete payload.eventEndDate; delete payload.eventLocation; }
@@ -173,10 +172,6 @@ export function EditorPage({ kind, id }: { kind: Kind; id?: string }) {
         {type === "agenda" && <div className="space-y-2 md:col-span-2"><Label htmlFor="eventEndDate">Tanggal selesai (opsional)</Label><Input id="eventEndDate" type="datetime-local" value={String(form.eventEndDate ?? "")} onChange={(event) => set("eventEndDate", event.target.value)} /></div>}
         {type === "agenda" && <div className="space-y-2 md:col-span-2"><Label htmlFor="eventLocation">Lokasi (opsional)</Label><Input id="eventLocation" value={String(form.eventLocation ?? "")} onChange={(event) => set("eventLocation", event.target.value)} placeholder="Contoh: Aula Sekolah" /></div>}
         <div className="md:col-span-2 grid gap-4 sm:grid-cols-2">
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3">
-            <div><p className="text-sm font-semibold text-slate-800">Tampilkan di Highlight</p><p className="text-xs text-slate-500">Muncul di banner highlight berita.</p></div>
-            <Switch checked={Boolean(form.isHighlighted)} onCheckedChange={(checked) => set("isHighlighted", checked)} aria-label="Tampilkan di highlight" />
-          </div>
           <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3">
             <div><p className="text-sm font-semibold text-slate-800">Konten Populer</p><p className="text-xs text-slate-500">Prioritaskan di tab Populer.</p></div>
             <Switch checked={Boolean(form.isPopularOverride)} onCheckedChange={(checked) => set("isPopularOverride", checked)} aria-label="Konten populer" />

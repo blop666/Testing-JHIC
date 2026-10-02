@@ -131,7 +131,6 @@ export default function AdminChatbotPage() {
   const [editValue, setEditValue] = useState("");
   const [pendingEdit, setPendingEdit] = useState(false);
   const [publishChoice, setPublishChoice] = useState<PublishChoice | null>(null);
-  const [publishHighlight, setPublishHighlight] = useState(false);
   const [publishPopular, setPublishPopular] = useState(false);
   const [existingAction, setExistingAction] = useState<{ draft: Draft; action: "update" | "draft" | "delete" } | null>(null);
   const [resourceAction, setResourceAction] = useState<{ draft: ResourceDraft; action: "update" | "draft" | "publish" | "delete" } | null>(null);
@@ -378,7 +377,7 @@ export default function AdminChatbotPage() {
     setSourceUrls((current) => current.filter((item) => item !== url));
   }
 
-  async function publishDraft(messageId: number, draft: Draft, isHighlighted: boolean, isPopularOverride: boolean) {
+  async function publishDraft(messageId: number, draft: Draft, isPopularOverride: boolean) {
     if (draft.contentType === "agenda" && !draft.eventDate) {
       addMessage({ sender: "ai", text: "Konten agenda belum bisa diterbitkan karena tanggal belum diisi." });
       return;
@@ -402,8 +401,7 @@ export default function AdminChatbotPage() {
           isPublished: true,
           publishedAt: new Date().toISOString(),
           isFeatured: false,
-           isHighlighted,
-           isPopularOverride,
+          isPopularOverride,
         }),
       });
       setMessages((current) => current.map((m) => (m.id === messageId ? { ...m, publishedId: 1 } : m)));
@@ -562,7 +560,7 @@ export default function AdminChatbotPage() {
                           <Button size="sm" className="bg-blue-700 hover:bg-blue-600" onClick={() => setExistingAction({ draft: message.draft!, action: "update" })}><Check className="size-4" />Simpan perubahan</Button>
                            <Button size="sm" variant="destructive" onClick={() => setExistingAction({ draft: message.draft!, action: "delete" })}>Hapus {contentTypeLabel[message.draft.contentType]}</Button>
                         </>}
-                        <Button size="sm" className="ml-auto bg-blue-700 hover:bg-blue-600" onClick={() => { setPublishChoice({ messageId: message.id, draft: message.draft! }); setPublishHighlight(false); setPublishPopular(false); }}><Check className="size-4" />Publikasikan</Button>
+                        <Button size="sm" className="ml-auto bg-blue-700 hover:bg-blue-600" onClick={() => { setPublishChoice({ messageId: message.id, draft: message.draft! }); setPublishPopular(false); }}><Check className="size-4" />Publikasikan</Button>
                       </div>
                     )}
                     {message.publishedId && <Alert className="mt-4 border-emerald-200 bg-emerald-50 text-emerald-800"><Check className="size-4" /><AlertDescription>Konten berhasil diterbitkan.</AlertDescription></Alert>}
@@ -660,13 +658,9 @@ export default function AdminChatbotPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Atur tampilan konten</AlertDialogTitle>
-            <AlertDialogDescription>Pilih apakah konten ini ditampilkan pada banner highlight dan tab Populer.</AlertDialogDescription>
+            <AlertDialogDescription>Pilih apakah konten ini ditandai populer pada tab Populer.</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-3 py-2">
-            <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 p-4">
-              <span><span className="block text-sm font-semibold text-slate-900">Tampilkan di banner highlight berita</span><span className="text-xs text-slate-500">Urutan mengikuti tanggal terbit terbaru.</span></span>
-              <input checked={publishHighlight} onChange={(event) => setPublishHighlight(event.target.checked)} type="checkbox" disabled={saving} />
-            </label>
             <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 p-4">
               <span><span className="block text-sm font-semibold text-slate-900">Tandai sebagai populer</span><span className="text-xs text-slate-500">Prioritaskan pada tab Populer.</span></span>
               <input checked={publishPopular} onChange={(event) => setPublishPopular(event.target.checked)} type="checkbox" disabled={saving} />
@@ -674,7 +668,7 @@ export default function AdminChatbotPage() {
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={saving}>Batal</AlertDialogCancel>
-            <AlertDialogAction disabled={saving} onClick={async () => { if (publishChoice) await publishDraft(publishChoice.messageId, publishChoice.draft, publishHighlight, publishPopular); setPublishChoice(null); }}>{saving ? <LoaderCircle className="size-4 animate-spin" /> : null}Terbitkan konten</AlertDialogAction>
+            <AlertDialogAction disabled={saving} onClick={async () => { if (publishChoice) await publishDraft(publishChoice.messageId, publishChoice.draft, publishPopular); setPublishChoice(null); }}>{saving ? <LoaderCircle className="size-4 animate-spin" /> : null}Terbitkan konten</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

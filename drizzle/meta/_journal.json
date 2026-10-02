@@ -43,6 +43,13 @@
       "when": 1790486225564,
       "tag": "0005_previous_sumo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790958050500,
+      "tag": "0006_jurusan_durasi",
+      "breakpoints": true
     }
   ]
 }

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Award, BookOpen, Bot, Building2, GraduationCap, Handshake, LayoutDashboard, LogOut, Menu, Newspaper, Settings2, Tags, Wrench } from "lucide-react";
+import { Award, BookOpen, Bot, Building2, GraduationCap, Handshake, LayoutDashboard, LogOut, Menu, Newspaper, Settings2, Tags, Wrench, Layers } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,7 @@ const groups: NavGroup[] = [
   {
     title: "Kelola Sekolah",
     items: [
+      ["/admin/jurusan", "Jurusan", Layers],
       ["/admin/sarana-prasarana", "Sarana & Prasarana", Building2],
       ["/admin/fasilitas-vokasi", "Fasilitas Praktik Vokasi", Wrench],
       ["/admin/mitra-industri", "Mitra Industri", Handshake],

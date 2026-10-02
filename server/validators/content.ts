@@ -51,6 +51,24 @@ export const fasilitasVokasiInputSchema = z.object({
   isPublished: z.boolean().default(false),
 });
 
+export const jurusanInputSchema = z.object({
+  code: z.string().trim().min(1).max(20),
+  name: z.string().trim().min(1).max(120),
+  fullName: z.string().trim().min(1).max(240),
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(240).optional().or(z.literal("")),
+  category: z.enum(["IT", "Teknik"]),
+  description: z.string().trim().min(1).max(5_000),
+  kompetensi: z.array(z.string().trim().min(1).max(200)).max(30),
+  fokusKeahlian: z.array(z.object({ title: z.string().trim().min(1).max(120), icon: z.string().trim().max(60) })).max(20),
+  prospek: z.string().trim().min(1).max(2_000),
+  durasi: z.string().trim().min(1).max(60).optional(),
+  logoUrl: nullableUrl,
+  bgImageUrl: nullableUrl,
+  websiteUrl: nullableUrl,
+  sortOrder: z.number().int().min(0).default(0),
+  isPublished: z.boolean().default(false),
+});
+
 export const partnerInputSchema = z.object({
   name: z.string().trim().min(1).max(240),
   logoUrl: nullableUrl,

@@ -1,0 +1,1 @@
+ALTER TABLE "jurusan" ADD COLUMN "durasi" text DEFAULT '3 Tahun' NOT NULL;
