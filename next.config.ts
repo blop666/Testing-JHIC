@@ -9,6 +9,10 @@ const mediaRemotePatterns = mediaBase
   : [];
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: ["lucide-react", "framer-motion"],
+    cpus: 1,
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     qualities: [55, 60, 65, 75],
