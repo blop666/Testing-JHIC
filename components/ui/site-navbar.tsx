@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, useMotionTemplate, useScroll, useTransform } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,18 +18,17 @@ const navItems = [
 export function SiteNavbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState(720);
-  const { scrollY } = useScroll();
+  const [scrolled, setScrolled] = useState(false);
   const isHome = pathname === "/";
   const isProfile = pathname === "/profil-sekolah";
 
   useEffect(() => setMobileOpen(false), [pathname]);
 
   useEffect(() => {
-    const updateHeight = () => setViewportHeight(window.innerHeight);
-    updateHeight();
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
+    const onScroll = () => setScrolled(window.scrollY > window.innerHeight * 0.9);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
@@ -43,37 +42,21 @@ export function SiteNavbar() {
     };
   }, [mobileOpen]);
 
-  const homeBlue = useTransform(scrollY, [viewportHeight * 0.7, viewportHeight * 1.05], [0, 0.82]);
-  const homeBlur = useTransform(scrollY, [viewportHeight * 0.92, viewportHeight * 1.05], [0, 16]);
-  const homePadding = useTransform(scrollY, [0, viewportHeight * 1.18], [28, 12]);
-  const profileBlue = useTransform(scrollY, [viewportHeight * 0.96, viewportHeight * 1.08], [0, 0.82]);
-  const profileText = useTransform(scrollY, () => "#ffffff");
-  const profileBlur = useTransform(scrollY, [viewportHeight * 0.96, viewportHeight * 1.08], [0, 16]);
-  const staticBlue = useTransform(scrollY, () => 0.82);
-  const staticBlur = useTransform(scrollY, () => 16);
-  const transparent = useTransform(scrollY, () => 0);
-  const white = useTransform(scrollY, () => "#ffffff");
-  const compactPadding = useTransform(scrollY, () => 12);
-
-  const blueOpacity = isHome ? homeBlue : isProfile ? profileBlue : staticBlue;
-  const whiteOpacity = transparent;
-  const blur = isHome ? homeBlur : isProfile ? profileBlur : staticBlur;
-  const color = isProfile ? profileText : white;
-  const paddingY = isHome || isProfile ? homePadding : compactPadding;
-  const background = useMotionTemplate`linear-gradient(rgba(255, 255, 255, ${whiteOpacity}), rgba(255, 255, 255, ${whiteOpacity})), linear-gradient(rgba(0, 54, 171, ${blueOpacity}), rgba(0, 54, 171, ${blueOpacity}))`;
-  const backdropFilter = useMotionTemplate`blur(${blur}px) saturate(150%)`;
+  const solid = scrolled || !isHome || !isProfile;
 
   return (
     <>
-      <motion.header
-        className="fixed inset-x-0 top-0 z-[60]"
+      <header
+        className="fixed inset-x-0 top-0 z-[60] transition-[padding,background,backdrop-filter] duration-300"
         style={{
-          paddingTop: paddingY,
-          paddingBottom: paddingY,
-          background,
-          backdropFilter,
-          WebkitBackdropFilter: backdropFilter,
-          color,
+          background: solid
+            ? "linear-gradient(rgba(255,255,255,0.82), rgba(255,255,255,0.82)), linear-gradient(rgba(0,54,171,0.82), rgba(0,54,171,0.82))"
+            : "transparent",
+          backdropFilter: solid ? "blur(16px) saturate(150%)" : "none",
+          WebkitBackdropFilter: solid ? "blur(16px) saturate(150%)" : "none",
+          color: "#ffffff",
+          paddingTop: solid ? 12 : 28,
+          paddingBottom: solid ? 12 : 28,
         }}
       >
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-6 px-5 md:px-10 lg:px-14">
@@ -104,7 +87,7 @@ export function SiteNavbar() {
             </button>
           </div>
         </div>
-      </motion.header>
+      </header>
 
       <AnimatePresence>
         {mobileOpen && (

@@ -7,7 +7,7 @@ const saranaPrasaranaItems = [
     id: 1,
     title: "Ruang Kelas Utama",
     desc: "Ruang belajar nyaman dengan fasilitas modern",
-    url: "/fan.jpeg",
+    url: "/banner.webp",
     span: "md:col-span-2 md:row-span-2",
   },
   {

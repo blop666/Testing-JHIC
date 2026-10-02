@@ -11,7 +11,7 @@ const mediaRemotePatterns = mediaBase
 const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
-    qualities: [55, 65, 75],
+    qualities: [55, 60, 65, 75],
     deviceSizes: [640, 750, 828, 1080, 1200, 1600, 1920],
     remotePatterns: [
       {

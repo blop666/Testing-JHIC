@@ -242,8 +242,15 @@ export function GuruStaffSection({ items, categories = [] }: { items: GuruItem[]
           </div>
         )}
 
+        {guruStaffData.length > 0 && filteredData.length === 0 && (
+          <div className="mx-auto mt-4 max-w-xl rounded-3xl border-2 border-dashed border-blue-200 bg-white/70 px-8 py-16 text-center shadow-sm">
+            <p className="text-lg font-semibold text-blue-900">Data Tidak Ditemukan</p>
+            <p className="mt-2 text-sm text-slate-500">Belum ada Guru untuk saat ini pada kategori ini.</p>
+          </div>
+        )}
+
         {/* Mobile uses one readable card instead of the desktop five-panel accordion. */}
-        {guruStaffData.length > 0 && (<>
+        {guruStaffData.length > 0 && filteredData.length > 0 && (<>
         <AnimatePresence mode="wait">
           <motion.article
             key={`mobile-${paginatedData[activeIndex]?.id}`}
