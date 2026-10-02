@@ -3,17 +3,18 @@ set -Eeuo pipefail
 
 : "${DEPLOY_PATH:?DEPLOY_PATH is required}"
 cd "$DEPLOY_PATH"
+
+git pull --ff-only origin main
+npm ci
+npm run build
+
 set -a
 . ./.env.production
 set +a
 
-git pull --ff-only origin main
-npm ci
 npx drizzle-kit migrate
-npm run build
-pm2 restart cibione-cms --update-env
-pm2 save
-pm2 describe cibione-cms > /dev/null
+sudo systemctl restart pm2-cibione
+sudo systemctl is-active --quiet pm2-cibione
 for attempt in 1 2 3 4 5; do
   curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3000/ > /dev/null && exit 0
   sleep 2
