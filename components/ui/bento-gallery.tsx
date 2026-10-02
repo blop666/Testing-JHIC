@@ -6,7 +6,7 @@ import {
   motion,
   AnimatePresence,
   useMotionValue,
-  animate,
+  useReducedMotion,
 } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { X } from "lucide-react"
@@ -104,11 +104,12 @@ const InteractiveImageBentoGallery: React.FC<
   const gridRef = useRef<HTMLDivElement>(null)
   const targetRef = useRef<HTMLDivElement>(null)
   const x = useMotionValue(0)
+  const reduceMotion = useReducedMotion()
 
   const duplicatedItems = [...imageItems, ...imageItems, ...imageItems, ...imageItems]
 
   useEffect(() => {
-    if (!autoPlay || isHovered || isDragging) return
+    if (!autoPlay || isHovered || isDragging || reduceMotion) return
 
     let animationFrameId: number
     const speed = 1 * autoPlaySpeed
@@ -135,7 +136,7 @@ const InteractiveImageBentoGallery: React.FC<
         cancelAnimationFrame(animationFrameId)
       }
     }
-  }, [autoPlay, isHovered, isDragging, autoPlaySpeed, x])
+  }, [autoPlay, isHovered, isDragging, autoPlaySpeed, reduceMotion, x])
 
   useEffect(() => {
     if (!selectedItem) return
@@ -175,9 +176,9 @@ const InteractiveImageBentoGallery: React.FC<
         <motion.div
           className="w-max"
           style={{ x }}
-          drag="x"
-          dragConstraints={{ left: -10000, right: 0 }}
-          dragElastic={0.05}
+            drag={reduceMotion ? false : "x"}
+            dragConstraints={{ left: -10000, right: 0 }}
+            dragElastic={0.05}
           onDragStart={() => setIsDragging(true)}
           onDragEnd={() => {
             setIsDragging(false)

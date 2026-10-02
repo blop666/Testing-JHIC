@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import LogoLoop, { type LogoItem } from "@/components/ui/logo-loop";
-import { Building2, X } from "lucide-react";
+import { Building2, ChevronRight, X } from "lucide-react";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -151,6 +151,27 @@ export function KerjaSamaIndustriSection({ partners }: { partners: Partner[] }) 
     title: logo.name,
   }));
 
+  const renderPartnerCard = (logo: PartnerLogo) => (
+    <button
+      type="button"
+      onClick={() => handleLogoClick(logo)}
+      className="flex h-24 w-64 shrink-0 items-center gap-4 rounded-2xl border border-white/15 bg-white/10 px-5 text-left shadow-lg backdrop-blur-sm transition-transform hover:scale-105"
+    >
+      <span className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-white/30">
+        {logo.src && logo.src !== "/banner.jpeg" ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logo.src} alt={logo.alt} className="max-h-full max-w-full object-contain" loading="lazy" />
+        ) : (
+          <Building2 className="h-8 w-8 text-[#1b4d96]" />
+        )}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-base font-semibold text-white">{logo.name}</span>
+        <span className="block text-xs font-medium text-white/70">Mitra Industri</span>
+      </span>
+    </button>
+  );
+
   const closeModal = () => {
     setIsModalOpen(false);
     setTimeout(() => setSelectedCompany(null), 300);
@@ -194,8 +215,29 @@ export function KerjaSamaIndustriSection({ partners }: { partners: Partner[] }) 
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, delay: 0.3 }}
+          className="hidden md:block"
         >
           <LogoLoop logos={logos} speed={40} direction="left" logoHeight={96} gap={24} fadeOut fadeOutColor="#1b4d96" ariaLabel="Daftar mitra kerja sama industri" />
+        </motion.div>
+
+        {/* Mobile: manual scroll carousel with a small "tap for detail" hint */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6 }}
+          className="md:hidden"
+        >
+          <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Daftar mitra kerja sama industri">
+            {partnerLogos.map((logo) => (
+              <div key={logo.name} className="snap-start">
+                {renderPartnerCard(logo)}
+                <span className="mt-2 flex items-center justify-center gap-1 text-[11px] font-medium text-white/60">
+                  <ChevronRight className="h-3 w-3" /> Ketuk untuk detail
+                </span>
+              </div>
+            ))}
+          </div>
         </motion.div>
       </div>
 

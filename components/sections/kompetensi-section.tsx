@@ -515,7 +515,7 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[70] flex items-center justify-center p-4"
             style={{
               backgroundColor: "rgba(0, 0, 0, 0.7)",
               backdropFilter: "blur(8px)",

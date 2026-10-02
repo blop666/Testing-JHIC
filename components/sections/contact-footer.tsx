@@ -61,12 +61,33 @@ export function ContactFooter() {
     subject: "",
     message: "",
   });
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    alert("Terima kasih! Pesan Anda telah dikirim.");
-    setFormData({ name: "", email: "", subject: "", message: "" });
+    if (status === "sending") return;
+    setStatus("sending");
+    setErrorMessage("");
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const result = (await response.json()) as { success?: boolean; error?: { message?: string; details?: Array<{ field: string; message: string }> } };
+      if (!response.ok || !result.success) {
+        const detail = (result.error?.details ?? []).map((d) => d.message).join(" ");
+        setErrorMessage(detail || result.error?.message || "Gagal mengirim pesan.");
+        setStatus("error");
+        return;
+      }
+      setStatus("sent");
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch {
+      setErrorMessage("Gagal mengirim pesan. Periksa koneksi Anda.");
+      setStatus("error");
+    }
   };
 
   const handleChange = (
@@ -243,15 +264,22 @@ export function ContactFooter() {
             <div className="sm:col-span-2">
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 rounded-lg bg-[#155DFC] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#0f4bc8]"
+                disabled={status === "sending"}
+                className="inline-flex items-center gap-2 rounded-lg bg-[#155DFC] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#0f4bc8] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" />
                   <path d="m21.854 2.147-10.94 10.939" />
                 </svg>
-                Kirim Pesan
+                {status === "sending" ? "Mengirim..." : "Kirim Pesan"}
               </button>
             </div>
+            {status === "sent" && (
+              <p className="sm:col-span-2 rounded-lg bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">Terima kasih! Pesan Anda telah dikirim.</p>
+            )}
+            {status === "error" && (
+              <p className="sm:col-span-2 rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{errorMessage}</p>
+            )}
           </form>
         </div>
       </div>
