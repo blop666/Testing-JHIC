@@ -215,8 +215,7 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initi
     activeFilter === "popular"
       ? [...newsItems].sort((first, second) => Number(second.isPopularOverride) - Number(first.isPopularOverride) || (second.viewCount ?? 0) - (first.viewCount ?? 0)).slice(0, 3)
       : newsItems.slice().sort((first, second) => (second.sortDate ?? 0) - (first.sortDate ?? 0)).slice(0, 3);
-  const highlightedNews = newsItems.filter((news) => news.isHighlighted).sort((first, second) => (second.sortDate ?? 0) - (first.sortDate ?? 0)).slice(0, 3);
-  const carouselNews = highlightedNews.length ? highlightedNews : sideNews;
+  const carouselNews = sideNews;
   const activeNews = carouselNews[activeIndex] ?? carouselNews[0];
 
   const moveCarousel = (direction: -1 | 1) => {
@@ -231,6 +230,10 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initi
 
     return () => window.clearInterval(timer);
   }, [carouselNews.length, isPaused, reduceMotion]);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [activeFilter]);
 
   return (
     <section
@@ -358,7 +361,7 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initi
           </Dialog>
 
           <aside className="flex min-h-[520px] flex-col gap-5 lg:h-full" data-aos="fade-up" data-aos-delay="100">
-             <div className="flex h-fit flex-col rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_-28px_rgba(15,23,42,0.4)] ring-1 ring-slate-100">
+             <div className="flex h-full flex-col rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_-28px_rgba(15,23,42,0.4)] ring-1 ring-slate-100">
               <div
                 aria-label="Urutkan berita"
                 className="mb-4 grid grid-cols-2 border-b border-slate-200"
@@ -389,7 +392,7 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initi
               <AnimatePresence initial={false} mode="wait">
                 <motion.div
                   animate={{ opacity: 1, x: 0 }}
-                   className="grid gap-3 sm:grid-cols-1"
+                   className="grid flex-1 grid-rows-3 gap-3 sm:grid-cols-1"
                   exit={{ opacity: 0, x: -10 }}
                   initial={{ opacity: 0, x: 10 }}
                   key={activeFilter}
@@ -405,13 +408,14 @@ export function BeritaSection({ items = FALLBACK_NEWS_ITEMS, achievements, initi
                         animate={{ opacity: 1, y: 0 }}
                         layout
                         transition={{ duration: reduceMotion ? 0.12 : 0.28, ease: [0.23, 1, 0.32, 1] }}
+                        className="h-full"
                       >
                       <CutoutCard
                         aria-label={`Pilih berita: ${news.title}`}
                         aria-pressed={isActive}
                         className={cn(
                           cutoutCardSurfaceClassName,
-                           "grid min-h-[114px] grid-cols-[112px_minmax(0,1fr)] rounded-xl border-slate-200/80 bg-white p-2.5 text-left shadow-none ring-1 ring-slate-100 hover:border-slate-300 hover:shadow-none",
+                           "grid h-full min-h-[114px] grid-cols-[112px_minmax(0,1fr)] rounded-xl border-slate-200/80 bg-white p-2.5 text-left shadow-none ring-1 ring-slate-100 hover:border-slate-300 hover:shadow-none",
                           isActive && "border-[#d7e6f0] bg-[#e8f1f6] shadow-none ring-[#d7e6f0]",
                         )}
                         onClick={() => setActiveIndex(carouselIndex)}

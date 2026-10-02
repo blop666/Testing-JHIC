@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Award, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Dialog } from "@/components/ui/linear-dialog";
@@ -46,9 +46,10 @@ export function HighlightPrestasi({ achievements = ACHIEVEMENTS }: { achievement
   const highlights = achievements.slice(0, 6);
   const pages = Math.max(1, Math.ceil(highlights.length / ITEMS_PER_PAGE));
   const activeItems = highlights.slice(page * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE + ITEMS_PER_PAGE);
+  const isEmpty = highlights.length === 0;
 
   useEffect(() => {
-    if (reduceMotion) return;
+    if (reduceMotion || pages <= 1) return;
     const timer = window.setInterval(() => setPage((current) => (current + 1) % pages), AUTO_ADVANCE_DELAY);
     return () => window.clearInterval(timer);
   }, [pages, reduceMotion]);
@@ -63,17 +64,24 @@ export function HighlightPrestasi({ achievements = ACHIEVEMENTS }: { achievement
       <div className="mx-auto max-w-[1720px] px-4 sm:px-6 lg:px-8 xl:px-10" data-aos="fade-up">
         <div className="mb-6 flex items-end justify-between gap-5" data-aos="fade-up" data-aos-delay="100">
           <div>
-            <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#1d4f98]"><Award className="h-4 w-4" /> Highlight Prestasi</span>
+            <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#1d4f98]">Highlight Prestasi</span>
             <h2 id="highlight-prestasi-title" className="mt-2 text-2xl font-bold tracking-[-0.035em] text-slate-950 sm:text-3xl">Pencapaian populer sekolah</h2>
           </div>
           <Link className="shrink-0 rounded-full border border-[#bfd3e6] px-4 py-2 text-sm font-bold text-[#1d4f98] transition-colors hover:bg-[#1d4f98] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1d4f98]" href="/berita/prestasi">Detail</Link>
         </div>
         <div data-aos="fade-up" data-aos-delay="200">
+          {isEmpty ? (
+            <div className="mx-auto max-w-xl rounded-3xl border-2 border-dashed border-blue-200 bg-white/70 px-8 py-16 text-center shadow-sm">
+              <p className="text-lg font-semibold text-blue-900">Data Belum Ada</p>
+              <p className="mt-2 text-sm text-slate-500">Belum ada pencapaian populer untuk saat ini.</p>
+            </div>
+          ) : (
           <AnimatePresence initial={false} mode="wait">
             <motion.div animate={{ opacity: 1, x: 0 }} className="grid gap-4 md:grid-cols-3" exit={{ opacity: 0, x: -10 }} initial={{ opacity: 0, x: 10 }} key={page} transition={{ duration: reduceMotion ? 0.08 : 0.28, ease: [0.23, 1, 0.32, 1] }}>
               {activeItems.map((achievement) => <HighlightCard achievement={achievement} key={achievement.id} onSelect={openAchievement} />)}
             </motion.div>
           </AnimatePresence>
+          )}
         </div>
         {pages > 1 && <div className="mt-6 flex justify-center gap-2" data-aos="fade-up" data-aos-delay="300" role="group" aria-label="Pagination highlight prestasi">{Array.from({ length: pages }, (_, index) => <button aria-current={page === index ? "true" : undefined} aria-label={`Tampilkan highlight prestasi ${index + 1}`} className="relative h-4 w-9 cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1d4f98]" key={index} onClick={() => setPage(index)} type="button"><span className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-slate-200" />{page === index && <motion.span className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#1d4f98]" layoutId="highlight-prestasi-dot" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}</button>)}</div>}
         {selectedAchievement && <Dialog open onOpenChange={(open) => !open && setSelectedAchievement(null)}><AchievementModal achievement={selectedAchievement} /></Dialog>}

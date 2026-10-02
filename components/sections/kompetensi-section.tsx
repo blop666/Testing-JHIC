@@ -284,7 +284,7 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
   // Framer Motion Variants
   const focusCardVariants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 50 : -50,
+      x: direction > 0 ? 28 : -28,
       opacity: 0,
     }),
     center: {
@@ -292,7 +292,7 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
       opacity: 1,
     },
     exit: (direction: number) => ({
-      x: direction > 0 ? -50 : 50,
+      x: direction > 0 ? -28 : 28,
       opacity: 0,
     }),
   };
@@ -346,7 +346,7 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
         <div className="grid gap-6 lg:grid-cols-[1fr_0.65fr] lg:gap-8">
           {/* Focus Card - Kiri */}
           <motion.div 
-            className="relative h-[500px] md:h-[600px] lg:h-[560px]"
+            className="relative h-[500px] overflow-hidden md:h-[600px] lg:h-[560px]"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -363,7 +363,7 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
                   x: { type: "tween", duration: 0.3, ease: "easeInOut" },
                   opacity: { duration: 0.2 },
                 }}
-                className="absolute inset-0 group cursor-pointer rounded-2xl overflow-hidden border border-[#E5E7EB]"
+                className="absolute inset-0 will-change-transform group cursor-pointer rounded-2xl overflow-hidden border border-[#E5E7EB]"
                 onClick={handleModalOpen}
                 style={{
                   backgroundImage: `url(${focusedJurusan?.bgImage || "/hero-banner.jpeg"})`,
