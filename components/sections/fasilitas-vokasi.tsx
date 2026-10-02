@@ -18,7 +18,7 @@ export type FasilitasVokasiItem = {
 const fallbackFasilitas: FasilitasVokasiItem[] = [
   { id: 1, title: "Laboratorium Komputer Enterprise", description: "Lab komputer berstandar industri untuk praktik pemrograman dan jaringan. Dilengkapi workstation modern dan koneksi berkecepatan tinggi.", image: "/smkn-hero-banner.webp", tefaName: "TeFa Software Development", jurusan: "RPL · SIJA" },
   { id: 2, title: "Bengkel Praktik Mesin", description: "Bengkel produksi riil dengan mesin CNC dan peralatan manufaktur modern untuk pembelajaran berbasis Teaching Factory.", image: "/hero-banner.webp", tefaName: "TeFa CNC Machining", jurusan: "TP · TFLM" },
-  { id: 3, title: "LSP Sertifikasi Kompetensi", description: "Tempat uji kompetensi berlisensi untuk sertifikasi profesi siswa, bekerja sama dengan asosiasi dan industri.", image: "/hero-banner.webp", tefaName: "TeFa Jaringan & Mikrotik", jurusan: "TKJ · TOI" },
+  { id: 3, title: "LSP Sertifikasi Kompetensi", description: "Tempat uji kompetensi berlisensi untuk sertifikasi profesi siswa, bekerja sama dengan asosiasi dan industri.", image: "/hero-banner.jpeg", tefaName: "TeFa Jaringan & Mikrotik", jurusan: "TKJ · TOI" },
 ];
 
 const AUTO_ADVANCE_MS = 5000;
@@ -68,7 +68,7 @@ export function FasilitasVokasi({ fasilitas = fallbackFasilitas }: { fasilitas?:
               className="group absolute inset-0 w-full cursor-pointer overflow-hidden rounded-xl border border-[#E5E7EB] text-left"
             >
               <Image
-                src={current.image || "/hero-banner.webp"}
+                src={current.image || "/hero-banner.jpeg"}
                 alt={current.title}
                 fill
                 sizes="(max-width: 768px) 100vw, 80vw"
@@ -142,7 +142,7 @@ export function FasilitasVokasi({ fasilitas = fallbackFasilitas }: { fasilitas?:
               onClick={(e) => e.stopPropagation()}
             >
               <div className="relative h-72 md:h-96">
-                <Image src={modalItem.image || "/hero-banner.webp"} alt={modalItem.title} fill sizes="(max-width: 768px) 100vw, 896px" className="object-cover" />
+                <Image src={modalItem.image || "/hero-banner.jpeg"} alt={modalItem.title} fill sizes="(max-width: 768px) 100vw, 896px" className="object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                 <button
                   onClick={() => setModalOpen(false)}

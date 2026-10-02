@@ -30,7 +30,7 @@ const galleryItems = [
     title: "Akreditasi A",
     description: "Terakreditasi A oleh BAN-S/M dengan standar pendidikan nasional yang terpercaya dan berkualitas.",
     tag: "Akreditasi",
-    image: "/banner.webp",
+    image: "/banner.jpeg",
     type: "image",
     className: "md:col-span-3 lg:col-span-5 md:row-span-2"
   },
@@ -39,7 +39,7 @@ const galleryItems = [
     title: "Fasilitas Standar Industri",
     description: "Laboratorium dan workshop dengan peralatan modern sesuai standar industri 4.0.",
     tag: "Fasilitas",
-    image: "/banner.webp",
+    image: "/banner.jpeg",
     type: "image",
     className: "md:col-span-3 lg:col-span-4 md:row-span-1"
   },
@@ -56,7 +56,7 @@ const galleryItems = [
     title: "Sertifikasi ISO",
     description: "ISO 9001:2015 untuk Sistem Manajemen Mutu dan ISO 21001:2018 untuk Organisasi Pendidikan.",
     tag: "Sertifikasi",
-    image: "/banner.webp",
+    image: "/banner.jpeg",
     type: "image",
     className: "md:col-span-3 lg:col-span-4 md:row-span-1"
   },
@@ -81,7 +81,7 @@ const galleryItems = [
     title: "Pembelajaran Inovatif",
     description: "Metode pembelajaran berbasis proyek dengan kolaborasi industri dan teknologi terkini.",
     tag: "Pembelajaran",
-    image: "/banner.webp",
+    image: "/banner.jpeg",
     type: "image",
     className: "md:col-span-3 lg:col-span-6 md:row-span-1"
   },

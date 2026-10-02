@@ -13,7 +13,7 @@ export default async function ProfilSekolahPage() {
   const guru = guruResult.status === "fulfilled" ? guruResult.value : [];
   const guruCategories = guruCategoriesResult.status === "fulfilled" ? guruCategoriesResult.value : [];
   const partners = partnersResult.status === "fulfilled" ? partnersResult.value : [];
-  const guruItems = guru.map((item) => ({ id: item.id, name: item.name, position: item.position ?? "", bio: item.bio ?? "", image: item.imageUrl ?? "/banner.webp", category: item.category ?? "General" }));
+  const guruItems = guru.map((item) => ({ id: item.id, name: item.name, position: item.position ?? "", bio: item.bio ?? "", image: item.imageUrl ?? "/banner.jpeg", category: item.category ?? "General" }));
   return (
     <main className="min-h-screen bg-gray-50">
       <SejarahSection />

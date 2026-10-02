@@ -51,7 +51,7 @@ async function seedSettings() {
     {
       key: "school_vision_mission",
       value: {
-        backgroundImageUrl: "/banner.webp",
+        backgroundImageUrl: "/banner.jpeg",
         vision: { title: "Visi", subtitle: "Sekolah", description: "", points: [] },
         mission: { title: "Misi", subtitle: "Sekolah", description: "", points: [] },
       },
@@ -74,27 +74,27 @@ async function seedContent() {
   const [selectedCategory] = category ? [category] : await db.select({ id: postCategories.id }).from(postCategories).where(eq(postCategories.slug, "sekolah")).limit(1);
   const [general] = await db.select({ id: guruCategories.id }).from(guruCategories).where(eq(guruCategories.slug, "general")).limit(1);
   const actor = (await db.select({ id: users.id }).from(users).where(eq(users.role, "super_admin")).limit(1))[0]?.id ?? null;
-  if (!(await db.select({ id: guru.id }).from(guru).where(eq(guru.name, "Kepala Sekolah")).limit(1)).length) await db.insert(guru).values({ name: "Kepala Sekolah", position: "Kepala Sekolah", bio: "Pimpinan SMKN 1 Cibinong.", imageUrl: "/banner.webp", categoryId: general?.id ?? null, sortOrder: 0, isPublished: true, createdBy: actor });
-  if (!(await db.select({ id: saranaPrasarana.id }).from(saranaPrasarana).where(eq(saranaPrasarana.title, "Ruang Kelas Utama")).limit(1)).length) await db.insert(saranaPrasarana).values({ title: "Ruang Kelas Utama", description: "Ruang belajar dengan fasilitas modern.", imageUrl: "/banner.webp", presentationSlot: "featured_large", sortOrder: 0, isPublished: true, createdBy: actor });
-  if (!(await db.select({ id: kerjasamaIndustri.id }).from(kerjasamaIndustri).where(eq(kerjasamaIndustri.name, "Mitra Industri")).limit(1)).length) await db.insert(kerjasamaIndustri).values({ name: "Mitra Industri", logoUrl: "/banner.webp", description: "Mitra pembelajaran dan pengembangan kompetensi.", sortOrder: 0, isPublished: true, createdBy: actor });
-  if (selectedCategory && !(await db.select({ id: posts.id }).from(posts).where(eq(posts.slug, "selamat-datang-di-cibione-cms")).limit(1)).length) await db.insert(posts).values({ type: "berita", categoryId: selectedCategory.id, title: "Selamat Datang di CibiOne CMS", slug: "selamat-datang-di-cibione-cms", excerpt: "Informasi resmi SMKN 1 Cibinong.", body: "Konten awal CMS.", imageUrl: "/banner.webp", isPublished: false, publishedAt: new Date(), createdBy: actor });
+  if (!(await db.select({ id: guru.id }).from(guru).where(eq(guru.name, "Kepala Sekolah")).limit(1)).length) await db.insert(guru).values({ name: "Kepala Sekolah", position: "Kepala Sekolah", bio: "Pimpinan SMKN 1 Cibinong.", imageUrl: "/banner.jpeg", categoryId: general?.id ?? null, sortOrder: 0, isPublished: true, createdBy: actor });
+  if (!(await db.select({ id: saranaPrasarana.id }).from(saranaPrasarana).where(eq(saranaPrasarana.title, "Ruang Kelas Utama")).limit(1)).length) await db.insert(saranaPrasarana).values({ title: "Ruang Kelas Utama", description: "Ruang belajar dengan fasilitas modern.", imageUrl: "/banner.jpeg", presentationSlot: "featured_large", sortOrder: 0, isPublished: true, createdBy: actor });
+  if (!(await db.select({ id: kerjasamaIndustri.id }).from(kerjasamaIndustri).where(eq(kerjasamaIndustri.name, "Mitra Industri")).limit(1)).length) await db.insert(kerjasamaIndustri).values({ name: "Mitra Industri", logoUrl: "/banner.jpeg", description: "Mitra pembelajaran dan pengembangan kompetensi.", sortOrder: 0, isPublished: true, createdBy: actor });
+  if (selectedCategory && !(await db.select({ id: posts.id }).from(posts).where(eq(posts.slug, "selamat-datang-di-cibione-cms")).limit(1)).length) await db.insert(posts).values({ type: "berita", categoryId: selectedCategory.id, title: "Selamat Datang di CibiOne CMS", slug: "selamat-datang-di-cibione-cms", excerpt: "Informasi resmi SMKN 1 Cibinong.", body: "Konten awal CMS.", imageUrl: "/banner.jpeg", isPublished: false, publishedAt: new Date(), createdBy: actor });
   const agendaSeeds = [
     { title: "Pembukaan Tahun Ajaran Baru", slug: "pembukaan-tahun-ajaran-baru", excerpt: "Pembukaan kegiatan belajar dan pengarahan awal bagi seluruh siswa SMKN 1 Cibinong.", location: "Lapangan Utama", date: "2026-10-12T07:00:00", endDate: "2026-10-12T09:30:00" },
     { title: "Seminar Karier dan Industri", slug: "seminar-karier-industri", excerpt: "Sesi bersama mitra industri untuk mengenal kebutuhan kompetensi dan peluang karier lulusan.", location: "Aula Sekolah", date: "2026-10-20T09:00:00", endDate: "2026-10-20T12:00:00" },
     { title: "Pameran Karya Siswa", slug: "pameran-karya-siswa", excerpt: "Presentasi karya terbaik dari berbagai kompetensi keahlian untuk warga sekolah dan publik.", location: "Gedung Praktik", date: "2026-11-04T08:00:00", endDate: "2026-11-04T15:00:00" },
   ];
   for (const agendaItem of agendaSeeds) {
-    await db.insert(posts).values({ type: "agenda", categoryId: selectedCategory?.id ?? null, title: agendaItem.title, slug: agendaItem.slug, excerpt: agendaItem.excerpt, body: agendaItem.excerpt, imageUrl: "/banner.webp", eventDate: new Date(agendaItem.date), eventEndDate: new Date(agendaItem.endDate), eventLocation: agendaItem.location, isPublished: true, publishedAt: new Date(), createdBy: actor }).onConflictDoUpdate({ target: posts.slug, set: { eventDate: new Date(agendaItem.date), eventEndDate: new Date(agendaItem.endDate), eventLocation: agendaItem.location, updatedAt: new Date() } });
+    await db.insert(posts).values({ type: "agenda", categoryId: selectedCategory?.id ?? null, title: agendaItem.title, slug: agendaItem.slug, excerpt: agendaItem.excerpt, body: agendaItem.excerpt, imageUrl: "/banner.jpeg", eventDate: new Date(agendaItem.date), eventEndDate: new Date(agendaItem.endDate), eventLocation: agendaItem.location, isPublished: true, publishedAt: new Date(), createdBy: actor }).onConflictDoUpdate({ target: posts.slug, set: { eventDate: new Date(agendaItem.date), eventEndDate: new Date(agendaItem.endDate), eventLocation: agendaItem.location, updatedAt: new Date() } });
   }
 }
 
 async function seedProgramUnggulan() {
   const actor = (await db.select({ id: users.id }).from(users).where(eq(users.role, "super_admin")).limit(1))[0]?.id ?? null;
   const seeds = [
-    { title: "Portal Belajar Online", description: "Lingkungan belajar digital untuk mendukung pembelajaran jarak jauh sesuai kurikulum sekolah.", label: "Pembelajaran digital", imageUrl: "/hero-banner.webp", sortOrder: 0 },
+    { title: "Portal Belajar Online", description: "Lingkungan belajar digital untuk mendukung pembelajaran jarak jauh sesuai kurikulum sekolah.", label: "Pembelajaran digital", imageUrl: "/hero-banner.jpeg", sortOrder: 0 },
     { title: "Academy Mikrotik", description: "Kelas Mikrotik bersertifikasi sebagai bagian dari kurikulum dan persiapan kompetensi siswa.", label: "Sertifikasi teknologi", imageUrl: "/smkn-hero-banner.webp", sortOrder: 1 },
     { title: "Sistem Informasi BK", description: "Layanan informasi bimbingan dan konseling yang lebih mudah dijangkau oleh siswa.", label: "Pendampingan siswa", imageUrl: "/hero-banner.webp", sortOrder: 2 },
-    { title: "Sertifikasi LSP", description: "Layanan sertifikasi kompetensi untuk membuktikan kesiapan siswa memasuki dunia kerja.", label: "Kompetensi profesi", imageUrl: "/hero-banner.webp", sortOrder: 3 },
+    { title: "Sertifikasi LSP", description: "Layanan sertifikasi kompetensi untuk membuktikan kesiapan siswa memasuki dunia kerja.", label: "Kompetensi profesi", imageUrl: "/hero-banner.jpeg", sortOrder: 3 },
   ];
   for (const item of seeds) {
     if (!(await db.select({ id: programUnggulan.id }).from(programUnggulan).where(eq(programUnggulan.title, item.title)).limit(1)).length) {
@@ -111,7 +111,7 @@ async function seedFasilitasVokasi() {
   const seeds = [
     { title: "Laboratorium Komputer Enterprise", description: "Lab komputer berstandar industri untuk praktik pemrograman dan jaringan. Dilengkapi workstation modern dan koneksi berkecepatan tinggi.", imageUrl: "/smkn-hero-banner.webp", tefaName: "TeFa Software Development", jurusanId: rpl?.id ?? null, sortOrder: 0 },
     { title: "Bengkel Praktik Mesin", description: "Bengkel produksi riil dengan mesin CNC dan peralatan manufaktur modern untuk pembelajaran berbasis Teaching Factory.", imageUrl: "/hero-banner.webp", tefaName: "TeFa CNC Machining", jurusanId: tp?.id ?? null, sortOrder: 1 },
-    { title: "LSP Sertifikasi Kompetensi", description: "Tempat uji kompetensi berlisensi untuk sertifikasi profesi siswa, bekerja sama dengan asosiasi dan industri.", imageUrl: "/hero-banner.webp", tefaName: "TeFa Jaringan & Mikrotik", jurusanId: tkj?.id ?? null, sortOrder: 2 },
+    { title: "LSP Sertifikasi Kompetensi", description: "Tempat uji kompetensi berlisensi untuk sertifikasi profesi siswa, bekerja sama dengan asosiasi dan industri.", imageUrl: "/hero-banner.jpeg", tefaName: "TeFa Jaringan & Mikrotik", jurusanId: tkj?.id ?? null, sortOrder: 2 },
   ];
   for (const item of seeds) {
     if (!(await db.select({ id: fasilitasVokasi.id }).from(fasilitasVokasi).where(eq(fasilitasVokasi.title, item.title)).limit(1)).length) {

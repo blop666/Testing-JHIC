@@ -40,7 +40,7 @@ export default async function KompetensiKeahlianPage() {
     id: item.id,
     title: item.title,
     description: item.description ?? "",
-    image: item.imageUrl ?? "/hero-banner.webp",
+    image: item.imageUrl ?? "/hero-banner.jpeg",
     tefaName: item.tefaName,
     jurusan: item.jurusan ? `${item.jurusan.code} · ${item.jurusan.name}` : null,
   }));
