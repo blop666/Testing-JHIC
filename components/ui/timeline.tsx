@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useMotionValueEvent,
   useScroll,
   useTransform,
   motion,
@@ -34,7 +35,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
     offset: ["start 10%", "end 50%"],
   });
 
-  const scaleTransform = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const heightTransform = useTransform(scrollYProgress, [0, 1], [0, height]);
   const opacityTransform = useTransform(scrollYProgress, [0, 0.1], [0, 1]);
 
   return (
@@ -83,10 +84,10 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
         >
           <motion.div
             style={{
-              scaleY: scaleTransform,
+              height: heightTransform,
               opacity: opacityTransform,
             }}
-            className="absolute inset-x-0 top-0 h-full w-[2px] origin-top bg-gradient-to-t from-cyan-400 via-blue-400 to-white rounded-full"
+            className="absolute inset-x-0 top-0 w-[2px] bg-gradient-to-t from-cyan-400 via-blue-400 to-white rounded-full"
           />
         </div>
       </div>
