@@ -21,7 +21,7 @@ export default async function PrestasiPage() {
       recipient: post.jurusan?.name ?? "SMKN 1 Cibinong",
       date: formatDate(post.publishedAt),
       level: "Prestasi",
-      image: post.imageUrl ?? "/banner.jpeg",
+      image: post.imageUrl ?? "/banner.webp",
       ratio: (index % 3 === 0 ? "portrait" : index % 3 === 1 ? "landscape" : "square") as "portrait" | "landscape" | "square",
       description,
       body: post.body,

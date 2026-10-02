@@ -13,7 +13,7 @@ assert.ok(htmlBody.includes("<h2>") && htmlBody.includes("<strong>") && !htmlBod
 const imgSafe = postInputSchema.parse({ type: "berita", title: "Berita", slug: "berita-2", body: "<img src=x onerror=alert(1)>", isPublished: false });
 const imgBody = imgSafe.body ?? "";
 assert.ok(!imgBody.includes("onerror") && !imgBody.includes("javascript:"));
-const vision = parseSetting("school_vision_mission", { backgroundImageUrl: "/banner.jpeg", vision: { title: "Visi", subtitle: "", description: "", points: [] }, mission: { title: "Misi", subtitle: "", description: "", points: [] } });
+const vision = parseSetting("school_vision_mission", { backgroundImageUrl: "/banner.webp", vision: { title: "Visi", subtitle: "", description: "", points: [] }, mission: { title: "Misi", subtitle: "", description: "", points: [] } });
 assert.ok("vision" in vision && vision.vision.title === "Visi");
 
 const sijaAdmin = { id: 1, role: "jurusan_admin" as const, jurusanId: 5 };

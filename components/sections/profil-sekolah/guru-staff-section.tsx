@@ -6,87 +6,87 @@ import Image from "next/image";
 
 const fallbackGuruStaffData = [
   // General - Leadership
-  { id: 1, name: 'Dr. Sugiyo, S.Pd, M.Pd', position: 'Kepala Sekolah', bio: 'Memimpin SMKN 1 Cibinong dengan visi keunggulan dan karakter. Berpengalaman lebih dari 20 tahun di bidang pendidikan.', image: '/banner.jpeg', category: 'General' },
-  { id: 2, name: 'Dr. Eneng Nurahman, S.Pd, M.Si', position: 'Wakil Kepala Sekolah Bidang Kurikulum', bio: 'Mengelola kurikulum dan pembelajaran dengan fokus pada standar industri dan kompetensi siswa.', image: '/banner.jpeg', category: 'General' },
-  { id: 3, name: 'H. Budi Santoso, S.Kom', position: 'Wakil Kepala Sekolah Bidang Sarana Prasarana', bio: 'Mengelola fasilitas pembelajaran dan infrastruktur sekolah untuk mendukung proses belajar mengajar.', image: '/banner.jpeg', category: 'General' },
-  { id: 4, name: 'Lina Susilowati, S.Pd', position: 'Wakil Kepala Sekolah Bidang Kesiswaan', bio: 'Membimbing karakter dan prestasi siswa dalam berbagai kegiatan ekstrakurikuler.', image: '/banner.jpeg', category: 'General' },
-  { id: 5, name: 'Drs. Ahmad Fauzi, M.Pd', position: 'Wakil Kepala Sekolah Bidang Hubungan Industri', bio: 'Membangun kemitraan dengan dunia usaha dan industri untuk penempatan lulusan.', image: '/banner.jpeg', category: 'General' },
-  { id: 6, name: 'Hj. Siti Aminah, S.Pd, M.M', position: 'Kepala Tata Usaha', bio: 'Mengelola administrasi dan keuangan sekolah dengan sistem yang tertib dan akuntabel.', image: '/banner.jpeg', category: 'General' },
+  { id: 1, name: 'Dr. Sugiyo, S.Pd, M.Pd', position: 'Kepala Sekolah', bio: 'Memimpin SMKN 1 Cibinong dengan visi keunggulan dan karakter. Berpengalaman lebih dari 20 tahun di bidang pendidikan.', image: '/banner.webp', category: 'General' },
+  { id: 2, name: 'Dr. Eneng Nurahman, S.Pd, M.Si', position: 'Wakil Kepala Sekolah Bidang Kurikulum', bio: 'Mengelola kurikulum dan pembelajaran dengan fokus pada standar industri dan kompetensi siswa.', image: '/banner.webp', category: 'General' },
+  { id: 3, name: 'H. Budi Santoso, S.Kom', position: 'Wakil Kepala Sekolah Bidang Sarana Prasarana', bio: 'Mengelola fasilitas pembelajaran dan infrastruktur sekolah untuk mendukung proses belajar mengajar.', image: '/banner.webp', category: 'General' },
+  { id: 4, name: 'Lina Susilowati, S.Pd', position: 'Wakil Kepala Sekolah Bidang Kesiswaan', bio: 'Membimbing karakter dan prestasi siswa dalam berbagai kegiatan ekstrakurikuler.', image: '/banner.webp', category: 'General' },
+  { id: 5, name: 'Drs. Ahmad Fauzi, M.Pd', position: 'Wakil Kepala Sekolah Bidang Hubungan Industri', bio: 'Membangun kemitraan dengan dunia usaha dan industri untuk penempatan lulusan.', image: '/banner.webp', category: 'General' },
+  { id: 6, name: 'Hj. Siti Aminah, S.Pd, M.M', position: 'Kepala Tata Usaha', bio: 'Mengelola administrasi dan keuangan sekolah dengan sistem yang tertib dan akuntabel.', image: '/banner.webp', category: 'General' },
   
   // Staff - Administrative
-  { id: 7, name: 'Budi Hartono, S.Kom', position: 'Staff IT & Sistem Informasi', bio: 'Mengelola infrastruktur teknologi informasi dan sistem administrasi digital sekolah.', image: '/banner.jpeg', category: 'Staff' },
-  { id: 8, name: 'Rina Kusuma, S.E', position: 'Staff Keuangan', bio: 'Mengelola keuangan sekolah dengan sistem pelaporan yang transparan dan akuntabel.', image: '/banner.jpeg', category: 'Staff' },
-  { id: 9, name: 'Dedi Supriadi, S.Sos', position: 'Staff Hubungan Masyarakat', bio: 'Mengelola komunikasi dan publikasi kegiatan sekolah ke masyarakat dan media.', image: '/banner.jpeg', category: 'Staff' },
-  { id: 10, name: 'Ani Widiastuti, A.Md', position: 'Staff Perpustakaan', bio: 'Mengelola koleksi buku dan layanan perpustakaan digital untuk mendukung pembelajaran.', image: '/banner.jpeg', category: 'Staff' },
-  { id: 11, name: 'Joko Susilo, S.Pd', position: 'Staff Bimbingan Konseling', bio: 'Memberikan layanan konseling dan bimbingan karir untuk siswa.', image: '/banner.jpeg', category: 'Staff' },
+  { id: 7, name: 'Budi Hartono, S.Kom', position: 'Staff IT & Sistem Informasi', bio: 'Mengelola infrastruktur teknologi informasi dan sistem administrasi digital sekolah.', image: '/banner.webp', category: 'Staff' },
+  { id: 8, name: 'Rina Kusuma, S.E', position: 'Staff Keuangan', bio: 'Mengelola keuangan sekolah dengan sistem pelaporan yang transparan dan akuntabel.', image: '/banner.webp', category: 'Staff' },
+  { id: 9, name: 'Dedi Supriadi, S.Sos', position: 'Staff Hubungan Masyarakat', bio: 'Mengelola komunikasi dan publikasi kegiatan sekolah ke masyarakat dan media.', image: '/banner.webp', category: 'Staff' },
+  { id: 10, name: 'Ani Widiastuti, A.Md', position: 'Staff Perpustakaan', bio: 'Mengelola koleksi buku dan layanan perpustakaan digital untuk mendukung pembelajaran.', image: '/banner.webp', category: 'Staff' },
+  { id: 11, name: 'Joko Susilo, S.Pd', position: 'Staff Bimbingan Konseling', bio: 'Memberikan layanan konseling dan bimbingan karir untuk siswa.', image: '/banner.webp', category: 'Staff' },
   
   // SIJA - Sistem Informasi Jaringan dan Aplikasi
-  { id: 12, name: 'Agus Prasetyo, S.Kom, M.T', position: 'Ketua Program SIJA', bio: 'Mengkoordinir pembelajaran dan pengembangan kurikulum SIJA sesuai kebutuhan industri.', image: '/banner.jpeg', category: 'SIJA' },
-  { id: 13, name: 'Eko Wijaya, S.T', position: 'Guru Produktif SIJA', bio: 'Mengajar jaringan komputer, administrasi server, dan keamanan jaringan.', image: '/banner.jpeg', category: 'SIJA' },
-  { id: 14, name: 'Dewi Anggraeni, S.Kom', position: 'Guru Produktif SIJA', bio: 'Mengajar pemrograman web, database management, dan sistem informasi.', image: '/banner.jpeg', category: 'SIJA' },
-  { id: 15, name: 'Rudi Hermawan, S.Pd', position: 'Guru Produktif SIJA', bio: 'Mengajar infrastruktur jaringan, cloud computing, dan virtualisasi.', image: '/banner.jpeg', category: 'SIJA' },
-  { id: 16, name: 'Linda Marlina, S.T', position: 'Guru Produktif SIJA', bio: 'Mengajar cybersecurity, ethical hacking, dan forensik digital.', image: '/banner.jpeg', category: 'SIJA' },
+  { id: 12, name: 'Agus Prasetyo, S.Kom, M.T', position: 'Ketua Program SIJA', bio: 'Mengkoordinir pembelajaran dan pengembangan kurikulum SIJA sesuai kebutuhan industri.', image: '/banner.webp', category: 'SIJA' },
+  { id: 13, name: 'Eko Wijaya, S.T', position: 'Guru Produktif SIJA', bio: 'Mengajar jaringan komputer, administrasi server, dan keamanan jaringan.', image: '/banner.webp', category: 'SIJA' },
+  { id: 14, name: 'Dewi Anggraeni, S.Kom', position: 'Guru Produktif SIJA', bio: 'Mengajar pemrograman web, database management, dan sistem informasi.', image: '/banner.webp', category: 'SIJA' },
+  { id: 15, name: 'Rudi Hermawan, S.Pd', position: 'Guru Produktif SIJA', bio: 'Mengajar infrastruktur jaringan, cloud computing, dan virtualisasi.', image: '/banner.webp', category: 'SIJA' },
+  { id: 16, name: 'Linda Marlina, S.T', position: 'Guru Produktif SIJA', bio: 'Mengajar cybersecurity, ethical hacking, dan forensik digital.', image: '/banner.webp', category: 'SIJA' },
   
   // RPL - Rekayasa Perangkat Lunak
-  { id: 17, name: 'Dr. Bambang Sulistyo, S.Kom, M.Cs', position: 'Ketua Program RPL', bio: 'Mengkoordinir pengembangan kompetensi siswa di bidang software engineering.', image: '/banner.jpeg', category: 'RPL' },
-  { id: 18, name: 'Andi Firmansyah, S.Kom', position: 'Guru Produktif RPL', bio: 'Mengajar pemrograman Java, Android development, dan mobile app development.', image: '/banner.jpeg', category: 'RPL' },
-  { id: 19, name: 'Sari Indah, S.T', position: 'Guru Produktif RPL', bio: 'Mengajar web development, React, Node.js, dan full-stack development.', image: '/banner.jpeg', category: 'RPL' },
-  { id: 20, name: 'Hendra Gunawan, S.Kom', position: 'Guru Produktif RPL', bio: 'Mengajar database design, SQL, dan backend development.', image: '/banner.jpeg', category: 'RPL' },
-  { id: 21, name: 'Maya Kusuma, S.Pd', position: 'Guru Produktif RPL', bio: 'Mengajar UI/UX design, software testing, dan quality assurance.', image: '/banner.jpeg', category: 'RPL' },
+  { id: 17, name: 'Dr. Bambang Sulistyo, S.Kom, M.Cs', position: 'Ketua Program RPL', bio: 'Mengkoordinir pengembangan kompetensi siswa di bidang software engineering.', image: '/banner.webp', category: 'RPL' },
+  { id: 18, name: 'Andi Firmansyah, S.Kom', position: 'Guru Produktif RPL', bio: 'Mengajar pemrograman Java, Android development, dan mobile app development.', image: '/banner.webp', category: 'RPL' },
+  { id: 19, name: 'Sari Indah, S.T', position: 'Guru Produktif RPL', bio: 'Mengajar web development, React, Node.js, dan full-stack development.', image: '/banner.webp', category: 'RPL' },
+  { id: 20, name: 'Hendra Gunawan, S.Kom', position: 'Guru Produktif RPL', bio: 'Mengajar database design, SQL, dan backend development.', image: '/banner.webp', category: 'RPL' },
+  { id: 21, name: 'Maya Kusuma, S.Pd', position: 'Guru Produktif RPL', bio: 'Mengajar UI/UX design, software testing, dan quality assurance.', image: '/banner.webp', category: 'RPL' },
   
   // TKJ - Teknik Komputer dan Jaringan
-  { id: 22, name: 'Ir. Wahyu Hidayat, M.T', position: 'Ketua Program TKJ', bio: 'Mengkoordinir pembelajaran teknik komputer dan jaringan dengan standar industri.', image: '/banner.jpeg', category: 'TKJ' },
-  { id: 23, name: 'Dedi Kurniawan, S.T', position: 'Guru Produktif TKJ', bio: 'Mengajar instalasi dan konfigurasi jaringan, routing, dan switching.', image: '/banner.jpeg', category: 'TKJ' },
-  { id: 24, name: 'Fitri Rahmawati, S.Kom', position: 'Guru Produktif TKJ', bio: 'Mengajar troubleshooting hardware, assembling PC, dan maintenance komputer.', image: '/banner.jpeg', category: 'TKJ' },
-  { id: 25, name: 'Arief Budiman, S.Pd', position: 'Guru Produktif TKJ', bio: 'Mengajar wireless network, network security, dan monitoring jaringan.', image: '/banner.jpeg', category: 'TKJ' },
-  { id: 26, name: 'Nurul Hidayah, S.T', position: 'Guru Produktif TKJ', bio: 'Mengajar sistem operasi, Linux administration, dan server management.', image: '/banner.jpeg', category: 'TKJ' },
+  { id: 22, name: 'Ir. Wahyu Hidayat, M.T', position: 'Ketua Program TKJ', bio: 'Mengkoordinir pembelajaran teknik komputer dan jaringan dengan standar industri.', image: '/banner.webp', category: 'TKJ' },
+  { id: 23, name: 'Dedi Kurniawan, S.T', position: 'Guru Produktif TKJ', bio: 'Mengajar instalasi dan konfigurasi jaringan, routing, dan switching.', image: '/banner.webp', category: 'TKJ' },
+  { id: 24, name: 'Fitri Rahmawati, S.Kom', position: 'Guru Produktif TKJ', bio: 'Mengajar troubleshooting hardware, assembling PC, dan maintenance komputer.', image: '/banner.webp', category: 'TKJ' },
+  { id: 25, name: 'Arief Budiman, S.Pd', position: 'Guru Produktif TKJ', bio: 'Mengajar wireless network, network security, dan monitoring jaringan.', image: '/banner.webp', category: 'TKJ' },
+  { id: 26, name: 'Nurul Hidayah, S.T', position: 'Guru Produktif TKJ', bio: 'Mengajar sistem operasi, Linux administration, dan server management.', image: '/banner.webp', category: 'TKJ' },
   
   // DKV - Desain Komunikasi Visual
-  { id: 27, name: 'Drs. Hadi Purnomo, M.Sn', position: 'Ketua Program DKV', bio: 'Mengkoordinir pengembangan kreativitas dan kompetensi desain visual siswa.', image: '/banner.jpeg', category: 'DKV' },
-  { id: 28, name: 'Lia Amalia, S.Sn', position: 'Guru Produktif DKV', bio: 'Mengajar desain grafis, Adobe Photoshop, Illustrator, dan digital imaging.', image: '/banner.jpeg', category: 'DKV' },
-  { id: 29, name: 'Riko Aditya, S.Ds', position: 'Guru Produktif DKV', bio: 'Mengajar videografi, editing video, motion graphics, dan multimedia.', image: '/banner.jpeg', category: 'DKV' },
-  { id: 30, name: 'Indah Permatasari, S.Sn', position: 'Guru Produktif DKV', bio: 'Mengajar fotografi, lighting, dan visual storytelling.', image: '/banner.jpeg', category: 'DKV' },
-  { id: 31, name: 'Fajar Ramadhan, S.Ds', position: 'Guru Produktif DKV', bio: 'Mengajar desain web, UI design, dan branding.', image: '/banner.jpeg', category: 'DKV' },
+  { id: 27, name: 'Drs. Hadi Purnomo, M.Sn', position: 'Ketua Program DKV', bio: 'Mengkoordinir pengembangan kreativitas dan kompetensi desain visual siswa.', image: '/banner.webp', category: 'DKV' },
+  { id: 28, name: 'Lia Amalia, S.Sn', position: 'Guru Produktif DKV', bio: 'Mengajar desain grafis, Adobe Photoshop, Illustrator, dan digital imaging.', image: '/banner.webp', category: 'DKV' },
+  { id: 29, name: 'Riko Aditya, S.Ds', position: 'Guru Produktif DKV', bio: 'Mengajar videografi, editing video, motion graphics, dan multimedia.', image: '/banner.webp', category: 'DKV' },
+  { id: 30, name: 'Indah Permatasari, S.Sn', position: 'Guru Produktif DKV', bio: 'Mengajar fotografi, lighting, dan visual storytelling.', image: '/banner.webp', category: 'DKV' },
+  { id: 31, name: 'Fajar Ramadhan, S.Ds', position: 'Guru Produktif DKV', bio: 'Mengajar desain web, UI design, dan branding.', image: '/banner.webp', category: 'DKV' },
   
   // TKP - Teknik Konstruksi dan Perumahan
-  { id: 32, name: 'Ir. Sutrisno, M.T', position: 'Ketua Program TKP', bio: 'Mengkoordinir pembelajaran teknik konstruksi dengan standar SNI dan industri.', image: '/banner.jpeg', category: 'TKP' },
-  { id: 33, name: 'Ahmad Yani, S.T', position: 'Guru Produktif TKP', bio: 'Mengajar gambar teknik, AutoCAD, dan perencanaan konstruksi.', image: '/banner.jpeg', category: 'TKP' },
-  { id: 34, name: 'Wulan Dari, S.Pd', position: 'Guru Produktif TKP', bio: 'Mengajar ilmu bahan bangunan, teknologi beton, dan struktur bangunan.', image: '/banner.jpeg', category: 'TKP' },
-  { id: 35, name: 'Iwan Setiawan, S.T', position: 'Guru Produktif TKP', bio: 'Mengajar mekanika tanah, fondasi, dan konstruksi jalan.', image: '/banner.jpeg', category: 'TKP' },
-  { id: 36, name: 'Sri Wahyuni, S.Pd', position: 'Guru Produktif TKP', bio: 'Mengajar estimasi biaya, manajemen proyek, dan quantity surveying.', image: '/banner.jpeg', category: 'TKP' },
+  { id: 32, name: 'Ir. Sutrisno, M.T', position: 'Ketua Program TKP', bio: 'Mengkoordinir pembelajaran teknik konstruksi dengan standar SNI dan industri.', image: '/banner.webp', category: 'TKP' },
+  { id: 33, name: 'Ahmad Yani, S.T', position: 'Guru Produktif TKP', bio: 'Mengajar gambar teknik, AutoCAD, dan perencanaan konstruksi.', image: '/banner.webp', category: 'TKP' },
+  { id: 34, name: 'Wulan Dari, S.Pd', position: 'Guru Produktif TKP', bio: 'Mengajar ilmu bahan bangunan, teknologi beton, dan struktur bangunan.', image: '/banner.webp', category: 'TKP' },
+  { id: 35, name: 'Iwan Setiawan, S.T', position: 'Guru Produktif TKP', bio: 'Mengajar mekanika tanah, fondasi, dan konstruksi jalan.', image: '/banner.webp', category: 'TKP' },
+  { id: 36, name: 'Sri Wahyuni, S.Pd', position: 'Guru Produktif TKP', bio: 'Mengajar estimasi biaya, manajemen proyek, dan quantity surveying.', image: '/banner.webp', category: 'TKP' },
   
   // DPIB - Desain Permodelan dan Informasi Bangunan
-  { id: 37, name: 'Ir. Gunawan, M.T', position: 'Ketua Program DPIB', bio: 'Mengkoordinir pembelajaran BIM (Building Information Modeling) dan teknologi konstruksi modern.', image: '/banner.jpeg', category: 'DPIB' },
-  { id: 38, name: 'Rizal Efendi, S.T', position: 'Guru Produktif DPIB', bio: 'Mengajar Revit, BIM modeling, dan koordinasi desain 3D.', image: '/banner.jpeg', category: 'DPIB' },
-  { id: 39, name: 'Dwi Lestari, S.T', position: 'Guru Produktif DPIB', bio: 'Mengajar SketchUp, rendering 3D, dan presentasi arsitektur.', image: '/banner.jpeg', category: 'DPIB' },
-  { id: 40, name: 'Heru Santoso, S.Pd', position: 'Guru Produktif DPIB', bio: 'Mengajar struktur bangunan, MEP (Mechanical, Electrical, Plumbing), dan instalasi.', image: '/banner.jpeg', category: 'DPIB' },
-  { id: 41, name: 'Yuni Astuti, S.T', position: 'Guru Produktif DPIB', bio: 'Mengajar quantity take-off, cost estimation berbasis BIM, dan project management.', image: '/banner.jpeg', category: 'DPIB' },
+  { id: 37, name: 'Ir. Gunawan, M.T', position: 'Ketua Program DPIB', bio: 'Mengkoordinir pembelajaran BIM (Building Information Modeling) dan teknologi konstruksi modern.', image: '/banner.webp', category: 'DPIB' },
+  { id: 38, name: 'Rizal Efendi, S.T', position: 'Guru Produktif DPIB', bio: 'Mengajar Revit, BIM modeling, dan koordinasi desain 3D.', image: '/banner.webp', category: 'DPIB' },
+  { id: 39, name: 'Dwi Lestari, S.T', position: 'Guru Produktif DPIB', bio: 'Mengajar SketchUp, rendering 3D, dan presentasi arsitektur.', image: '/banner.webp', category: 'DPIB' },
+  { id: 40, name: 'Heru Santoso, S.Pd', position: 'Guru Produktif DPIB', bio: 'Mengajar struktur bangunan, MEP (Mechanical, Electrical, Plumbing), dan instalasi.', image: '/banner.webp', category: 'DPIB' },
+  { id: 41, name: 'Yuni Astuti, S.T', position: 'Guru Produktif DPIB', bio: 'Mengajar quantity take-off, cost estimation berbasis BIM, dan project management.', image: '/banner.webp', category: 'DPIB' },
   
   // TP - Teknik Pengelasan
-  { id: 42, name: 'Drs. Slamet Riyadi, M.Pd', position: 'Ketua Program TP', bio: 'Mengkoordinir pembelajaran teknik pengelasan dengan sertifikasi internasional.', image: '/banner.jpeg', category: 'TP' },
-  { id: 43, name: 'Joko Widodo, S.T', position: 'Guru Produktif TP', bio: 'Mengajar las SMAW, GMAW, dan teknik pengelasan dasar.', image: '/banner.jpeg', category: 'TP' },
-  { id: 44, name: 'Suwardi, A.Md', position: 'Guru Produktif TP', bio: 'Mengajar las TIG, pipa, dan pressure vessel welding.', image: '/banner.jpeg', category: 'TP' },
-  { id: 45, name: 'Edi Susanto, S.Pd', position: 'Guru Produktif TP', bio: 'Mengajar metalurgi pengelasan, NDT (Non-Destructive Testing), dan quality control.', image: '/banner.jpeg', category: 'TP' },
+  { id: 42, name: 'Drs. Slamet Riyadi, M.Pd', position: 'Ketua Program TP', bio: 'Mengkoordinir pembelajaran teknik pengelasan dengan sertifikasi internasional.', image: '/banner.webp', category: 'TP' },
+  { id: 43, name: 'Joko Widodo, S.T', position: 'Guru Produktif TP', bio: 'Mengajar las SMAW, GMAW, dan teknik pengelasan dasar.', image: '/banner.webp', category: 'TP' },
+  { id: 44, name: 'Suwardi, A.Md', position: 'Guru Produktif TP', bio: 'Mengajar las TIG, pipa, dan pressure vessel welding.', image: '/banner.webp', category: 'TP' },
+  { id: 45, name: 'Edi Susanto, S.Pd', position: 'Guru Produktif TP', bio: 'Mengajar metalurgi pengelasan, NDT (Non-Destructive Testing), dan quality control.', image: '/banner.webp', category: 'TP' },
   
   // TFLM - Teknik Fabrikasi Logam dan Manufaktur
-  { id: 46, name: 'Ir. Bambang Sutopo, M.T', position: 'Ketua Program TFLM', bio: 'Mengkoordinir pembelajaran fabrikasi logam dan proses manufaktur modern.', image: '/banner.jpeg', category: 'TFLM' },
-  { id: 47, name: 'Agung Prasetya, S.T', position: 'Guru Produktif TFLM', bio: 'Mengajar mesin CNC, CAD/CAM, dan machining process.', image: '/banner.jpeg', category: 'TFLM' },
-  { id: 48, name: 'Surya Kusuma, A.Md', position: 'Guru Produktif TFLM', bio: 'Mengajar sheet metal working, bending, dan fabrikasi plat.', image: '/banner.jpeg', category: 'TFLM' },
-  { id: 49, name: 'Rini Handayani, S.Pd', position: 'Guru Produktif TFLM', bio: 'Mengajar metrology, quality inspection, dan manufacturing process.', image: '/banner.jpeg', category: 'TFLM' },
+  { id: 46, name: 'Ir. Bambang Sutopo, M.T', position: 'Ketua Program TFLM', bio: 'Mengkoordinir pembelajaran fabrikasi logam dan proses manufaktur modern.', image: '/banner.webp', category: 'TFLM' },
+  { id: 47, name: 'Agung Prasetya, S.T', position: 'Guru Produktif TFLM', bio: 'Mengajar mesin CNC, CAD/CAM, dan machining process.', image: '/banner.webp', category: 'TFLM' },
+  { id: 48, name: 'Surya Kusuma, A.Md', position: 'Guru Produktif TFLM', bio: 'Mengajar sheet metal working, bending, dan fabrikasi plat.', image: '/banner.webp', category: 'TFLM' },
+  { id: 49, name: 'Rini Handayani, S.Pd', position: 'Guru Produktif TFLM', bio: 'Mengajar metrology, quality inspection, dan manufacturing process.', image: '/banner.webp', category: 'TFLM' },
   
   // TKR - Teknik Kendaraan Ringan
-  { id: 50, name: 'Drs. Agus Salim, M.Pd', position: 'Ketua Program TKR', bio: 'Mengkoordinir pembelajaran teknologi otomotif dengan standar industri automotive.', image: '/banner.jpeg', category: 'TKR' },
-  { id: 51, name: 'Hermawan, S.T', position: 'Guru Produktif TKR', bio: 'Mengajar sistem mesin, tune-up, dan engine overhaul.', image: '/banner.jpeg', category: 'TKR' },
-  { id: 52, name: 'Dian Pratama, A.Md', position: 'Guru Produktif TKR', bio: 'Mengajar sistem kelistrikan, ECU, dan diagnosa kendaraan.', image: '/banner.jpeg', category: 'TKR' },
-  { id: 53, name: 'Yanto Wijaya, S.Pd', position: 'Guru Produktif TKR', bio: 'Mengajar sistem chasis, transmisi, dan power train.', image: '/banner.jpeg', category: 'TKR' },
-  { id: 54, name: 'Ratna Sari, S.T', position: 'Guru Produktif TKR', bio: 'Mengajar AC mobil, sistem rem, dan teknologi hybrid vehicle.', image: '/banner.jpeg', category: 'TKR' },
+  { id: 50, name: 'Drs. Agus Salim, M.Pd', position: 'Ketua Program TKR', bio: 'Mengkoordinir pembelajaran teknologi otomotif dengan standar industri automotive.', image: '/banner.webp', category: 'TKR' },
+  { id: 51, name: 'Hermawan, S.T', position: 'Guru Produktif TKR', bio: 'Mengajar sistem mesin, tune-up, dan engine overhaul.', image: '/banner.webp', category: 'TKR' },
+  { id: 52, name: 'Dian Pratama, A.Md', position: 'Guru Produktif TKR', bio: 'Mengajar sistem kelistrikan, ECU, dan diagnosa kendaraan.', image: '/banner.webp', category: 'TKR' },
+  { id: 53, name: 'Yanto Wijaya, S.Pd', position: 'Guru Produktif TKR', bio: 'Mengajar sistem chasis, transmisi, dan power train.', image: '/banner.webp', category: 'TKR' },
+  { id: 54, name: 'Ratna Sari, S.T', position: 'Guru Produktif TKR', bio: 'Mengajar AC mobil, sistem rem, dan teknologi hybrid vehicle.', image: '/banner.webp', category: 'TKR' },
   
   // TOI - Teknik Otomasi Industri
-  { id: 55, name: 'Ir. Hendra Kusuma, M.T', position: 'Ketua Program TOI', bio: 'Mengkoordinir pembelajaran otomasi industri dan teknologi kontrol modern.', image: '/banner.jpeg', category: 'TOI' },
-  { id: 56, name: 'Budi Santoso, S.T', position: 'Guru Produktif TOI', bio: 'Mengajar PLC programming, SCADA, dan industrial automation.', image: '/banner.jpeg', category: 'TOI' },
-  { id: 57, name: 'Lina Mariana, S.Kom', position: 'Guru Produktif TOI', bio: 'Mengajar robotika, pneumatik, dan elektro-pneumatik.', image: '/banner.jpeg', category: 'TOI' },
-  { id: 58, name: 'Andi Gunawan, S.Pd', position: 'Guru Produktif TOI', bio: 'Mengajar sensor dan aktuator, IoT, dan smart manufacturing.', image: '/banner.jpeg', category: 'TOI' },
-  { id: 59, name: 'Rina Kusumawati, S.T', position: 'Guru Produktif TOI', bio: 'Mengajar kontrol motor, inverter, dan sistem kontrol proses industri.', image: '/banner.jpeg', category: 'TOI' },
+  { id: 55, name: 'Ir. Hendra Kusuma, M.T', position: 'Ketua Program TOI', bio: 'Mengkoordinir pembelajaran otomasi industri dan teknologi kontrol modern.', image: '/banner.webp', category: 'TOI' },
+  { id: 56, name: 'Budi Santoso, S.T', position: 'Guru Produktif TOI', bio: 'Mengajar PLC programming, SCADA, dan industrial automation.', image: '/banner.webp', category: 'TOI' },
+  { id: 57, name: 'Lina Mariana, S.Kom', position: 'Guru Produktif TOI', bio: 'Mengajar robotika, pneumatik, dan elektro-pneumatik.', image: '/banner.webp', category: 'TOI' },
+  { id: 58, name: 'Andi Gunawan, S.Pd', position: 'Guru Produktif TOI', bio: 'Mengajar sensor dan aktuator, IoT, dan smart manufacturing.', image: '/banner.webp', category: 'TOI' },
+  { id: 59, name: 'Rina Kusumawati, S.T', position: 'Guru Produktif TOI', bio: 'Mengajar kontrol motor, inverter, dan sistem kontrol proses industri.', image: '/banner.webp', category: 'TOI' },
 ];
 
 type GuruItem = { id: number; name: string; position: string; bio: string; image: string; category: string };

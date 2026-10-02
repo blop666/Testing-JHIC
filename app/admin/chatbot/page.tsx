@@ -716,7 +716,7 @@ export default function AdminChatbotPage() {
             {selectedDraft && (
               <div className="grid min-h-0 flex-1 lg:grid-cols-[0.9fr_1.1fr]">
                 <div className="relative min-h-[220px] overflow-hidden bg-slate-900 lg:min-h-full">
-                  <Image src={attachedImage || "/banner.jpeg"} alt={selectedDraft.title} fill className="object-cover brightness-90" sizes="45vw" />
+                  <Image src={attachedImage || "/banner.webp"} alt={selectedDraft.title} fill className="object-cover brightness-90" sizes="45vw" />
                   <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-slate-950/80 to-transparent p-7 pt-20 text-white">
                     <p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-200">{contentTypeLabel[selectedDraft.contentType]}</p>
                     {selectedDraft.eventDate && <p className="mt-3 flex items-center gap-2 text-sm text-white/75"><CalendarDays className="size-4" />{new Date(selectedDraft.eventDate).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}</p>}

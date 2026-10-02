@@ -14,7 +14,7 @@ function toNewsItem(post: { id: number; title: string; slug: string; excerpt: st
     excerpt: post.excerpt ?? "",
     date: toDate(post.eventDate ?? post.publishedAt),
     category: categoryOverride ?? post.category?.name ?? "Berita",
-    image: post.imageUrl ?? "/banner.jpeg",
+    image: post.imageUrl ?? "/banner.webp",
     popularRank: rank,
     isHighlighted: post.isHighlighted,
     isPopularOverride: post.isPopularOverride,
@@ -50,7 +50,7 @@ export default async function BeritaPage({ searchParams }: { searchParams: Promi
     recipient: post.excerpt ?? "SMKN 1 Cibinong",
     date: toDate(post.publishedAt),
     level: "Prestasi",
-    image: post.imageUrl ?? "/banner.jpeg",
+    image: post.imageUrl ?? "/banner.webp",
     ratio: (index % 3 === 0 ? "portrait" : index % 3 === 1 ? "landscape" : "square") as "portrait" | "landscape" | "square",
     description: post.excerpt ?? "",
   }));

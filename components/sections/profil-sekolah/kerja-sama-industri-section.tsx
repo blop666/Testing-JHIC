@@ -113,7 +113,7 @@ type PartnerLogo = {
 
 export function KerjaSamaIndustriSection({ partners }: { partners: Partner[] }) {
   const partnerLogos: PartnerLogo[] = partners.length ? partners.map((partner) => ({
-    src: partner.logoUrl ?? "/banner.jpeg",
+    src: partner.logoUrl ?? "/banner.webp",
     alt: partner.name,
     width: 120,
     name: partner.name,
@@ -135,7 +135,7 @@ export function KerjaSamaIndustriSection({ partners }: { partners: Partner[] }) 
         className="flex h-24 w-64 shrink-0 items-center gap-4 rounded-2xl border border-white/15 bg-white/10 px-5 text-left shadow-lg backdrop-blur-sm transition-transform hover:scale-105"
       >
         <span className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-white/30">
-          {logo.src && logo.src !== "/banner.jpeg" ? (
+          {logo.src && logo.src !== "/banner.webp" ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logo.src} alt={logo.alt} className="max-h-full max-w-full object-contain" loading="lazy" />
           ) : (

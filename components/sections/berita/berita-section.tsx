@@ -33,7 +33,7 @@ const FALLBACK_NEWS_ITEMS: NewsItem[] = [
       "Karya inovatif siswa kembali membawa nama sekolah ke panggung nasional melalui kompetisi teknologi dan kreativitas.",
     date: "18 Agustus 2026",
     category: "Prestasi Siswa",
-    image: "/banner.jpeg",
+    image: "/banner.webp",
     popularRank: 2,
     content: [
       [
@@ -53,7 +53,7 @@ const FALLBACK_NEWS_ITEMS: NewsItem[] = [
       "Program pembelajaran bersama mitra industri memperkuat pengalaman praktik dan kesiapan kerja peserta didik.",
     date: "15 Agustus 2026",
     category: "Sekolah",
-    image: "/banner.jpeg",
+    image: "/banner.webp",
     popularRank: 1,
     content: [
       [
@@ -73,7 +73,7 @@ const FALLBACK_NEWS_ITEMS: NewsItem[] = [
       "Rangkaian kegiatan awal tahun membantu siswa mengenal budaya sekolah yang aman, kreatif, dan kolaboratif.",
     date: "12 Agustus 2026",
     category: "Kesiswaan",
-    image: "/banner.jpeg",
+    image: "/banner.webp",
     popularRank: 3,
     content: [
       [
@@ -93,7 +93,7 @@ const FALLBACK_NEWS_ITEMS: NewsItem[] = [
       "Kegiatan pengenalan lingkungan sekolah disusun lebih interaktif agar siswa baru nyaman mengenal budaya belajar.",
     date: "10 Agustus 2026",
     category: "Berita Sekolah",
-    image: "/banner.jpeg",
+    image: "/banner.webp",
     popularRank: 6,
     content: [
       [
@@ -112,7 +112,7 @@ const FALLBACK_NEWS_ITEMS: NewsItem[] = [
       "Guru produktif dan normatif mengikuti lokakarya untuk menyusun proyek lintas mata pelajaran yang relevan.",
     date: "8 Agustus 2026",
     category: "Sekolah",
-    image: "/banner.jpeg",
+    image: "/banner.webp",
     popularRank: 5,
     content: [
       [
@@ -131,7 +131,7 @@ const FALLBACK_NEWS_ITEMS: NewsItem[] = [
       "Pembina dan pengurus ekstrakurikuler menyusun kalender kegiatan untuk memperluas ruang minat siswa.",
     date: "5 Agustus 2026",
     category: "Kesiswaan",
-    image: "/banner.jpeg",
+    image: "/banner.webp",
     popularRank: 4,
     content: [
       [
@@ -150,7 +150,7 @@ const FALLBACK_NEWS_ITEMS: NewsItem[] = [
       "Siswa mengikuti sesi literasi digital mengenai keamanan akun, etika komunikasi, dan jejak digital.",
     date: "2 Agustus 2026",
     category: "Kesiswaan",
-    image: "/banner.jpeg",
+    image: "/banner.webp",
     popularRank: 7,
     content: [
       [
@@ -169,7 +169,7 @@ const FALLBACK_NEWS_ITEMS: NewsItem[] = [
       "Peserta didik memperoleh gambaran langsung mengenai proses produksi, budaya kerja, dan kebutuhan kompetensi industri.",
     date: "29 Juli 2026",
     category: "Kerjasama",
-    image: "/banner.jpeg",
+    image: "/banner.webp",
     popularRank: 8,
     content: [
       [
@@ -188,7 +188,7 @@ const FALLBACK_NEWS_ITEMS: NewsItem[] = [
       "Sesi alumni mengangkat pengalaman transisi dari sekolah ke dunia kerja dan pendidikan lanjutan.",
     date: "26 Juli 2026",
     category: "Alumni",
-    image: "/banner.jpeg",
+    image: "/banner.webp",
     popularRank: 9,
     content: [
       [
