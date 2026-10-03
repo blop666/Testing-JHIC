@@ -10,6 +10,14 @@ const navLinks = [
   { label: "Kontak", href: "/kontak" },
 ];
 
+const partnerLogos = [
+  { name: "JHIC", src: "/partners/jhic.png" },
+  { name: "Jagoan Hosting", src: "/partners/jagoan-hosting.png" },
+  { name: "KOMDIGI", src: "/partners/komdigi.png" },
+  { name: "Garuda Spark", src: "/partners/garuda-spark.png" },
+  { name: "Ngalup", src: "/partners/ngalup.png" },
+];
+
 const socialLinks = [
   {
     label: "Facebook",
@@ -131,6 +139,29 @@ export function SiteFooter() {
                 </a>
               ))}
             </div>
+          </div>
+        </div>
+
+        <div className="mt-14 border-t border-white/10 pt-8">
+          <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-white/50">
+            Didukung Oleh
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
+            {partnerLogos.map((logo) => (
+              <span
+                key={logo.name}
+                className="grid h-14 w-32 place-content-center rounded-xl bg-white p-2 transition hover:scale-105"
+                title={logo.name}
+              >
+                <Image
+                  src={logo.src}
+                  alt={`Logo ${logo.name}`}
+                  width={120}
+                  height={56}
+                  className="h-10 w-auto object-contain"
+                />
+              </span>
+            ))}
           </div>
         </div>
       </div>
