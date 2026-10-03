@@ -9,9 +9,19 @@ git reset --hard origin/main
 npm ci
 npm run build
 
-set -a
-. ./.env.production
-set +a
+# Muat env tanpa menjalankan shell: nilai di-quote agar karakter khusus
+# (&, spasi, #, =) tidak diinterpretasikan sebagai perintah.
+while IFS= read -r line || [ -n "$line" ]; do
+  case "$line" in
+    ''|'#'*) continue ;;
+  esac
+  key="${line%%=*}"
+  value="${line#*=}"
+  case "$key" in
+    *[!A-Za-z0-9_]*) continue ;;
+  esac
+  export "$key"="$value"
+done < ./.env.production
 
 npx drizzle-kit migrate
 sudo -n /usr/bin/systemctl restart pm2-cibione
