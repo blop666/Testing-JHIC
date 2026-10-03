@@ -75,7 +75,12 @@ async function seedContent() {
   const [general] = await db.select({ id: guruCategories.id }).from(guruCategories).where(eq(guruCategories.slug, "general")).limit(1);
   const actor = (await db.select({ id: users.id }).from(users).where(eq(users.role, "super_admin")).limit(1))[0]?.id ?? null;
   if (!(await db.select({ id: guru.id }).from(guru).where(eq(guru.name, "Kepala Sekolah")).limit(1)).length) await db.insert(guru).values({ name: "Kepala Sekolah", position: "Kepala Sekolah", bio: "Pimpinan SMKN 1 Cibinong.", imageUrl: "/banner.jpeg", categoryId: general?.id ?? null, sortOrder: 0, isPublished: true, createdBy: actor });
-  if (!(await db.select({ id: saranaPrasarana.id }).from(saranaPrasarana).where(eq(saranaPrasarana.title, "Ruang Kelas Utama")).limit(1)).length) await db.insert(saranaPrasarana).values({ title: "Ruang Kelas Utama", description: "Ruang belajar dengan fasilitas modern.", imageUrl: "/assets/fasilitas/ruang-kelas-teori.webp", presentationSlot: "featured_large", sortOrder: 0, isPublished: true, createdBy: actor });
+  const [classroom] = await db.select({ id: saranaPrasarana.id }).from(saranaPrasarana).where(eq(saranaPrasarana.title, "Ruang Kelas Utama")).limit(1);
+  if (classroom) {
+    await db.update(saranaPrasarana).set({ imageUrl: "/assets/fasilitas/ruang-kelas-teori.webp", updatedAt: new Date() }).where(eq(saranaPrasarana.id, classroom.id));
+  } else {
+    await db.insert(saranaPrasarana).values({ title: "Ruang Kelas Utama", description: "Ruang belajar dengan fasilitas modern.", imageUrl: "/assets/fasilitas/ruang-kelas-teori.webp", presentationSlot: "featured_large", sortOrder: 0, isPublished: true, createdBy: actor });
+  }
   if (!(await db.select({ id: kerjasamaIndustri.id }).from(kerjasamaIndustri).where(eq(kerjasamaIndustri.name, "Mitra Industri")).limit(1)).length) await db.insert(kerjasamaIndustri).values({ name: "Mitra Industri", logoUrl: "/banner.jpeg", description: "Mitra pembelajaran dan pengembangan kompetensi.", sortOrder: 0, isPublished: true, createdBy: actor });
   if (selectedCategory && !(await db.select({ id: posts.id }).from(posts).where(eq(posts.slug, "selamat-datang-di-cibione-cms")).limit(1)).length) await db.insert(posts).values({ type: "berita", categoryId: selectedCategory.id, title: "Selamat Datang di CibiOne CMS", slug: "selamat-datang-di-cibione-cms", excerpt: "Informasi resmi SMKN 1 Cibinong.", body: "Konten awal CMS.", imageUrl: "/banner.jpeg", isPublished: false, publishedAt: new Date(), createdBy: actor });
   const agendaSeeds = [
@@ -121,7 +126,10 @@ async function seedFasilitasVokasi() {
 
 async function seedJurusan() {
   for (const item of jurusanSeeds) {
-    await db.insert(jurusan).values({ ...item, slug: slugify(item.fullName) }).onConflictDoNothing({ target: jurusan.code });
+    await db.insert(jurusan).values({ ...item, slug: slugify(item.fullName) }).onConflictDoUpdate({
+      target: jurusan.code,
+      set: { bgImageUrl: item.bgImageUrl, updatedAt: new Date() },
+    });
   }
 }
 
