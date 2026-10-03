@@ -73,5 +73,10 @@ jobs:
             -p "$DEPLOY_PORT" \
             -o IdentitiesOnly=yes \
             -o BatchMode=yes \
-            "$DEPLOY_USER@$DEPLOY_HOST" \
-            "DEPLOY_PATH='$DEPLOY_PATH' bash '$DEPLOY_PATH/scripts/deploy-vps.sh'"
+            "$DEPLOY_USER@$DEPLOY_HOST" "
+              set -Eeuo pipefail
+              cd '$DEPLOY_PATH'
+              git fetch origin main
+              git reset --hard origin/main
+              DEPLOY_PATH='$DEPLOY_PATH' bash '$DEPLOY_PATH/scripts/deploy-vps.sh'
+            "
