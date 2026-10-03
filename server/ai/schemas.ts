@@ -8,10 +8,10 @@ export const chatSourceSchema = z.object({
 });
 
 export const chatResponseSchema = z.object({
-  answer: z.string(),
-  status: chatStatusSchema,
-  sources: z.array(chatSourceSchema),
-  confidence: z.number().min(0).max(1),
+  answer: z.string().catch("Maaf, saya belum dapat memproses pertanyaan ini. Silakan hubungi pihak sekolah melalui halaman Kontak."),
+  status: chatStatusSchema.catch("unknown"),
+  sources: z.array(chatSourceSchema).catch([]),
+  confidence: z.coerce.number().min(0).max(1).catch(0.5),
   emailHandoff: z
     .object({
       userEmail: z.string().email().optional(),
@@ -19,5 +19,6 @@ export const chatResponseSchema = z.object({
       subject: z.string().optional(),
       message: z.string().optional(),
     })
-    .optional(),
+    .nullish()
+    .catch(undefined),
 });

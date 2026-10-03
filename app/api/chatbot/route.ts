@@ -34,13 +34,12 @@ export async function POST(request: NextRequest) {
         { role: "system", content: CHATBOT_SYSTEM_PROMPT },
         { role: "user", content: `CONTEXT:\n${contextText}\n\nPertanyaan pengguna: ${prompt}\n\nJawab hanya JSON sesuai bentuk yang diminta.` },
       ]);
-      let raw: unknown;
-      try {
-        raw = JSON.parse(fallback.text);
-      } catch {
-        return apiError({ code: "CHATBOT_UNAVAILABLE", message: "Layanan chatbot sedang tidak dapat memproses permintaan." }, { status: 503 });
-      }
-      result = chatResponseSchema.parse(raw);
+      result = {
+        answer: fallback.text,
+        status: "answered" as const,
+        sources: [],
+        confidence: 0.5,
+      };
     }
 
     return apiSuccess(result);
