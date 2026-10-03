@@ -4,7 +4,8 @@ set -Eeuo pipefail
 : "${DEPLOY_PATH:?DEPLOY_PATH is required}"
 cd "$DEPLOY_PATH"
 
-git pull --ff-only origin main
+git fetch origin main
+git reset --hard origin/main
 npm ci
 npm run build
 
