@@ -140,7 +140,7 @@ export function VisiMisiSection() {
           </AnimatePresence>
         </div>
 
-        <div className="hidden h-[min(72vh,700px)] min-h-[560px] gap-5 sm:flex lg:gap-7">
+        <div className="hidden min-h-[560px] items-stretch gap-5 sm:flex lg:gap-7">
           {visiMisiData.map((item, index) => (
             <motion.div
               key={item.id}
