@@ -197,7 +197,7 @@ const InteractiveImageBentoGallery: React.FC<
         >
           <motion.div
             ref={gridRef}
-            className="grid grid-flow-col grid-rows-1 auto-cols-[16rem] auto-rows-[16rem] gap-3 px-2 md:grid-flow-col-dense md:grid-rows-2 md:auto-cols-[20rem] md:auto-rows-[14rem] md:gap-4 md:px-8"
+            className="grid grid-flow-col grid-rows-1 auto-cols-[19rem] auto-rows-[19rem] gap-3 px-2 md:grid-flow-col-dense md:grid-rows-2 md:auto-cols-[24rem] md:auto-rows-[16rem] md:gap-5 md:px-8"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
