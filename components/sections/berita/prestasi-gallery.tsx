@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -91,7 +92,11 @@ export function PrestasiGallery({
 }) {
   const [page, setPage] = useState(0);
   const [activeTab, setActiveTab] = useState<"latest" | "popular">("latest");
-  const [activeJurusan, setActiveJurusan] = useState("Semua");
+  const searchParams = useSearchParams();
+  const initialJurusan = searchParams.get("jurusan");
+  const [activeJurusan, setActiveJurusan] = useState(
+    initialJurusan && jurusan.some((item) => item.code === initialJurusan) ? initialJurusan : "Semua",
+  );
   const [selectedCard, setSelectedCard] = useState<LayoutGridCard | null>(null);
   const filteredAchievements = useMemo(
     () => activeJurusan === "Semua"

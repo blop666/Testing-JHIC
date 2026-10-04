@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { PrestasiGallery } from "@/components/sections/berita/prestasi-gallery";
 import { getPublicJurusan, getPublicPosts } from "@/server/queries/public-content";
 
@@ -34,7 +36,9 @@ export default async function PrestasiPage() {
   });
   return (
     <main className="min-h-screen bg-[#f4f8fa]">
-      <PrestasiGallery achievements={achievements} jurusan={jurusan} />
+      <Suspense fallback={null}>
+        <PrestasiGallery achievements={achievements} jurusan={jurusan} />
+      </Suspense>
     </main>
   );
 }

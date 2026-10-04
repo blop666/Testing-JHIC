@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -171,6 +172,7 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutoRotating, setIsAutoRotating] = useState(true);
   const [direction, setDirection] = useState(1);
+  const [autoRotatePauseUntil, setAutoRotatePauseUntil] = useState(0);
 
   // Memoize filtered data untuk performa
   const filteredJurusan = useMemo(() => 
@@ -223,6 +225,10 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
   // Auto-rotate
   useEffect(() => {
     if (!isAutoRotating || isModalOpen) return;
+    if (Date.now() < autoRotatePauseUntil) {
+      const resumeDelay = setTimeout(() => setAutoRotatePauseUntil(0), autoRotatePauseUntil - Date.now());
+      return () => clearTimeout(resumeDelay);
+    }
 
     const interval = setInterval(() => {
       setFocusedIndex((prev) => {
@@ -238,7 +244,7 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isAutoRotating, isModalOpen, filteredJurusan.length, currentPage]);
+  }, [isAutoRotating, isModalOpen, filteredJurusan.length, currentPage, autoRotatePauseUntil]);
 
   // Reset on category change
   useEffect(() => {
@@ -263,6 +269,7 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
     const globalIndex = startIndex + index;
     setDirection(globalIndex > focusedIndex ? 1 : -1);
     setFocusedIndex(globalIndex);
+    setAutoRotatePauseUntil(Date.now() + 5000);
   };
 
   const handlePageChange = (page: number) => {
@@ -598,6 +605,20 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
                   <p className="mt-3 rounded-xl border border-[#1C4E97]/10 bg-[#EFF5FC] p-5 text-base leading-relaxed text-[#364153]">
                     {focusedJurusan.prospek}
                   </p>
+                </div>
+
+                {/* Lihat Prestasi */}
+                <div className="mt-8">
+                  <Link
+                    href={`/berita/prestasi?jurusan=${encodeURIComponent(focusedJurusan.code)}`}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#155DFC] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#0f4bc8]"
+                  >
+                    Lihat Prestasi {focusedJurusan.code}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M7 7h10v10" />
+                      <path d="M7 17 17 7" />
+                    </svg>
+                  </Link>
                 </div>
               </div>
             </motion.div>

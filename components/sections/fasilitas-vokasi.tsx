@@ -28,14 +28,19 @@ export function FasilitasVokasi({ fasilitas = fallbackFasilitas }: { fasilitas?:
   const [modalOpen, setModalOpen] = useState(false);
   const [modalItem, setModalItem] = useState<FasilitasVokasiItem | null>(null);
   const [paused, setPaused] = useState(false);
+  const [pauseUntil, setPauseUntil] = useState(0);
 
   const items = fasilitas.length ? fasilitas : fallbackFasilitas;
 
   useEffect(() => {
     if (paused || modalOpen || items.length <= 1) return;
+    if (Date.now() < pauseUntil) {
+      const resumeDelay = setTimeout(() => setPauseUntil(0), pauseUntil - Date.now());
+      return () => clearTimeout(resumeDelay);
+    }
     const interval = setInterval(() => setActive((prev) => (prev + 1) % items.length), AUTO_ADVANCE_MS);
     return () => clearInterval(interval);
-  }, [paused, modalOpen, items.length]);
+  }, [paused, modalOpen, items.length, pauseUntil]);
 
   const openModal = (item: FasilitasVokasiItem) => {
     setModalItem(item);
@@ -46,6 +51,12 @@ export function FasilitasVokasi({ fasilitas = fallbackFasilitas }: { fasilitas?:
 
   const move = (direction: -1 | 1) => {
     setActive((index) => (index + direction + items.length) % items.length);
+    setPauseUntil(Date.now() + 5000);
+  };
+
+  const jumpTo = (index: number) => {
+    setActive(index);
+    setPauseUntil(Date.now() + 5000);
   };
 
   return (
@@ -111,7 +122,7 @@ export function FasilitasVokasi({ fasilitas = fallbackFasilitas }: { fasilitas?:
           {items.map((item, index) => (
             <button
               key={item.id}
-              onClick={() => setActive(index)}
+              onClick={() => jumpTo(index)}
               className={cn(
                 "h-3 rounded-full transition-all duration-200",
                 active === index ? "w-8 bg-[#155DFC]" : "w-3 bg-[#CBD5E1] hover:bg-[#94A3B8]"

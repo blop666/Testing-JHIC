@@ -197,18 +197,19 @@ const InteractiveImageBentoGallery: React.FC<
         >
           <motion.div
             ref={gridRef}
-            className="grid auto-cols-[minmax(15rem,1fr)] grid-flow-col gap-4 px-4 md:px-8"
+            className="grid grid-flow-col grid-rows-1 auto-cols-[12rem] auto-rows-[12rem] gap-2 px-2 md:grid-flow-col-dense md:grid-rows-2 md:auto-cols-[15rem] md:auto-rows-[11rem] md:gap-3 md:px-8"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0 }}
+            viewport={{ once: true, amount: 0.1 }}
           >
             {duplicatedItems.map((item, index) => (
               <motion.div
                 key={`${item.id}-${index}`}
                 variants={itemVariants}
                 className={cn(
-                  "group relative flex h-full min-h-[15rem] w-full min-w-[15rem] cursor-pointer items-end overflow-hidden rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 p-4 shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-white/20 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2",
+                  "group relative flex h-full w-full cursor-pointer items-end overflow-hidden bg-white/5 backdrop-blur-md p-4 shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2",
+                  item.span,
                 )}
                 whileHover={{ scale: 1.03, y: -5 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
