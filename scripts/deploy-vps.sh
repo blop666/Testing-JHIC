@@ -6,15 +6,9 @@ cd "$DEPLOY_PATH"
 
 git fetch origin main
 git reset --hard origin/main
-npm ci
-npm run build
 
-# Data cache (unstable_cache) bertahan antar-build dan tidak melihat perubahan
-# dari seed/migrasi manual; bersihkan agar halaman publik selalu segar.
-rm -rf .next/cache
-
-# Muat env tanpa menjalankan shell: nilai di-quote agar karakter khusus
-# (&, spasi, #, =) tidak diinterpretasikan sebagai perintah.
+# Muat env sebelum build agar halaman statis (profil-sekolah) bisa query DB
+# saat prerender; nilai di-parse per baris agar karakter khusus aman.
 while IFS= read -r line || [ -n "$line" ]; do
   case "$line" in
     ''|'#'*) continue ;;
@@ -26,6 +20,13 @@ while IFS= read -r line || [ -n "$line" ]; do
   esac
   export "$key"="$value"
 done < ./.env.production
+
+npm ci
+npm run build
+
+# Data cache (unstable_cache) bertahan antar-build dan tidak melihat perubahan
+# dari seed/migrasi manual; bersihkan agar halaman publik selalu segar.
+rm -rf .next/cache
 
 npx drizzle-kit migrate
 sudo -n /usr/bin/systemctl restart pm2-cibione
