@@ -9,6 +9,10 @@ git reset --hard origin/main
 npm ci
 npm run build
 
+# Data cache (unstable_cache) bertahan antar-build dan tidak melihat perubahan
+# dari seed/migrasi manual; bersihkan agar halaman publik selalu segar.
+rm -rf .next/cache
+
 # Muat env tanpa menjalankan shell: nilai di-quote agar karakter khusus
 # (&, spasi, #, =) tidak diinterpretasikan sebagai perintah.
 while IFS= read -r line || [ -n "$line" ]; do
