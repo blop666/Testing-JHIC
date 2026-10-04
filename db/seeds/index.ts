@@ -99,7 +99,26 @@ async function seedContent() {
       await db.insert(saranaPrasarana).values({ ...item, sortOrder, isPublished: true, createdBy: actor });
     }
   }
-  if (!(await db.select({ id: kerjasamaIndustri.id }).from(kerjasamaIndustri).where(eq(kerjasamaIndustri.name, "Mitra Industri")).limit(1)).length) await db.insert(kerjasamaIndustri).values({ name: "Mitra Industri", logoUrl: "/banner.jpeg", description: "Mitra pembelajaran dan pengembangan kompetensi.", sortOrder: 0, isPublished: true, createdBy: actor });
+  const mitraSeeds = [
+    { name: "PT Lingkar Sembilan Titian Media", logoUrl: "/assets/mitra/pt-lingkar-sembilan.webp", description: "Mitra media dan pengembangan konten digital.", sortOrder: 0 },
+    { name: "PT Tirta Fresindo Jaya", logoUrl: "/assets/mitra/pt-tirta-fresindo-jaya.webp", description: "Mitra industri produksi dan distribusi.", sortOrder: 1 },
+    { name: "Komatsu", logoUrl: "/assets/mitra/komatsu.webp", description: "Mitra industri alat berat dan manufaktur.", sortOrder: 2 },
+    { name: "Cisco Networking Academy", logoUrl: "/assets/mitra/cisco-networking-academy.webp", description: "Mitra sertifikasi jaringan dan teknologi Cisco.", sortOrder: 3 },
+    { name: "Mikrotik", logoUrl: "/assets/mitra/mikrotik.webp", description: "Mitra vendor teknologi jaringan.", sortOrder: 4 },
+    { name: "Mizzle", logoUrl: "/assets/mitra/mizzle.webp", description: "Mitra teknologi software.", sortOrder: 5 },
+    { name: "Pemerintah Provinsi Jawa Barat", logoUrl: "/assets/mitra/jawa-barat.webp", description: "Dukungan program pendidikan provinsi.", sortOrder: 6 },
+    { name: "SMK Bisa Hebat", logoUrl: "/assets/mitra/smk-bisa-hebat.webp", description: "Program nasional penguatan SMK.", sortOrder: 7 },
+  ];
+  const [oldMitra] = await db.select({ id: kerjasamaIndustri.id }).from(kerjasamaIndustri).where(eq(kerjasamaIndustri.name, "Mitra Industri")).limit(1);
+  if (oldMitra) await db.delete(kerjasamaIndustri).where(eq(kerjasamaIndustri.id, oldMitra.id));
+  for (const item of mitraSeeds) {
+    const [existing] = await db.select({ id: kerjasamaIndustri.id }).from(kerjasamaIndustri).where(eq(kerjasamaIndustri.name, item.name)).limit(1);
+    if (existing) {
+      await db.update(kerjasamaIndustri).set({ ...item, updatedAt: new Date() }).where(eq(kerjasamaIndustri.id, existing.id));
+    } else {
+      await db.insert(kerjasamaIndustri).values({ ...item, isPublished: true, createdBy: actor });
+    }
+  }
   if (selectedCategory && !(await db.select({ id: posts.id }).from(posts).where(eq(posts.slug, "selamat-datang-di-cibione-cms")).limit(1)).length) await db.insert(posts).values({ type: "berita", categoryId: selectedCategory.id, title: "Selamat Datang di CibiOne CMS", slug: "selamat-datang-di-cibione-cms", excerpt: "Informasi resmi SMKN 1 Cibinong.", body: "Konten awal CMS.", imageUrl: "/banner.jpeg", isPublished: false, publishedAt: new Date(), createdBy: actor });
   const agendaSeeds = [
     { title: "Pembukaan Tahun Ajaran Baru", slug: "pembukaan-tahun-ajaran-baru", excerpt: "Pembukaan kegiatan belajar dan pengarahan awal bagi seluruh siswa SMKN 1 Cibinong.", location: "Lapangan Utama", date: "2026-10-12T07:00:00", endDate: "2026-10-12T09:30:00" },
@@ -114,13 +133,24 @@ async function seedContent() {
 async function seedProgramUnggulan() {
   const actor = (await db.select({ id: users.id }).from(users).where(eq(users.role, "super_admin")).limit(1))[0]?.id ?? null;
   const seeds = [
-    { title: "Portal Belajar Online", description: "Lingkungan belajar digital untuk mendukung pembelajaran jarak jauh sesuai kurikulum sekolah.", label: "Pembelajaran digital", imageUrl: "/hero-banner.jpeg", sortOrder: 0 },
-    { title: "Academy Mikrotik", description: "Kelas Mikrotik bersertifikasi sebagai bagian dari kurikulum dan persiapan kompetensi siswa.", label: "Sertifikasi teknologi", imageUrl: "/smkn-hero-banner.webp", sortOrder: 1 },
-    { title: "Sistem Informasi BK", description: "Layanan informasi bimbingan dan konseling yang lebih mudah dijangkau oleh siswa.", label: "Pendampingan siswa", imageUrl: "/hero-banner.webp", sortOrder: 2 },
-    { title: "Sertifikasi LSP", description: "Layanan sertifikasi kompetensi untuk membuktikan kesiapan siswa memasuki dunia kerja.", label: "Kompetensi profesi", imageUrl: "/hero-banner.jpeg", sortOrder: 3 },
+    { title: "Adobe Creative Cloud", description: "Akses resmi aplikasi desain dan multimedia Adobe untuk pembelajaran DKV: Photoshop, Illustrator, Premiere, dan lainnya.", label: "Desain & Multimedia", imageUrl: "/assets/produk/adobe-creative-cloud.webp", sortOrder: 0 },
+    { title: "Adobe", description: "Perangkat lunak kreatif standar industri untuk produktivitas desain digital siswa.", label: "Software Industri", imageUrl: "/assets/produk/adobe.webp", sortOrder: 1 },
+    { title: "One Portal Kamvak", description: "Portal layanan digital KAMVAK untuk manajemen kegiatan dan layanan sekolah.", label: "Portal Digital", imageUrl: "/assets/produk/one-portal-kamvak.webp", sortOrder: 2 },
+    { title: "Sistem Informasi BK", description: "Layanan informasi bimbingan dan konseling yang lebih mudah dijangkau oleh siswa.", label: "Pendampingan siswa", imageUrl: "/assets/produk/bk.webp", sortOrder: 3 },
+    { title: "Academy Mikrotik", description: "Kelas Mikrotik bersertifikasi sebagai bagian dari kurikulum dan persiapan kompetensi siswa.", label: "Sertifikasi teknologi", imageUrl: "/assets/mitra/academy-mikrotik.webp", sortOrder: 4 },
+    { title: "Sertifikasi LSP SMKN 1 Cibinong", description: "Lembaga sertifikasi profesi internal untuk membuktikan kesiapan kompetensi siswa memasuki dunia kerja.", label: "Kompetensi profesi", imageUrl: "/assets/mitra/lsp-smkn-1-cibinong.webp", sortOrder: 5 },
+    { title: "Sertifikasi BNSP", description: "Sertifikasi kompetensi berlisensi BNSP untuk lulusan siap kerja.", label: "Sertifikasi nasional", imageUrl: "/assets/mitra/bnsp.webp", sortOrder: 6 },
   ];
+  const oldTitles = ["Portal Belajar Online"];
+  for (const title of oldTitles) {
+    const [old] = await db.select({ id: programUnggulan.id }).from(programUnggulan).where(eq(programUnggulan.title, title)).limit(1);
+    if (old) await db.delete(programUnggulan).where(eq(programUnggulan.id, old.id));
+  }
   for (const item of seeds) {
-    if (!(await db.select({ id: programUnggulan.id }).from(programUnggulan).where(eq(programUnggulan.title, item.title)).limit(1)).length) {
+    const [existing] = await db.select({ id: programUnggulan.id }).from(programUnggulan).where(eq(programUnggulan.title, item.title)).limit(1);
+    if (existing) {
+      await db.update(programUnggulan).set({ ...item, updatedAt: new Date() }).where(eq(programUnggulan.id, existing.id));
+    } else {
       await db.insert(programUnggulan).values({ ...item, isPublished: true, createdBy: actor });
     }
   }
