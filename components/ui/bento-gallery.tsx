@@ -197,7 +197,7 @@ const InteractiveImageBentoGallery: React.FC<
         >
           <motion.div
             ref={gridRef}
-            className="grid grid-flow-col grid-rows-1 auto-cols-[12rem] auto-rows-[12rem] gap-2 px-2 md:grid-flow-col-dense md:grid-rows-2 md:auto-cols-[15rem] md:auto-rows-[11rem] md:gap-3 md:px-8"
+            className="grid grid-flow-col grid-rows-1 auto-cols-[16rem] auto-rows-[16rem] gap-3 px-2 md:grid-flow-col-dense md:grid-rows-2 md:auto-cols-[20rem] md:auto-rows-[14rem] md:gap-4 md:px-8"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -221,6 +221,8 @@ const InteractiveImageBentoGallery: React.FC<
                 <img
                   src={item.url}
                   alt={item.title}
+                  loading="lazy"
+                  decoding="async"
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />

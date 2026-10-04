@@ -1,7 +1,16 @@
 import Link from "next/link";
-import { KompetensiSection } from "@/components/sections/kompetensi-section";
-import { FasilitasVokasi } from "@/components/sections/fasilitas-vokasi";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
 import { getPublicFasilitasVokasi } from "@/server/queries/public-content";
+
+const KompetensiSection = dynamic(
+  () => import("@/components/sections/kompetensi-section").then((module) => module.KompetensiSection),
+  { loading: () => <div className="h-[720px] animate-pulse bg-white" aria-hidden="true" /> },
+);
+const FasilitasVokasi = dynamic(
+  () => import("@/components/sections/fasilitas-vokasi").then((module) => module.FasilitasVokasi),
+  { loading: () => <div className="h-[520px] animate-pulse bg-[#F9FAFB]" aria-hidden="true" /> },
+);
 
 const keunggulan = [
   {
@@ -76,10 +85,14 @@ export default async function KompetensiKeahlianPage() {
       </div>
 
       {/* Daftar Jurusan */}
-      <KompetensiSection />
+      <Suspense fallback={null}>
+        <KompetensiSection />
+      </Suspense>
 
       {/* Fasilitas Praktik Vokasi */}
-      <FasilitasVokasi fasilitas={fasilitasItems} />
+      <Suspense fallback={null}>
+        <FasilitasVokasi fasilitas={fasilitasItems} />
+      </Suspense>
 
       {/* CTA Banner */}
       <section className="bg-[#0036ab] py-16 md:py-20">

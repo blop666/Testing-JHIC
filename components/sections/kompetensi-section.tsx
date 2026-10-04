@@ -185,7 +185,10 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
 
     async function loadJurusan() {
       try {
-        const response = await fetch("/api/jurusan?limit=100");
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const response = await fetch("/api/jurusan?limit=100", { signal: controller.signal });
+        clearTimeout(timeoutId);
         const payload = await response.json() as { success: boolean; data?: JurusanApiItem[] };
         if (!response.ok || !payload.success || !payload.data) {
           throw new Error("Gagal memuat jurusan");
@@ -221,6 +224,14 @@ export function KompetensiSection({ className }: KompetensiSectionProps) {
   );
 
   const focusedJurusan = filteredJurusan[focusedIndex];
+
+  // Preload background image of the focused card to avoid flash on auto-rotate.
+  useEffect(() => {
+    const url = focusedJurusan?.bgImage;
+    if (!url) return;
+    const img = new Image();
+    img.src = url;
+  }, [focusedJurusan?.bgImage]);
 
   // Auto-rotate
   useEffect(() => {
