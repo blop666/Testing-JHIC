@@ -16,12 +16,17 @@ while IFS= read -r line || [ -n "$line" ]; do
   key="${line%%=*}"
   value="${line#*=}"
   case "$key" in
+    NODE_ENV) continue ;;
+  esac
+  case "$key" in
     *[!A-Za-z0-9_]*) continue ;;
   esac
   export "$key"="$value"
 done < ./.env.production
 
-npm ci
+# npm ci perlu devDependencies (tailwind, typescript, drizzle-kit);
+# NODE_ENV=production dari env membuat npm melewatkannya.
+NODE_ENV=development npm ci
 npm run build
 
 # Data cache (unstable_cache) bertahan antar-build dan tidak melihat perubahan
