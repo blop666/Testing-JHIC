@@ -201,7 +201,7 @@ const InteractiveImageBentoGallery: React.FC<
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
+            viewport={{ once: true, amount: 0 }}
           >
             {duplicatedItems.map((item, index) => (
               <motion.div
