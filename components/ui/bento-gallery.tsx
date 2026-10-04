@@ -160,7 +160,7 @@ const InteractiveImageBentoGallery: React.FC<
             transition={{ duration: 0.5 }}
             className="text-4xl md:text-5xl lg:text-6xl font-bold text-blue-900 mb-4"
           >
-            Sarana & Prasana
+            Sarana & Prasarana
           </motion.h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
           {description}
@@ -201,7 +201,7 @@ const InteractiveImageBentoGallery: React.FC<
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
+            viewport={{ once: true, amount: 0 }}
           >
             {duplicatedItems.map((item, index) => (
               <motion.div
