@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
 import { client, db } from "@/db";
 import { chatbotKnowledge, fasilitasVokasi, guru, guruCategories, jurusan, kerjasamaIndustri, postCategories, posts, programUnggulan, saranaPrasarana, siteSettings, users } from "@/db/schema";
@@ -75,11 +75,29 @@ async function seedContent() {
   const [general] = await db.select({ id: guruCategories.id }).from(guruCategories).where(eq(guruCategories.slug, "general")).limit(1);
   const actor = (await db.select({ id: users.id }).from(users).where(eq(users.role, "super_admin")).limit(1))[0]?.id ?? null;
   if (!(await db.select({ id: guru.id }).from(guru).where(eq(guru.name, "Kepala Sekolah")).limit(1)).length) await db.insert(guru).values({ name: "Kepala Sekolah", position: "Kepala Sekolah", bio: "Pimpinan SMKN 1 Cibinong.", imageUrl: "/banner.jpeg", categoryId: general?.id ?? null, sortOrder: 0, isPublished: true, createdBy: actor });
-  const [classroom] = await db.select({ id: saranaPrasarana.id }).from(saranaPrasarana).where(eq(saranaPrasarana.title, "Ruang Kelas Utama")).limit(1);
-  if (classroom) {
-    await db.update(saranaPrasarana).set({ imageUrl: "/assets/fasilitas/ruang-kelas-teori.webp", updatedAt: new Date() }).where(eq(saranaPrasarana.id, classroom.id));
-  } else {
-    await db.insert(saranaPrasarana).values({ title: "Ruang Kelas Utama", description: "Ruang belajar dengan fasilitas modern.", imageUrl: "/assets/fasilitas/ruang-kelas-teori.webp", presentationSlot: "featured_large", sortOrder: 0, isPublished: true, createdBy: actor });
+  const saranaSeeds = [
+    { title: "Ruang Kelas Teori", description: "Ruang belajar nyaman dengan fasilitas modern untuk seluruh program keahlian.", imageUrl: "/assets/fasilitas/ruang-kelas-teori.webp", presentationSlot: "featured_large" },
+    { title: "Perpustakaan", description: "Koleksi buku lengkap dan ruang baca yang nyaman untuk mendukung literasi siswa.", imageUrl: "/assets/fasilitas/perpustakaan.webp", presentationSlot: "standard" },
+    { title: "Lapangan Utama", description: "Area olahraga, upacara, dan kegiatan besar sekolah.", imageUrl: "/assets/fasilitas/lapangan-utama.webp", presentationSlot: "tall" },
+    { title: "Lapangan Depan Masjid", description: "Lapangan serbaguna di sisi masjid untuk kegiatan siswa.", imageUrl: "/assets/fasilitas/lapangan-depan-masjid.webp", presentationSlot: "standard" },
+    { title: "Lobby Utama", description: "Ruang tunggu dan area sambutan tamu sekolah.", imageUrl: "/assets/fasilitas/lobby-utama.webp", presentationSlot: "wide" },
+    { title: "Masjid", description: "Tempat ibadah yang bersih dan nyaman bagi warga sekolah.", imageUrl: "/assets/fasilitas/masjid.webp", presentationSlot: "standard" },
+    { title: "Maket Denah Sekolah", description: "Maket denah kompleks SMKN 1 Cibinong.", imageUrl: "/assets/fasilitas/maket-denah.webp", presentationSlot: "standard" },
+    { title: "Resepsionis", description: "Meja resepsionis layanan informasi sekolah.", imageUrl: "/assets/fasilitas/resepsionis.webp", presentationSlot: "standard" },
+    { title: "Ruang BK", description: "Layanan bimbingan dan konseling untuk pendampingan siswa.", imageUrl: "/assets/fasilitas/ruang-bk.webp", presentationSlot: "standard" },
+    { title: "Ruang ICT", description: "Ruang teknologi informasi dan komunikasi sekolah.", imageUrl: "/assets/fasilitas/ruang-ict.webp", presentationSlot: "standard" },
+    { title: "Ruang Kontrol Audio", description: "Kendali sound system untuk kegiatan dan acara sekolah.", imageUrl: "/assets/fasilitas/ruang-kontrol-audio.webp", presentationSlot: "tall" },
+    { title: "Taman", description: "Area hijau yang asri untuk bersantai antara jam pelajaran.", imageUrl: "/assets/fasilitas/taman.webp", presentationSlot: "wide" },
+  ];
+  const [oldClassroom] = await db.select({ id: saranaPrasarana.id }).from(saranaPrasarana).where(eq(saranaPrasarana.title, "Ruang Kelas Utama")).limit(1);
+  if (oldClassroom) await db.delete(saranaPrasarana).where(eq(saranaPrasarana.id, oldClassroom.id));
+  for (const [sortOrder, item] of saranaSeeds.entries()) {
+    const [existing] = await db.select({ id: saranaPrasarana.id }).from(saranaPrasarana).where(eq(saranaPrasarana.title, item.title)).limit(1);
+    if (existing) {
+      await db.update(saranaPrasarana).set({ ...item, sortOrder, updatedAt: new Date() }).where(eq(saranaPrasarana.id, existing.id));
+    } else {
+      await db.insert(saranaPrasarana).values({ ...item, sortOrder, isPublished: true, createdBy: actor });
+    }
   }
   if (!(await db.select({ id: kerjasamaIndustri.id }).from(kerjasamaIndustri).where(eq(kerjasamaIndustri.name, "Mitra Industri")).limit(1)).length) await db.insert(kerjasamaIndustri).values({ name: "Mitra Industri", logoUrl: "/banner.jpeg", description: "Mitra pembelajaran dan pengembangan kompetensi.", sortOrder: 0, isPublished: true, createdBy: actor });
   if (selectedCategory && !(await db.select({ id: posts.id }).from(posts).where(eq(posts.slug, "selamat-datang-di-cibione-cms")).limit(1)).length) await db.insert(posts).values({ type: "berita", categoryId: selectedCategory.id, title: "Selamat Datang di CibiOne CMS", slug: "selamat-datang-di-cibione-cms", excerpt: "Informasi resmi SMKN 1 Cibinong.", body: "Konten awal CMS.", imageUrl: "/banner.jpeg", isPublished: false, publishedAt: new Date(), createdBy: actor });
@@ -119,8 +137,13 @@ async function seedFasilitasVokasi() {
     { title: "LSP Sertifikasi Kompetensi", description: "Tempat uji kompetensi berlisensi untuk sertifikasi profesi siswa, bekerja sama dengan asosiasi dan industri.", imageUrl: "/assets/jurusan/tkj.webp", tefaName: "TeFa Jaringan & Mikrotik", jurusanId: tkj?.id ?? null, sortOrder: 2 },
   ];
   for (const item of seeds) {
-    await db.insert(fasilitasVokasi).values({ ...item, isPublished: true, createdBy: actor }).onConflictDoNothing();
-    await db.update(fasilitasVokasi).set({ imageUrl: item.imageUrl, updatedAt: new Date() }).where(eq(fasilitasVokasi.title, item.title));
+    const rows = await db.select({ id: fasilitasVokasi.id }).from(fasilitasVokasi).where(eq(fasilitasVokasi.title, item.title)).orderBy(asc(fasilitasVokasi.id));
+    if (rows.length === 0) {
+      await db.insert(fasilitasVokasi).values({ ...item, isPublished: true, createdBy: actor });
+    } else {
+      for (const row of rows.slice(1)) await db.delete(fasilitasVokasi).where(eq(fasilitasVokasi.id, row.id));
+      await db.update(fasilitasVokasi).set({ ...item, updatedAt: new Date() }).where(eq(fasilitasVokasi.id, rows[0].id));
+    }
   }
 }
 
