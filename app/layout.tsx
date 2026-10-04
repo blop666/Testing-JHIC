@@ -11,8 +11,13 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "CibiOne CMS",
-  description: "CMS SMKN 1 Cibinong untuk JHIC 2026",
+  title: "SMKN 1 Cibinong",
+  description: "Website resmi SMKN 1 Cibinong",
+  icons: {
+    icon: "/cropped-logo-SMKN-1-Cbn.png",
+    shortcut: "/cropped-logo-SMKN-1-Cbn.png",
+    apple: "/cropped-logo-SMKN-1-Cbn.png",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

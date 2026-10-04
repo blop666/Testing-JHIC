@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { BeritaDetailClient } from "@/components/sections/berita/berita-detail-client";
+import { incrementPostViewCount } from "@/server/repositories/posts";
 import { getPublicPostBySlug, getPublicPosts } from "@/server/queries/public-content";
 
 function formatDate(value: Date | null) {
@@ -13,6 +14,7 @@ export default async function BeritaDetailPage({ params }: { params: Promise<{ s
   const { slug } = await params;
   const post = await getPublicPostBySlug(slug);
   if (!post) notFound();
+  void incrementPostViewCount(post.id);
   const [related, popular] = await Promise.all([getPublicPosts("berita", 12), getPublicPosts("berita", 12, false, "popular")]);
   type NewsSource = { id: number; title: string; excerpt: string | null; body?: string | null; imageUrl: string | null; publishedAt: Date | null; createdAt: Date; eventDate?: Date | null; category: { name: string; slug: string } | null; isHighlighted?: boolean; isPopularOverride?: boolean; viewCount?: number };
   const toNewsItem = (item: NewsSource, rank: number) => ({ id: item.id, title: item.title, excerpt: item.excerpt ?? "", date: formatDate(item.eventDate ?? item.publishedAt), category: item.category?.name ?? "Berita", image: item.imageUrl ?? "/banner.jpeg", popularRank: rank, isPopularOverride: item.isPopularOverride, viewCount: item.viewCount, sortDate: new Date(item.createdAt).getTime(), uploadDate: formatDate(item.createdAt), content: [[item.body ?? item.excerpt ?? ""]] });
