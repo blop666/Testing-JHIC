@@ -27,13 +27,18 @@ done < ./.env.production
 # npm ci perlu devDependencies (tailwind, typescript, drizzle-kit);
 # NODE_ENV=production dari env membuat npm melewatkannya.
 NODE_ENV=development npm ci
+
+npx drizzle-kit migrate
+npm run db:seed
+
+# Build setelah migrate + seed agar halaman statis (home, profil-sekolah)
+# prerender dengan data DB terbaru, bukan fallback placeholder.
 npm run build
 
 # Data cache (unstable_cache) bertahan antar-build dan tidak melihat perubahan
 # dari seed/migrasi manual; bersihkan agar halaman publik selalu segar.
 rm -rf .next/cache
 
-npx drizzle-kit migrate
 sudo -n /usr/bin/systemctl restart pm2-cibione
 sudo -n /usr/bin/systemctl is-active --quiet pm2-cibione
 for attempt in 1 2 3 4 5; do
