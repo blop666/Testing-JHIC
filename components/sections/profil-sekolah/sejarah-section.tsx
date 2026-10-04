@@ -6,7 +6,7 @@ import { Timeline } from "@/components/ui/timeline";
 
 const timelineData = [
   {
-    title: "1965",
+    title: "1998",
     content: (
       <div className="group relative bg-gradient-to-br from-white/15 via-white/10 to-white/5 backdrop-blur-lg border border-white/30 rounded-3xl p-8 md:p-10 lg:p-12 shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(59,130,246,0.5)] transition-all duration-300 hover:scale-[1.02] hover:border-white/40">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -15,7 +15,7 @@ const timelineData = [
             Awal Mula Berdiri
           </h4>
           <p className="text-base md:text-lg text-white/95 leading-relaxed mb-8 font-light">
-            SMK Negeri 1 Cibinong didirikan pada tahun 1965 sebagai sekolah kejuruan pertama di Kabupaten Bogor. Berawal dari fasilitas sederhana, kini berkembang menjadi SMK terbaik di Jawa Barat.
+            SMK Negeri 1 Cibinong berdiri pada 17 Juli 1998 dengan nama awal SMK Negeri 2 Cibinong. Berlokasi di Jalan Raya Karadenan No. 7, Kecamatan Cibinong, Kabupaten Bogor.
           </p>
           <div className="flex items-start gap-4 bg-gradient-to-r from-white/10 to-white/5 rounded-2xl p-5 border border-white/10 shadow-lg">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/30">
@@ -24,7 +24,7 @@ const timelineData = [
               </svg>
             </div>
             <p className="text-sm md:text-base text-white/90 font-medium leading-relaxed">
-              Berdiri sejak 1965, lebih dari 60 tahun mengabdi untuk pendidikan Indonesia.
+              Berdiri sejak 17 Juli 1998 dengan nama awal SMKN 2 Cibinong.
             </p>
           </div>
         </div>
@@ -32,16 +32,16 @@ const timelineData = [
     ),
   },
   {
-    title: "1990-2020",
+    title: "2000",
     content: (
       <div className="group relative bg-gradient-to-br from-white/15 via-white/10 to-white/5 backdrop-blur-lg border border-white/30 rounded-3xl p-8 md:p-10 lg:p-12 shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(34,211,238,0.5)] transition-all duration-300 hover:scale-[1.02] hover:border-white/40">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         <div className="relative z-10">
           <h4 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-5 tracking-tight">
-            Perkembangan Pesat
+            Perubahan Nama Resmi
           </h4>
           <p className="text-base md:text-lg text-white/95 leading-relaxed mb-8 font-light">
-            Dengan visi "Menjadi SMK Unggul dan Berkarakter", sekolah terus berkembang dengan 10 konsentrasi keahlian terakreditasi A dan fasilitas pembelajaran modern.
+            Berdasarkan SK Menteri Pendidikan Nasional No. 217/O/2000, sekolah resmi berganti nama menjadi SMK Negeri 1 Cibinong. Gedung sekolah diresmikan pada 17 Februari 2000 oleh Bupati Bogor Bapak Agus Utara Efendi.
           </p>
           <div className="flex items-start gap-4 bg-gradient-to-r from-white/10 to-white/5 rounded-2xl p-5 border border-white/10 shadow-lg">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center shrink-0 shadow-lg shadow-cyan-500/30">
@@ -51,7 +51,7 @@ const timelineData = [
               </svg>
             </div>
             <p className="text-sm md:text-base text-white/90 font-medium leading-relaxed">
-              10 konsentrasi keahlian terakreditasi A dengan fasilitas industri standar.
+              Ganti nama resmi via SK Mendiknas No. 217/O/2000, gedung diresmikan 17 Februari 2000.
             </p>
           </div>
         </div>
@@ -59,16 +59,16 @@ const timelineData = [
     ),
   },
   {
-    title: "Prestasi",
+    title: "Perkembangan",
     content: (
       <div className="group relative bg-gradient-to-br from-white/15 via-white/10 to-white/5 backdrop-blur-lg border border-white/30 rounded-3xl p-8 md:p-10 lg:p-12 shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(96,165,250,0.5)] transition-all duration-300 hover:scale-[1.02] hover:border-white/40">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-400/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         <div className="relative z-10">
           <h4 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-5 tracking-tight">
-            Prestasi Gemilang
+            Akreditasi &amp; Program Keahlian
           </h4>
           <p className="text-base md:text-lg text-white/95 leading-relaxed mb-8 font-light">
-            Menghasilkan ribuan lulusan yang tersebar di berbagai industri nasional dan internasional dengan prestasi gemilang di berbagai kompetisi.
+            Sekolah terakreditasi A dan mengembangkan 10 konsentrasi keahlian: SIJA, RPL, DKV, TKJ, TKP, TP, TOI, TKR, TFLM, dan DPIB dengan fasilitas pembelajaran modern.
           </p>
           <div className="flex items-start gap-4 bg-gradient-to-r from-white/10 to-white/5 rounded-2xl p-5 border border-white/10 shadow-lg">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-300 to-blue-500 flex items-center justify-center shrink-0 shadow-lg shadow-blue-400/30">
@@ -78,7 +78,7 @@ const timelineData = [
               </svg>
             </div>
             <p className="text-sm md:text-base text-white/90 font-medium leading-relaxed">
-              Ribuan lulusan sukses di industri nasional & internasional.
+              Terakreditasi A dengan 10 konsentrasi keahlian.
             </p>
           </div>
         </div>
@@ -86,13 +86,13 @@ const timelineData = [
     ),
   },
   {
-    title: "2020-Sekarang",
+    title: "Sekarang",
     content: (
       <div className="group relative bg-gradient-to-br from-white/15 via-white/10 to-white/5 backdrop-blur-lg border border-white/30 rounded-3xl p-8 md:p-10 lg:p-12 shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(103,232,249,0.5)] transition-all duration-300 hover:scale-[1.02] hover:border-white/40">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         <div className="relative z-10">
           <h4 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-5 tracking-tight">
-            Era Digital & Inovasi
+            Era Digital &amp; Inovasi
           </h4>
           <p className="text-base md:text-lg text-white/95 leading-relaxed mb-8 font-light">
             Memasuki era digital dengan berbagai inovasi pembelajaran dan kerjasama industri 4.0. SMKN 1 Cibinong terus beradaptasi dengan perkembangan teknologi untuk mencetak lulusan yang siap kerja.

@@ -160,7 +160,7 @@ const InteractiveImageBentoGallery: React.FC<
             transition={{ duration: 0.5 }}
             className="text-4xl md:text-5xl lg:text-6xl font-bold text-blue-900 mb-4"
           >
-            Sarana & Prasarana
+            {title}
           </motion.h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
           {description}
@@ -209,7 +209,6 @@ const InteractiveImageBentoGallery: React.FC<
                 variants={itemVariants}
                 className={cn(
                   "group relative flex h-full min-h-[15rem] w-full min-w-[15rem] cursor-pointer items-end overflow-hidden rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 p-4 shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-white/20 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2",
-                  item.span,
                 )}
                 whileHover={{ scale: 1.03, y: -5 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}

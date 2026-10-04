@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, gte, isNull, lte, or } from "drizzle-orm";
 
-import { chatbotKnowledge, guru, jurusan, kerjasamaIndustri, postCategories, posts, saranaPrasarana } from "@/db/schema";
+import { chatbotKnowledge, fasilitasVokasi, guru, jurusan, kerjasamaIndustri, postCategories, posts, programUnggulan, saranaPrasarana } from "@/db/schema";
 import { chunkKnowledgeText } from "@/server/ai/knowledge-chunker";
 
 export type ChatSourceEntry = {
@@ -81,12 +81,14 @@ export async function retrieveChatbotContext(prompt: string): Promise<ChatSource
     entries.push({ title: item.row.title?.trim() || "Informasi Sekolah", url, content: item.chunk.text });
   }
 
-  const [jurusanRows, postsRows, guruRows, facilityRows, partnerRows] = await Promise.all([
+  const [jurusanRows, postsRows, guruRows, facilityRows, partnerRows, programRows, vokasiRows] = await Promise.all([
     db.select({ name: jurusan.name, code: jurusan.code, slug: jurusan.slug, description: jurusan.description }).from(jurusan).where(and(eq(jurusan.isActive, true), eq(jurusan.isPublished, true))).orderBy(asc(jurusan.sortOrder)).limit(12),
     db.select({ type: posts.type, title: posts.title, slug: posts.slug, excerpt: posts.excerpt, category: postCategories.name }).from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).where(eq(posts.isPublished, true)).orderBy(desc(posts.publishedAt)).limit(20),
     db.select({ name: guru.name, position: guru.position }).from(guru).where(eq(guru.isPublished, true)).limit(10),
     db.select({ title: saranaPrasarana.title, description: saranaPrasarana.description }).from(saranaPrasarana).where(eq(saranaPrasarana.isPublished, true)).limit(10),
     db.select({ name: kerjasamaIndustri.name, description: kerjasamaIndustri.description }).from(kerjasamaIndustri).where(eq(kerjasamaIndustri.isPublished, true)).limit(10),
+    db.select({ title: programUnggulan.title, description: programUnggulan.description, label: programUnggulan.label }).from(programUnggulan).where(eq(programUnggulan.isPublished, true)).orderBy(asc(programUnggulan.sortOrder)).limit(10),
+    db.select({ title: fasilitasVokasi.title, description: fasilitasVokasi.description, tefaName: fasilitasVokasi.tefaName }).from(fasilitasVokasi).where(eq(fasilitasVokasi.isPublished, true)).orderBy(asc(fasilitasVokasi.sortOrder)).limit(10),
   ]);
 
   for (const item of jurusanRows) {
@@ -105,6 +107,12 @@ export async function retrieveChatbotContext(prompt: string): Promise<ChatSource
   for (const item of partnerRows) {
     entries.push({ title: `Mitra ${item.name}`, url: "/profil-sekolah", content: `${item.name}: ${snippet(item.description)}` });
   }
+  for (const item of programRows) {
+    entries.push({ title: `Program Unggulan ${item.title}`, url: "/", content: `Program Unggulan ${item.title}${item.label ? ` (${item.label})` : ""}: ${snippet(item.description)}` });
+  }
+  for (const item of vokasiRows) {
+    entries.push({ title: `Fasilitas Vokasi ${item.title}`, url: "/profil-sekolah", content: `Fasilitas Praktik ${item.title}${item.tefaName ? ` - ${item.tefaName}` : ""}: ${snippet(item.description)}` });
+  }
 
-  return entries.slice(0, 40);
+  return entries.slice(0, 60);
 }
